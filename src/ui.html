@@ -1,24 +1,8 @@
-<style type="text/css">
-  textarea {
-    resize: none;
-    width: 100%;
-  }
-  div {
-    font-size: 11;
-  }
-  button {
-    font-size: 11;
-  }
-</style>
 
-<body>
-  <link rel="stylesheet" href="main.css" />
-
-  <textarea id="list" rows="5"></textarea>
-  <div id="options" style="display: block;"></div>
-  <button id="confirm">Confirm</button>
-  <button id="cancel">Cancel</button>
-</body>
+<textarea id="list" rows="5"></textarea>
+<div id="options" style="display: block;"></div>
+<button id="confirm">Confirm</button>
+<button id="cancel">Cancel</button>
 
 <script>
   onmessage = event => {
@@ -62,3 +46,4 @@
 
   parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
 </script>
+
