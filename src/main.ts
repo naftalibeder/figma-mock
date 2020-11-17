@@ -38,7 +38,7 @@ const getAllTextNodes = (selectedNodes: readonly SceneNode[]) => {
 };
 
 const getUniqueTextNodeContents = (nodes: TextNode[]) => {
-  const contents = nodes.map((node: TextNode) => node.characters);
+  const contents = nodes.map((node: TextNode) => node.name);
   return Array.from(new Set(contents));
 }
 
