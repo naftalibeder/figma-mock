@@ -2,11 +2,13 @@ figma.showUI(__html__, { width: 240, height: 400 });
 
 class TextNodeKind {
   nodeName: string;
+  nodeIds: {[id: string]: boolean};
   count: number;
 
-  constructor(nodeName: string, count: number = 0) {
+  constructor(nodeName: string) {
     this.nodeName = nodeName;
-    this.count = count;
+    this.nodeIds = {};
+    this.count = 0;
   }
 }
 
@@ -17,12 +19,13 @@ const onStart = () => {
 
   let kindsMap: {[id: string]: TextNodeKind} = {};
   nodes.forEach(node => {
-    const existingKind = kindsMap[node.name];
-    if (existingKind) {
-      existingKind.count += 1;
-    } else {
+    if (!kindsMap[node.name]) {
       kindsMap[node.name] = new TextNodeKind(node.name);
     }
+
+    const existingKind = kindsMap[node.name];
+    existingKind.nodeIds[node.id] = true;
+    existingKind.count += 1;
   });
   const uniqueKinds = Object.keys(kindsMap)
   .map(nodeName => kindsMap[nodeName])
@@ -45,8 +48,6 @@ const onPressConfirm = (listText: string, selectionText: string) => {
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
   if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'INSTANCE') {
-    const childNodes: TextNode[] = node.children.filter(child => child.type === 'TEXT') as TextNode[];
-    Array.prototype.push.apply(nodes, childNodes);
     node.children.forEach((node) => appendChildTextNodes(nodes, node));
   } else if (node.type === 'TEXT') {
     nodes.push(node);
