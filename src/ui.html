@@ -1,6 +1,8 @@
-<textarea id="list" rows="5"></textarea>
+<div id="textLabel">Enter your text</div>
+<textarea id="list" rows="5" placeholder="Put separate items on a new line"></textarea>
+<div id="optionsLabel">Choose what to fill</div>
 <div id="options" style="display: block;"></div>
-<button id="confirm">Confirm</button>
+<button id="confirm">Fill</button>
 <button id="cancel">Cancel</button>
 
 <script>
@@ -11,20 +13,24 @@
       const uniqueContents = msg.uniqueContents;
       const container = document.getElementById('options');
 
-      uniqueContents.forEach(contents => {
-        const option = document.createElement('div');
-        container.appendChild(option);
-
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'option';
-        radio.value = contents;
-        option.appendChild(radio);
-
-        const label = document.createElement('label');
-        label.innerHTML = contents;
-        option.appendChild(label);
-      })
+      if (uniqueContents.length === 0) { // show a no data message
+        container.textContent="You haven't selected anything, yet.";
+      } else {
+        uniqueContents.forEach(contents => {
+          const option = document.createElement('div');
+          container.appendChild(option);
+  
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'option';
+          radio.value = contents;
+          option.appendChild(radio);
+  
+          const label = document.createElement('label');
+          label.innerHTML = contents;
+          option.appendChild(label);
+        })
+      }
     }
   };
 
