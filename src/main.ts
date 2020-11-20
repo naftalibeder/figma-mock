@@ -4,9 +4,9 @@ const onStart = () => {
   const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
 
   const nodes = getAllTextNodes(selectedNodes);
-  const uniqueContents = getUniqueTextNodeContents(nodes);
+  const uniqueNodes = getUniqueTextNodes(nodes);
 
-  figma.ui.postMessage({ type: 'init', uniqueContents });
+  figma.ui.postMessage({ type: 'init', uniqueNodes });
 };
 
 const onPressConfirm = (listText: string, selectionText: string) => {
@@ -37,9 +37,9 @@ const getAllTextNodes = (selectedNodes: readonly SceneNode[]) => {
   return all;
 };
 
-const getUniqueTextNodeContents = (nodes: TextNode[]) => {
-  const contents = nodes.map((node: TextNode) => node.characters);
-  return Array.from(new Set(contents));
+const getUniqueTextNodes = (nodes: TextNode[]) => {
+  const components = nodes.map((node: TextNode) => node.name);
+  return Array.from(new Set(components));
 }
 
 const getTextNodesContainingText = (selectedNodes: readonly SceneNode[], text: string) => {
