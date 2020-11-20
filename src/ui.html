@@ -14,38 +14,50 @@
 <body>
   <link rel="stylesheet" href="main.css" />
 
-  <textarea id="list" rows="5"></textarea>
+  <div>Enter text to paste into the selected components, separated by new lines.</div>
+  <textarea id="list" rows="5" placeholder="Milk\nEggs\nButter"></textarea>
   <div id="options" style="display: block;"></div>
-  <button id="confirm">Confirm</button>
+  <button id="confirm">Replace elements</button>
   <button id="cancel">Cancel</button>
 </body>
 
 <script>
+  const list = document.getElementById('list');
+  list.placeholder = list.placeholder.replace(/\\n/g, '\n');
+
   onmessage = event => {
     const msg = event.data.pluginMessage;
+    const container = document.getElementById('options');
+    const confirmButton = document.getElementById('confirm');
 
     if (msg.type === 'init') {
+      confirmButton.disabled = true;
+
       const uniqueKinds = msg.uniqueKinds;
-      const container = document.getElementById('options');
 
       uniqueKinds.forEach(kind => {
-        const option = document.createElement('div');
-        container.appendChild(option);
+        const optionContainer = document.createElement('div');
+        container.appendChild(optionContainer);
 
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'option';
-        radio.value = kind.nodeName;
-        option.appendChild(radio);
+        const radioInput = document.createElement('input');
+        radioInput.type = 'radio';
+        radioInput.name = 'optionInput';
+        radioInput.value = kind.nodeName;
+        radioInput.count = kind.count;
+        radioInput.onchange = ({ target }) => {
+          confirmButton.disabled = false;
+          confirmButton.innerHTML = `Replace ${target.count} elements`;
+        };
+        optionContainer.appendChild(radioInput);
 
         const nameLabel = document.createElement('label');
         nameLabel.innerHTML = kind.nodeName;
-        option.appendChild(nameLabel);
+        optionContainer.appendChild(nameLabel);
 
         const countLabel = document.createElement('label');
         countLabel.style = "margin-left: 10;";
         countLabel.innerHTML = kind.count;
-        option.appendChild(countLabel);
+        optionContainer.appendChild(countLabel);
       })
     }
   };
@@ -54,7 +66,7 @@
     const listInput = document.getElementById('list');
     const listText = listInput.value;
 
-    const options = [...document.getElementsByName('option')];
+    const options = [...document.getElementsByName('optionInput')];
     const selected = options.filter(field => field.checked)[0];
     const selectionText = selected.value;
 
