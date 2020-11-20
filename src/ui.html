@@ -1,9 +1,58 @@
-<div id="textLabel">Enter your text</div>
-<textarea id="list" rows="5" placeholder="Put separate items on a new line"></textarea>
-<div id="optionsLabel">Choose what to fill</div>
-<div id="options" style="display: block;"></div>
-<button id="confirm">Fill</button>
-<button id="cancel">Cancel</button>
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
+<div id="textLabel" 
+  style="
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 0px;">Enter your text</div>
+
+<textarea id="list" rows="5" placeholder="Put separate items on a new line" 
+  style="
+    background: #F7F7F8;
+    border: 1px solid #E0E0E0;
+    margin-bottom: 16px;
+    padding: 8px;
+    min-width: 225px;"></textarea>
+
+<div id="optionsLabel" 
+  style="
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 0px">Choose what to fill</div>
+
+<div id="options" 
+  style="
+    display: block;
+    margin-bottom: 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;"></div>
+
+<button id="confirm" 
+  style="
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    background: rgb(78, 78, 238);
+    color: rgba(255, 255, 255, 0.9);
+    outline: none;
+    border: none;
+    padding: 8px;
+    min-width: 80px;
+    margin-right: 8px;
+    cursor: pointer;">Fill</button>
+
+<button id="cancel" 
+  style="
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    outline: none;
+    border: none;
+    padding: 8px;
+    min-width: 80px;
+    cursor: pointer;">Cancel</button>
 
 <script>
   onmessage = event => {
@@ -14,7 +63,7 @@
       const container = document.getElementById('options');
 
       if (uniqueContents.length === 0) { // show a no data message
-        container.textContent="You haven't selected anything, yet.";
+        container.textContent="Select a frame, component, or group of text fields.";
       } else {
         uniqueContents.forEach(contents => {
           const option = document.createElement('div');
