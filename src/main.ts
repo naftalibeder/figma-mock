@@ -4,16 +4,16 @@ const onStart = () => {
   const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
 
   const nodes = getAllTextNodes(selectedNodes);
-  const uniqueContents = getUniqueTextNodeContents(nodes);
+  const uniqueNames = getUniqueTextNodeNames(nodes);
 
-  figma.ui.postMessage({ type: 'init', uniqueContents });
+  figma.ui.postMessage({ type: 'init', uniqueNames });
 };
 
 const onPressConfirm = (listText: string, selectionText: string) => {
   const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
 
   const listLines: string[] = listText.split('\n').filter(line => line.length > 0);
-  const textNodes: TextNode[] = getTextNodesContainingText(selectedNodes, selectionText);
+  const textNodes: TextNode[] = getTextNodesWithName(selectedNodes, selectionText);
 
   textNodes.forEach(async (textNode, index) => {
     await figma.loadFontAsync(textNode.fontName as FontName);
@@ -37,14 +37,14 @@ const getAllTextNodes = (selectedNodes: readonly SceneNode[]) => {
   return all;
 };
 
-const getUniqueTextNodeContents = (nodes: TextNode[]) => {
-  const contents = nodes.map((node: TextNode) => node.characters);
+const getUniqueTextNodeNames = (nodes: TextNode[]) => {
+  const contents = nodes.map((node: TextNode) => node.name);
   return Array.from(new Set(contents));
 }
 
-const getTextNodesContainingText = (selectedNodes: readonly SceneNode[], text: string) => {
+const getTextNodesWithName = (selectedNodes: readonly SceneNode[], text: string) => {
   const all: TextNode[] = getAllTextNodes(selectedNodes);
-  return all.filter(node => node.characters == text);
+  return all.filter(node => node.name == text);
 }
 
 figma.ui.onmessage = msg => {

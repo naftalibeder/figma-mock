@@ -25,21 +25,21 @@
     const msg = event.data.pluginMessage;
 
     if (msg.type === 'init') {
-      const uniqueContents = msg.uniqueContents;
+      const uniqueNames = msg.uniqueNames;
       const container = document.getElementById('options');
 
-      uniqueContents.forEach(contents => {
+      uniqueNames.forEach(name => {
         const option = document.createElement('div');
         container.appendChild(option);
 
         const radio = document.createElement('input');
         radio.type = 'radio';
         radio.name = 'option';
-        radio.value = contents;
+        radio.value = name;
         option.appendChild(radio);
 
         const label = document.createElement('label');
-        label.innerHTML = contents;
+        label.innerHTML = name;
         option.appendChild(label);
       })
     }
