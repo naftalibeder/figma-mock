@@ -1,12 +1,34 @@
 figma.showUI(__html__, { width: 240, height: 400 });
 
+class TextNodeKind {
+  nodeName: string;
+  count: number;
+
+  constructor(nodeName: string, count: number = 0) {
+    this.nodeName = nodeName;
+    this.count = count;
+  }
+}
+
 const onStart = () => {
   const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
 
   const nodes = getAllTextNodes(selectedNodes);
-  const uniqueNames = getUniqueTextNodeNames(nodes);
 
-  figma.ui.postMessage({ type: 'init', uniqueNames });
+  let kindsMap: {[id: string]: TextNodeKind} = {};
+  nodes.forEach(node => {
+    const existingKind = kindsMap[node.name];
+    if (existingKind) {
+      existingKind.count += 1;
+    } else {
+      kindsMap[node.name] = new TextNodeKind(node.name);
+    }
+  });
+  const uniqueKinds = Object.keys(kindsMap)
+  .map(nodeName => kindsMap[nodeName])
+  .sort((a, b) => b.count - a.count);
+
+  figma.ui.postMessage({ type: 'init', uniqueKinds });
 };
 
 const onPressConfirm = (listText: string, selectionText: string) => {
@@ -36,11 +58,6 @@ const getAllTextNodes = (selectedNodes: readonly SceneNode[]) => {
   selectedNodes.forEach((node) => appendChildTextNodes(all, node));
   return all;
 };
-
-const getUniqueTextNodeNames = (nodes: TextNode[]) => {
-  const contents = nodes.map((node: TextNode) => node.name);
-  return Array.from(new Set(contents));
-}
 
 const getTextNodesWithName = (selectedNodes: readonly SceneNode[], text: string) => {
   const all: TextNode[] = getAllTextNodes(selectedNodes);

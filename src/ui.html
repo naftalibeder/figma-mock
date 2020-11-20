@@ -25,22 +25,27 @@
     const msg = event.data.pluginMessage;
 
     if (msg.type === 'init') {
-      const uniqueNames = msg.uniqueNames;
+      const uniqueKinds = msg.uniqueKinds;
       const container = document.getElementById('options');
 
-      uniqueNames.forEach(name => {
+      uniqueKinds.forEach(kind => {
         const option = document.createElement('div');
         container.appendChild(option);
 
         const radio = document.createElement('input');
         radio.type = 'radio';
         radio.name = 'option';
-        radio.value = name;
+        radio.value = kind.nodeName;
         option.appendChild(radio);
 
-        const label = document.createElement('label');
-        label.innerHTML = name;
-        option.appendChild(label);
+        const nameLabel = document.createElement('label');
+        nameLabel.innerHTML = kind.nodeName;
+        option.appendChild(nameLabel);
+
+        const countLabel = document.createElement('label');
+        countLabel.style = "margin-left: 10;";
+        countLabel.innerHTML = kind.count;
+        option.appendChild(countLabel);
       })
     }
   };
