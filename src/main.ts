@@ -1,48 +1,39 @@
-figma.showUI(__html__, { width: 240, height: 400 });
+figma.showUI(__html__, { width: 280, height: 420 });
 
-class TextNodeKind {
-  nodeName: string;
-  nodeIds: {[id: string]: boolean};
+interface TextNodeInfo {
+  id: string,
+  characters: string,
+}
+
+class TextNodeGroup {
+  key: string;
+  nodesMap: {[id: string]: TextNodeInfo};
   count: number;
 
-  constructor(nodeName: string) {
-    this.nodeName = nodeName;
-    this.nodeIds = {};
+  constructor(key: string) {
+    this.key = key;
+    this.nodesMap = {};
     this.count = 0;
   }
 }
 
 const onStart = () => {
-  const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
-
-  const nodes = getAllTextNodes(selectedNodes);
-
-  let kindsMap: {[id: string]: TextNodeKind} = {};
-  nodes.forEach(node => {
-    if (!kindsMap[node.name]) {
-      kindsMap[node.name] = new TextNodeKind(node.name);
-    }
-
-    const existingKind = kindsMap[node.name];
-    existingKind.nodeIds[node.id] = true;
-    existingKind.count += 1;
-  });
-  const uniqueKinds = Object.keys(kindsMap)
-  .map(nodeName => kindsMap[nodeName])
-  .sort((a, b) => b.count - a.count);
-
-  figma.ui.postMessage({ type: 'init', uniqueKinds });
+  const nodeGroups = getTextNodeGroups();
+  figma.ui.postMessage({ type: 'init', nodeGroups });
 };
 
-const onPressConfirm = (listText: string, selectionText: string) => {
-  const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
-
-  const listLines: string[] = listText.split('\n').filter(line => line.length > 0);
-  const textNodes: TextNode[] = getTextNodesWithName(selectedNodes, selectionText);
+const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean) => {
+  const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
   textNodes.forEach(async (textNode, index) => {
-    await figma.loadFontAsync(textNode.fontName as FontName);
-    textNode.characters = listLines[index % listLines.length];
+    if (!textNode.hasMissingFont) {
+      await figma.loadFontAsync(textNode.fontName as FontName);
+      let finalIndex = index % items.length;
+      if (randomize) finalIndex = Math.floor(Math.random() * items.length);
+      textNode.characters = items[finalIndex];
+    } else {
+      console.log('Text node is missing a font and cannot be edited.')
+    }
   });
 };
 
@@ -54,22 +45,47 @@ const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
   }
 }
 
-const getAllTextNodes = (selectedNodes: readonly SceneNode[]) => {
+const getAllTextNodes = (selectedNodes: readonly SceneNode[]): TextNode[] => {
   let all: TextNode[] = [];
   selectedNodes.forEach((node) => appendChildTextNodes(all, node));
   return all;
 };
 
-const getTextNodesWithName = (selectedNodes: readonly SceneNode[], text: string) => {
-  const all: TextNode[] = getAllTextNodes(selectedNodes);
-  return all.filter(node => node.name == text);
+const getTextNodesWithGroupingKey = (key: string): TextNode[] => {
+  const nodeGroups = getTextNodeGroups();
+  const nodeGroup = nodeGroups.filter(group => group.key == key)[0];
+  const nodesInfos = Object.values(nodeGroup.nodesMap);
+  const nodes = nodesInfos.map(o => figma.getNodeById(o.id) as TextNode);
+  return nodes;
+}
+
+const getTextNodeGroups = (): TextNodeGroup[] => {
+  const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
+  const nodes = getAllTextNodes(selectedNodes);
+
+  let groupsMap: {[key: string]: TextNodeGroup} = {};
+  nodes.forEach(node => {
+    const groupingKey = `${node.x},${node.y}`;
+
+    if (!groupsMap[groupingKey]) {
+      groupsMap[groupingKey] = new TextNodeGroup(groupingKey);
+    }
+
+    const existingGroup = groupsMap[groupingKey];
+    existingGroup.nodesMap[node.id] = { id: node.id, characters: node.characters };
+    existingGroup.count += 1;
+  });
+  const nodeGroups = Object.keys(groupsMap)
+  .map(key => groupsMap[key])
+  .sort((a, b) => b.count - a.count);
+  return nodeGroups;
 }
 
 figma.ui.onmessage = msg => {
   if (msg.type === 'init') {
     onStart();
   } else if (msg.type === 'confirm') {
-    onPressConfirm(msg.listText, msg.selectionText);
+    onPressConfirm(msg.items, msg.groupingKey, msg.randomize);
     figma.closePlugin();
   } else if (msg.type === 'cancel') {
     figma.closePlugin();

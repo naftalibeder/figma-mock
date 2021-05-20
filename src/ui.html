@@ -1,12 +1,26 @@
 <style type="text/css">
+  html {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
   textarea {
     resize: none;
     width: 100%;
   }
-  div {
+  h3 {
+    font-size: 14;
+  }
+  p, div, input, label, textarea {
     font-size: 11;
   }
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
   button {
+    flex: 1;
+    margin: 4px;
+    padding: 8px;
     font-size: 11;
   }
 </style>
@@ -14,68 +28,165 @@
 <body>
   <link rel="stylesheet" href="main.css" />
 
-  <div>Enter text to paste into the selected components, separated by new lines.</div>
-  <textarea id="list" rows="5" placeholder="Milk\nEggs\nButter"></textarea>
-  <div id="options" style="display: block;"></div>
-  <button id="confirm">Replace elements</button>
-  <button id="cancel">Cancel</button>
+  <h3>Input</h3>
+  <div>
+    <input id='input-kind-preset' value='preset' type='radio' name='kind' checked='true' />
+    <label for='input-kind-preset'>Preset</label><br>
+    <input id='input-kind-url' value='url' type='radio' name='kind' />
+    <label for='input-kind-url'>Url</label><br>
+    <input id='input-kind-custom' value='custom' type='radio' name='kind' />
+    <label for='input-kind-custom'>Custom</label><br>
+  </div>
+  <p id='list-entry-description'></p>
+  <textarea id="list-textbox" rows="5"></textarea>
+  <select id="list-dropdown" name="cars">
+    <option value="truck-stop" name='list-dropdown-preset'>Truck stops</option>
+  </select>
+
+  <br><br>
+
+  <h3>Output</h3>
+  <p>Choose the text fields to fill with the above content.</p>
+  <div id='output-options' style="display: block;"></div>
+
+  <br>
+
+  <h3>Options</h3>
+  <input type="checkbox" id="randomize-checkbox" checked='true'>
+  <label for="randomize">Randomize</label><br>
+
+  <br>
+
+  <div class='buttons'>
+    <button id="confirm">Paste!</button>
+    <button id="cancel">Cancel</button>
+  </div>
 </body>
 
 <script>
-  const list = document.getElementById('list');
-  list.placeholder = list.placeholder.replace(/\\n/g, '\n');
+  const listField = document.getElementById('list-textbox');
+  listField.placeholder = listField.placeholder.replace(/\\n/g, '\n');
+  
+  const inputKindPreset = document.getElementById('input-kind-preset');
+  const inputKindManual = document.getElementById('input-kind-custom');
+  const inputKindUrl = document.getElementById('input-kind-url');
+  inputKindPreset.onclick = onChangeInputKind;
+  inputKindManual.onclick = onChangeInputKind;
+  inputKindUrl.onclick = onChangeInputKind;
+
+  onChangeInputKind({ target: { value: 'preset' }}); // Forces update.
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
-    const container = document.getElementById('options');
+    const container = document.getElementById('output-options');
     const confirmButton = document.getElementById('confirm');
 
     if (msg.type === 'init') {
       confirmButton.disabled = true;
 
-      const uniqueKinds = msg.uniqueKinds;
-
-      uniqueKinds.forEach(kind => {
-        const optionContainer = document.createElement('div');
-        container.appendChild(optionContainer);
+      const nodeGroups = msg.nodeGroups;
+      nodeGroups.forEach(nodeGroup => {
+        const rowWrap = document.createElement('div');
+        container.appendChild(rowWrap);
 
         const radioInput = document.createElement('input');
         radioInput.type = 'radio';
-        radioInput.name = 'optionInput';
-        radioInput.value = kind.nodeName;
-        radioInput.count = kind.count;
+        radioInput.id = nodeGroup.key;
+        radioInput.name = 'option-input';
+        radioInput.value = nodeGroup.key;
+        radioInput.count = nodeGroup.count;
         radioInput.onchange = ({ target }) => {
           confirmButton.disabled = false;
-          confirmButton.innerHTML = `Replace ${target.count} elements`;
         };
-        optionContainer.appendChild(radioInput);
+        rowWrap.appendChild(radioInput);
 
-        const nameLabel = document.createElement('label');
-        nameLabel.innerHTML = kind.nodeName;
-        optionContainer.appendChild(nameLabel);
-
-        const countLabel = document.createElement('label');
-        countLabel.style = "margin-left: 10;";
-        countLabel.innerHTML = kind.count;
-        optionContainer.appendChild(countLabel);
+        const nodes = Object.values(nodeGroup.nodesMap);
+        const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 20)))];
+        const nodesDisplayText = nodeGroupTexts.slice(0, 3).join(', ');
+        const nameAndCountLabel = document.createElement('label');
+        nameAndCountLabel.for = nodeGroup.key;
+        nameAndCountLabel.innerHTML = `${nodesDisplayText} (${nodeGroup.count})`;
+        rowWrap.appendChild(nameAndCountLabel);
       })
     }
   };
 
+  function onChangeInputKind({ target }) {
+    const value = target.value;
+
+    const descriptionLabel = document.getElementById('list-entry-description');
+    const textbox = document.getElementById('list-textbox');
+    const dropdown = document.getElementById('list-dropdown');
+
+    if (value == 'preset') {
+      textbox.hidden = true;
+      dropdown.hidden = false;
+      descriptionLabel.innerHTML = 'Choose a type of data.';
+    } else if (value == 'url') {
+      textbox.hidden = false;
+      dropdown.hidden = true;
+      descriptionLabel.innerHTML = 'Enter a url to a text file to paste into the selected components, separated by new lines.';
+      textbox.placeholder = 'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt';
+      textbox.innerHTML = '';
+    } else if (value == 'custom') {
+      textbox.hidden = false;
+      dropdown.hidden = true;
+      descriptionLabel.innerHTML = 'Enter text to paste into the selected components, separated by new lines.';
+      textbox.placeholder = 'Milk\nEggs\nButter';
+      textbox.innerHTML = '';
+    }
+  }
+
   document.getElementById('confirm').onclick = () => {
-    const listInput = document.getElementById('list');
-    const listText = listInput.value;
+    const listDropdownPresets = [...document.getElementsByName('list-dropdown-preset')];
+    const selectedPreset = listDropdownPresets.filter(o => o.selected == true)[0].value;
+    
+    const listFieldText = document.getElementById('list-textbox').value;
 
-    const options = [...document.getElementsByName('optionInput')];
-    const selected = options.filter(field => field.checked)[0];
-    const selectionText = selected.value;
+    const inputOptions = [...document.getElementsByName('option-input')];
+    const selectedInputOption = inputOptions.filter(field => field.checked)[0];
+    const selectedInputOptionText = selectedInputOption.value;
 
-    parent.postMessage({ pluginMessage: { type: 'confirm', listText, selectionText } }, '*');
+    const randomize = document.getElementById('randomize-checkbox').checked;
+
+    const config = {
+      type: 'confirm',
+      items: [],
+      groupingKey: selectedInputOptionText,
+      randomize,
+    };
+
+    if (inputKindPreset.checked) {
+      // TODO: In progress.
+      let items = [];
+      if (selectedPreset === 'truck-stop') {
+        items = ['Truck Stop 1', 'Truck Stop 2', 'Truck Stop 3'];
+      }
+      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
+    } else if (inputKindUrl.checked) {
+      fetchItems(listFieldText, (items) => {
+        parent.postMessage({ pluginMessage: { ...config, items } }, '*');
+      })
+    } else if (inputKindManual.checked) {
+      parent.postMessage({ pluginMessage: { ...config, items: itemsFromStr(listFieldText) } }, '*');
+    }
   };
 
   document.getElementById('cancel').onclick = () => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
   };
+
+  function fetchItems(url, onResponse) {
+    let request = new XMLHttpRequest();
+    request.open('GET', url);
+    request.responseType = 'text';
+    request.onload = () => onResponse(itemsFromStr(request.response));
+    request.send();
+  }
+
+  function itemsFromStr(str) {
+    return str.split('\n').filter(line => line.length > 0);
+  }
 
   parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
 </script>
