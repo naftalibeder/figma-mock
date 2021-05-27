@@ -148,8 +148,8 @@
   onmessage = event => {
     const msg = event.data.pluginMessage;
 
-    [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
-    [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
+    clearInputOptions();
+    clearNodeOptions();
 
     if (msg.type === 'init') {
       if (msg.url) {
@@ -177,14 +177,14 @@
 
       confirmButton.disabled = false;
     } else if (msg.type === 'clear') {
-      [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
-      [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
+      clearInputOptions();
+      clearNodeOptions();
       confirmButton.disabled = true;
     }
   };
 
   function fetchInputs() {
-    [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
+    clearInputOptions();
 
     const baseUrl = settingsTextbox.value.replace('/index.json', '');
     const url = `${baseUrl}/index.json`;
@@ -218,7 +218,7 @@
   }
 
   confirmButton.onclick = () => {
-    const selectedInputDropdownOption = [...inputDropdown.children].filter(o => o.selected == true)[0];
+    const selectedInputDropdownOption = inputOptions().filter(o => o.selected == true)[0];
     const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
     const randomize = randomizeCheckbox.checked;
     const capitalize = capitalizeCheckbox.checked;
@@ -266,6 +266,32 @@
 
   function itemsFromStr(str) {
     return str.split('\n').filter(line => line.length > 0);
+  }
+
+  function inputOptions() {
+    let o = [];
+    for (let i = 0; i < inputDropdown.children.length; i++) {
+      const section = inputDropdown.children[i];
+      for (let i = 0; i < section.children.length; i++) {
+        const option = section.children[i];
+        o.push(option);
+      }
+    }
+    return o;
+  }
+
+  function clearInputOptions() {
+    for (let i = 0; i < inputDropdown.children.length; i++) {
+      const section = inputDropdown.children[i];
+      inputDropdown.removeChild(section);
+    }
+  }
+
+  function clearNodeOptions() {
+    for (let i = 0; i < nodesDropdown.children.length; i++) {
+      const node = nodesDropdown.children[i];
+      nodesDropdown.removeChild(node);
+    }
   }
 
   parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
