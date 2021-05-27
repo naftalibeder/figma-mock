@@ -121,7 +121,7 @@
     }
   ]
 }</pre>    
-    <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file">https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json</textarea>
+    <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file"></textarea>
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
@@ -151,12 +151,18 @@
     [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
 
     if (msg.type === 'init') {
+      if (msg.url) {
+        settingsTextbox.innerHTML = msg.url;
+      } else {
+        settingsTextbox.innerHTML = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
+      }
+
       fetchInputs();
 
       const nodeGroups = msg.nodeGroups;
       nodeGroups.forEach((nodeGroup, i) => {
         const nodes = Object.values(nodeGroup.nodesMap);
-        const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 20)))];
+        const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 30)))];
         const fieldCountDisplay = `(${nodeGroupTexts.length} fields)`;
         const nodesDisplayText = `${nodeGroupTexts[0]}${nodeGroupTexts.length > 1 ? ', ...' : ''}${nodeGroupTexts.length > 1 ? ' ' + fieldCountDisplay : ''}`;
         // const nodesDisplayText = nodeGroupTexts.slice(0, 3).join(', ');
@@ -180,12 +186,14 @@
     [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
 
     const baseUrl = settingsTextbox.value.replace('/index.json', '');
-    fetch(`${baseUrl}/index.json`, (response, error) => {
+    const url = `${baseUrl}/index.json`;
+    fetch(url, (response, error) => {
       let lists = null;
 
       try {
         lists = JSON.parse(response).lists;
         settingsErrorLabel.hidden = true;
+        parent.postMessage({ pluginMessage: { type: 'url', url } }, '*');
       } catch (error) {
         console.log(`Error: ${error}`);
         settingsErrorLabel.hidden = false;

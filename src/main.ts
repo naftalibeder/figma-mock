@@ -17,9 +17,10 @@ class TextNodeGroup {
   }
 }
 
-const onStart = () => {
+const onStart = async () => {
   const nodeGroups = getTextNodeGroups();
-  figma.ui.postMessage({ type: 'init', nodeGroups });
+  const url = await getUrl();
+  figma.ui.postMessage({ type: 'init', nodeGroups, url });
 };
 
 const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean, capitalize: boolean) => {
@@ -83,9 +84,19 @@ const getTextNodeGroups = (): TextNodeGroup[] => {
   return nodeGroups;
 }
 
+const getUrl = async (): Promise<string> => {
+  return figma.clientStorage.getAsync('url');
+}
+
+const setUrl = async (url: string) => {
+  await figma.clientStorage.setAsync('url', url);
+}
+
 figma.ui.onmessage = msg => {
   if (msg.type === 'init') {
     onStart();
+  } else if (msg.type === 'url') {
+    setUrl(msg.url);
   } else if (msg.type === 'confirm') {
     onPressConfirm(msg.items, msg.groupingKey, msg.randomize, msg.capitalize);
   } else if (msg.type === 'cancel') {
