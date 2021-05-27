@@ -119,7 +119,7 @@
     }
   ]
 }</pre>    
-    <input class='text' type="text" id="settings-textbox" placeholder="Url to index.json file" value="https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json" />
+    <textarea id="settings-textbox" class='text' type="text" rows="4" onblur="fetchInputs()" placeholder="Url to index.json file">https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json</textarea>
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
     </div>
@@ -173,6 +173,8 @@
   };
 
   function fetchInputs() {
+    [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
+
     const baseUrl = settingsTextbox.value.replace('/index.json', '');
     fetch(`${baseUrl}/index.json`, (response) => {
       const lists = JSON.parse(response).lists;
@@ -183,6 +185,8 @@
         inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
         inputDropdown.appendChild(inputOption);
       });
+
+      console.log(`Fetched ${lists.length} input lists`);
     });
   }
 
