@@ -60,6 +60,10 @@
     text-decoration: underline;
     cursor: pointer;
   }
+  button:disabled {
+    background-color: lightgray;
+    color: gray;
+  }
   select {
     width: 100%;
     padding: 8px;
@@ -83,6 +87,9 @@
     overflow-y: hidden;
     padding: 16px;
   }
+  .margin-above {
+    margin-top: 8px;
+  }
 </style>
 
 <body>
@@ -93,7 +100,7 @@
   <h2>Input</h2>
   <p>Choose a type of data to paste into the selected fields.</p>
   <select id="input-dropdown"></select>
-  <button id="settings-button" class='link' style="margin-top: 8px;">Customize</button>
+  <button id="settings-button" class='link margin-above'>Customize</button>
 
   <h2>Options</h2>
   <p>Capitalization</p>
@@ -104,7 +111,7 @@
     <option value="upper">Upper case</option>
     <option value="lower">Lower case</option>
   </select>
-  <div style="margin-top: 8px;">
+  <div class='margin-above'>
     <input id="randomize-checkbox" type="checkbox" checked='true'>
     <label for="randomize-checkbox">Randomize</label><br>
   </div>
@@ -130,7 +137,7 @@
 }</pre>    
     <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file"></textarea>
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
-    <button id="settings-restore-button" class='link' onclick="restoreDefaultInputOptions()">Restore default url</button>
+    <button id="settings-restore-button" class='link margin-above' onclick="restoreDefaultInputOptions()">Restore default url</button>
 
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
@@ -138,7 +145,7 @@
   </div>
 </body>
 
-<script type="module">
+<script>
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
@@ -152,6 +159,7 @@
   const cancelButton = document.getElementById('cancel-button');
 
   settingsOverlay.hidden = true;
+  confirmButton.disabled = true;
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
@@ -183,7 +191,9 @@
         nodesDropdown.appendChild(nodeOption);
       });
 
-      confirmButton.disabled = false;
+      if (nodeGroups.length > 0) {
+        confirmButton.disabled = false;
+      }
     } else if (msg.type === 'clear') {
       clearInputOptions();
       clearNodeOptions();
