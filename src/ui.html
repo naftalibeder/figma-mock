@@ -13,6 +13,15 @@
   p, div, input, label, textarea {
     font-size: 11;
   }
+  .overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background-color: white;
+  }
   .buttons {
     display: inline-flex;
     flex-wrap: wrap;
@@ -40,6 +49,14 @@
   button.primary:hover {
     background-color: rgb(75, 112, 214);
   }
+  button.link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: rgb(75, 112, 214);
+    text-decoration: underline;
+    cursor: pointer;
+  }
   select {
     width: 100%;
     padding: 8px;
@@ -50,8 +67,21 @@
     padding: 8px;
     margin-bottom: 8px;
   }
+  input.text {
+    width: 100%;
+    height: 40px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 8px;
+  }
   #input-textbox {
     margin-top: 8px;
+  }
+  pre {
+    font-family: monospace;
+    background-color: rgb(231, 231, 231);
+    word-wrap: break-word;
+    padding: 16px;
   }
 </style>
 
@@ -64,26 +94,52 @@
 
   <h2>Input</h2>
   <p>Choose a type of data to paste into the selected fields.</p>
-  <input type="text" id="input-repo-textbox" placeholder="Url to index.json file" value="https://raw.githubusercontent.com/TruckMap/truckmap-figma/main" />
   <select id="input-dropdown" onchange="onChangeInputKind()"></select>
   <textarea id="input-textbox" rows="5"></textarea>
+  <button id="settings-button" class='link'>Customize</button>
 
   <h2>Options</h2>
   <input type="checkbox" id="randomize-checkbox" checked='true'>
-  <label for="randomize">Randomize</label><br>
+  <label for="randomize-checkbox">Randomize</label><br>
 
   <br>
 
   <div class='buttons'>
-    <button id="cancel">Cancel</button>
-    <button id="confirm" class='primary'>Paste</button>
+    <button id="cancel-button">Cancel</button>
+    <button id="confirm-button" class='primary'>Paste</button>
+  </div>
+
+  <div id='settings-overlay' class='overlay'>
+    <p>Add a url to a publicly available index.json file that follows the format below.</p>
+    <pre>
+{
+  "name": "Household Objects",
+  "lists": [
+    {
+      "name": "Tools",
+      "path": "tools.txt"
+    }
+  ]
+}</pre>    
+    <input class='text' type="text" id="settings-textbox" placeholder="Url to index.json file" value="https://raw.githubusercontent.com/TruckMap/truckmap-figma/main/index.json" />
+    <div class='buttons'>
+      <button id="settings-back-button">Back</button>
+    </div>
   </div>
 </body>
 
 <script>
-  const inputRepoTextbox = document.getElementById('input-repo-textbox');
-  const inputDropdown = document.getElementById('input-dropdown');
   const nodesDropdown = document.getElementById('nodes-dropdown');
+  const inputDropdown = document.getElementById('input-dropdown');
+  const inputTextbox = document.getElementById('input-textbox');
+  const settingsButton = document.getElementById('settings-button');
+  const settingsOverlay = document.getElementById('settings-overlay');
+  const settingsTextbox = document.getElementById('settings-textbox');
+  const settingsBackButton = document.getElementById('settings-back-button');
+  const confirmButton = document.getElementById('confirm-button');
+  const cancelButton = document.getElementById('cancel-button');
+
+  settingsOverlay.hidden = true;
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
@@ -92,7 +148,7 @@
     [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
 
     if (msg.type === 'init') {
-      const baseUrl = inputRepoTextbox.value;
+      const baseUrl = settingsTextbox.value.replace('/index.json', '');
       fetch(`${baseUrl}/index.json`, (response) => {
         const lists = JSON.parse(response).lists;
         lists.forEach((list, index) => {
@@ -127,29 +183,22 @@
   };
 
   function onChangeInputKind() {
-    const listTextbox = document.getElementById('input-textbox');
-
-    const inputDropdown = document.getElementById('input-dropdown');
     const inputDropdownOptions = [...inputDropdown.children];
     const selectedInputDropdownOption = inputDropdownOptions.filter(o => o.selected == true)[0];
 
     if (selectedInputDropdownOption?.id == 'custom') {
-      listTextbox.hidden = false;
-      listTextbox.placeholder = 'Enter a url to a newline-separated text list, or paste one directly.';
-      listTextbox.innerHTML = '';
+      inputTextbox.hidden = false;
+      inputTextbox.placeholder = 'Enter a url to a newline-separated text list, or paste one directly.';
+      inputTextbox.innerHTML = '';
     } else {
-      listTextbox.hidden = true;
+      inputTextbox.hidden = true;
     }
   }
 
-  document.getElementById('confirm').onclick = () => {
-    const inputTextbox = document.getElementById('input-textbox');
-
-    const inputDropdown = document.getElementById('input-dropdown');
+  confirmButton.onclick = () => {
     const inputDropdownOptions = [...inputDropdown.children];
     const selectedInputDropdownOption = inputDropdownOptions.filter(o => o.selected == true)[0];
 
-    const nodesDropdown = document.getElementById('nodes-dropdown');
     const nodesDropdownOptions = [...nodesDropdown.children];
     const selectedNodeDropdownOption = nodesDropdownOptions.filter(o => o.selected == true)[0];
     
@@ -190,8 +239,16 @@
     }
   };
 
-  document.getElementById('cancel').onclick = () => {
+  cancelButton.onclick = () => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+  };
+
+  settingsButton.onclick = () => {
+    settingsOverlay.hidden = false;
+  };
+
+  settingsBackButton.onclick = () => {
+    settingsOverlay.hidden = true;
   };
 
   function fetch(url, onResponse) {
