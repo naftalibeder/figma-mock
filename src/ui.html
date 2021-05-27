@@ -55,7 +55,7 @@
   button.link {
     background: none;
     border: none;
-    padding: 0;
+    height: auto;
     color: rgb(75, 112, 214);
     text-decoration: underline;
     cursor: pointer;
@@ -95,13 +95,21 @@
   <h2>Input</h2>
   <p>Choose a type of data to paste into the selected fields.</p>
   <select id="input-dropdown"></select>
-  <button id="settings-button" class='link'>Customize</button>
+  <button id="settings-button" class='link' style="margin-top: 8px;">Customize</button>
 
   <h2>Options</h2>
-  <input id="randomize-checkbox" type="checkbox" checked='true'>
-  <label for="randomize-checkbox">Randomize</label><br>
-  <input id="capitalize-checkbox" type="checkbox">
-  <label for="capitalize-checkbox">Force sentence case</label><br>
+  <p>Capitalization</p>
+  <select id="casing-dropdown">
+    <option value="none">Use original</option>
+    <option value="sentence">Sentence case</option>
+    <option value="title">Title case</option>
+    <option value="upper">Upper case</option>
+    <option value="lower">Lower case</option>
+  </select>
+  <div style="margin-top: 8px;">
+    <input id="randomize-checkbox" type="checkbox" checked='true'>
+    <label for="randomize-checkbox">Randomize</label><br>
+  </div>
 
   <br>
 
@@ -136,7 +144,7 @@
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
-  const capitalizeCheckbox = document.getElementById('capitalize-checkbox');
+  const casingDropdown = document.getElementById('casing-dropdown');
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
   const settingsTextbox = document.getElementById('settings-textbox');
@@ -223,16 +231,16 @@
     const selectedInputDropdownOption = inputOptions().filter(o => o.selected == true)[0];
     const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
     const randomize = randomizeCheckbox.checked;
-    const capitalize = capitalizeCheckbox.checked;
+    const casing = casingDropdown.value;
 
-    console.log('Selected:', selectedInputDropdownOption.id);
+    console.log(`Selected: ${selectedInputDropdownOption.id} with casing ${casing}`);
 
     const config = {
       type: 'confirm',
       items: [],
       groupingKey: selectedNodeDropdownOption.value,
       randomize,
-      capitalize,
+      casing,
     };
 
     const inputUrl = selectedInputDropdownOption.dataset.url;

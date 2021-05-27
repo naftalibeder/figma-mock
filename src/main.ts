@@ -17,22 +17,36 @@ class TextNodeGroup {
   }
 }
 
+enum Casing {
+  None = 'none',
+  Sentence = 'sentence',
+  Title = 'title',
+  Upper = 'upper',
+  Lower = 'lower',
+}
+
 const onStart = async () => {
   const nodeGroups = getTextNodeGroups();
   const url = await getUrl();
   figma.ui.postMessage({ type: 'init', nodeGroups, url });
 };
 
-const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean, capitalize: boolean) => {
+const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean, casing: Casing) => {
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
   textNodes.forEach(async (textNode, index) => {
     if (!textNode.hasMissingFont) {
       await figma.loadFontAsync(textNode.fontName as FontName);
+      
       let finalIndex = index % items.length;
       if (randomize) finalIndex = Math.floor(Math.random() * items.length);
       let text = items[finalIndex];
-      if (capitalize) text = text.slice(0, 1).toUpperCase() + text.slice(1);
+
+      if (casing === Casing.Sentence) text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
+      if (casing === Casing.Title) text = text; // TODO
+      if (casing === Casing.Upper) text = text.toUpperCase();
+      if (casing === Casing.Lower) text = text.toLowerCase();
+
       textNode.characters = text;
     } else {
       console.log('Text node is missing a font and cannot be edited.')
@@ -98,7 +112,7 @@ figma.ui.onmessage = msg => {
   } else if (msg.type === 'url') {
     setUrl(msg.url);
   } else if (msg.type === 'confirm') {
-    onPressConfirm(msg.items, msg.groupingKey, msg.randomize, msg.capitalize);
+    onPressConfirm(msg.items, msg.groupingKey, msg.randomize, msg.casing);
   } else if (msg.type === 'cancel') {
     figma.closePlugin();
   }
