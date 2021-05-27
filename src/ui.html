@@ -86,8 +86,6 @@
 </style>
 
 <body>
-  <link rel="stylesheet" href="main.css" />
-
   <h2>Output</h2>
   <p>Choose the group of text fields to fill.</p>
   <select id="nodes-dropdown"></select>
@@ -140,7 +138,7 @@
   </div>
 </body>
 
-<script>
+<script type="module">
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
@@ -193,7 +191,7 @@
     }
   };
 
-  function fetchInputs() {
+  const fetchInputs = () => {
     clearInputOptions();
 
     const baseUrl = settingsTextbox.value.replace('/index.json', '');
@@ -217,7 +215,7 @@
 
       lists.forEach((list, index) => {
         const inputOption = document.createElement('option');
-        inputOption.id = `input-option-${index}`;
+        inputOption.id = slugify(list.name);
         inputOption.innerHTML = list.name;
         inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
         inputOptionGroup.appendChild(inputOption);
@@ -265,7 +263,7 @@
     settingsOverlay.hidden = true;
   };
 
-  function fetch(url, onResponse, onError) {
+  const fetch = (url, onResponse, onError) => {
     let request = new XMLHttpRequest();
     request.open('GET', url);
     request.responseType = 'text';
@@ -274,11 +272,11 @@
     request.send();
   }
 
-  function itemsFromStr(str) {
+  const itemsFromStr = (str) => {
     return str.split('\n').filter(line => line.length > 0);
   }
 
-  function inputOptions() {
+  const inputOptions = () => {
     let o = [];
     for (let i = 0; i < inputDropdown.children.length; i++) {
       const section = inputDropdown.children[i];
@@ -290,23 +288,27 @@
     return o;
   }
 
-  function clearInputOptions() {
+  const clearInputOptions = () => {
     for (let i = 0; i < inputDropdown.children.length; i++) {
       const section = inputDropdown.children[i];
       inputDropdown.removeChild(section);
     }
   }
 
-  function clearNodeOptions() {
+  const clearNodeOptions = () => {
     for (let i = 0; i < nodesDropdown.children.length; i++) {
       const node = nodesDropdown.children[i];
       nodesDropdown.removeChild(node);
     }
   }
 
-  function restoreDefaultInputOptions() {
+  const restoreDefaultInputOptions = () => {
     settingsTextbox.innerHTML = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
     fetchInputs();
+  }
+
+  const slugify = (text) => {
+    return text.replace(' ', '-').toLowerCase();
   }
 
   parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
