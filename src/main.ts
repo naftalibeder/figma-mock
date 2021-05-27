@@ -37,13 +37,13 @@ const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean
   textNodes.forEach(async (textNode, index) => {
     if (!textNode.hasMissingFont) {
       await figma.loadFontAsync(textNode.fontName as FontName);
-      
+
       let finalIndex = index % items.length;
       if (randomize) finalIndex = Math.floor(Math.random() * items.length);
       let text = items[finalIndex];
 
-      if (casing === Casing.Sentence) text = text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
-      if (casing === Casing.Title) text = text; // TODO
+      if (casing === Casing.Sentence) text = sentenceCase(text);
+      if (casing === Casing.Title) text = titleCase(text);
       if (casing === Casing.Upper) text = text.toUpperCase();
       if (casing === Casing.Lower) text = text.toLowerCase();
 
@@ -125,3 +125,11 @@ figma.on("selectionchange", () => {
     figma.ui.postMessage({ type: 'clear' });
   }
 });
+
+const sentenceCase = (text: string) => {
+  return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+const titleCase = (text: string) => {
+  return text.split(' ').map(word => sentenceCase(word)).join(' ');
+}
