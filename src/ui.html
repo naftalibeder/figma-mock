@@ -79,7 +79,8 @@
   pre {
     font-family: monospace;
     background-color: rgb(231, 231, 231);
-    word-wrap: break-word;
+    overflow-x: scroll;
+    overflow-y: hidden;
     padding: 16px;
   }
 </style>
@@ -93,7 +94,7 @@
 
   <h2>Input</h2>
   <p>Choose a type of data to paste into the selected fields.</p>
-  <select id="input-dropdown" onchange="onChangeInputKind()"></select>
+  <select id="input-dropdown"></select>
   <button id="settings-button" class='link'>Customize</button>
 
   <h2>Options</h2>
@@ -116,8 +117,8 @@
   "name": "Household Objects",
   "lists": [
     {
-      "name": "Tools",
-      "path": "tools.txt"
+      "name": "Animals",
+      "url": "https://raw.githubusercontent.com/verachell/English-word-lists-miscellaneous-categories/main/wordlists/Animals.txt"
     }
   ]
 }</pre>    
@@ -188,25 +189,28 @@
     const baseUrl = settingsTextbox.value.replace('/index.json', '');
     const url = `${baseUrl}/index.json`;
     fetch(url, (response, error) => {
-      let lists = null;
-
       try {
-        lists = JSON.parse(response).lists;
+        response = JSON.parse(response);
         settingsErrorLabel.hidden = true;
         parent.postMessage({ pluginMessage: { type: 'url', url } }, '*');
       } catch (error) {
         console.log(`Error: ${error}`);
         settingsErrorLabel.hidden = false;
+        return;
       }
 
-      if (!lists) return;
+      const { lists, name } = response;
+      
+      const inputOptionGroup = document.createElement('optgroup');
+      inputOptionGroup.label = name;
+      inputDropdown.appendChild(inputOptionGroup);
 
       lists.forEach((list, index) => {
         const inputOption = document.createElement('option');
         inputOption.id = `input-option-${index}`;
         inputOption.innerHTML = list.name;
         inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
-        inputDropdown.appendChild(inputOption);
+        inputOptionGroup.appendChild(inputOption);
       });
 
       console.log(`Fetched ${lists.length} input lists`);
