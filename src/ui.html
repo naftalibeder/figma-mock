@@ -124,6 +124,8 @@
 }</pre>    
     <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file"></textarea>
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
+    <button id="settings-restore-button" class='link' onclick="restoreDefaultInputOptions()">Restore default url</button>
+
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
     </div>
@@ -292,6 +294,11 @@
       const node = nodesDropdown.children[i];
       nodesDropdown.removeChild(node);
     }
+  }
+
+  function restoreDefaultInputOptions() {
+    settingsTextbox.innerHTML = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
+    fetchInputs();
   }
 
   parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
