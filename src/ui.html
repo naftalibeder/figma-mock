@@ -74,9 +74,6 @@
     padding-right: 8px;
     margin-bottom: 8px;
   }
-  #input-textbox {
-    margin-top: 8px;
-  }
   pre {
     font-family: monospace;
     background-color: rgb(231, 231, 231);
@@ -95,7 +92,6 @@
   <h2>Input</h2>
   <p>Choose a type of data to paste into the selected fields.</p>
   <select id="input-dropdown" onchange="onChangeInputKind()"></select>
-  <textarea id="input-textbox" rows="5"></textarea>
   <button id="settings-button" class='link'>Customize</button>
 
   <h2>Options</h2>
@@ -133,7 +129,6 @@
 <script>
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
-  const inputTextbox = document.getElementById('input-textbox');
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
   const capitalizeCheckbox = document.getElementById('capitalize-checkbox');
   const settingsButton = document.getElementById('settings-button');
@@ -152,17 +147,7 @@
     [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
 
     if (msg.type === 'init') {
-      const baseUrl = settingsTextbox.value.replace('/index.json', '');
-      fetch(`${baseUrl}/index.json`, (response) => {
-        const lists = JSON.parse(response).lists;
-        lists.forEach((list, index) => {
-          const inputOption = document.createElement('option');
-          inputOption.id = `input-option-${index}`;
-          inputOption.innerHTML = list.name;
-          inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
-          inputDropdown.appendChild(inputOption);
-        });
-      });
+      fetchInputs();
 
       const nodeGroups = msg.nodeGroups;
       nodeGroups.forEach((nodeGroup, i) => {
@@ -179,23 +164,26 @@
         nodesDropdown.appendChild(nodeOption);
       });
 
-      onChangeInputKind(); // Forces update.
+      confirmButton.disabled = false;
     } else if (msg.type === 'clear') {
       [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
       [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
+      confirmButton.disabled = true;
     }
   };
 
-  function onChangeInputKind() {
-    const selectedInputDropdownOption = [...inputDropdown.children].filter(o => o.selected == true)[0];
-
-    if (selectedInputDropdownOption?.id == 'custom') {
-      inputTextbox.hidden = false;
-      inputTextbox.placeholder = 'Enter a url to a newline-separated text list, or paste one directly.';
-      inputTextbox.innerHTML = '';
-    } else {
-      inputTextbox.hidden = true;
-    }
+  function fetchInputs() {
+    const baseUrl = settingsTextbox.value.replace('/index.json', '');
+    fetch(`${baseUrl}/index.json`, (response) => {
+      const lists = JSON.parse(response).lists;
+      lists.forEach((list, index) => {
+        const inputOption = document.createElement('option');
+        inputOption.id = `input-option-${index}`;
+        inputOption.innerHTML = list.name;
+        inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
+        inputDropdown.appendChild(inputOption);
+      });
+    });
   }
 
   confirmButton.onclick = () => {
@@ -214,29 +202,13 @@
       capitalize,
     };
 
-    let inputUrl = null;
-    let inputText = null;
-
-    if (selectedInputDropdownOption.id === 'custom') {
-      if (inputTextbox.value.match(/.+\.txt/)) {
-        inputUrl = inputTextbox.value;
-      } else {
-        inputText = inputTextbox.value;
-      }
-    } else {
-      inputUrl = selectedInputDropdownOption.dataset.url;
-    }
-
+    const inputUrl = selectedInputDropdownOption.dataset.url;
     if (inputUrl) {
       console.log('Fetching:', inputUrl);
       fetch(inputUrl, (response) => {
         const items = itemsFromStr(response);
         parent.postMessage({ pluginMessage: { ...config, items } }, '*');
       });
-    } else if (inputText) {
-      console.log('Pasting:', inputText);
-      const items = itemsFromStr(inputText);
-      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
   };
 
