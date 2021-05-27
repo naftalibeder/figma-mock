@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 280, height: 420 });
+figma.showUI(__html__, { width: 300, height: 500 });
 
 interface TextNodeInfo {
   id: string,
@@ -86,8 +86,15 @@ figma.ui.onmessage = msg => {
     onStart();
   } else if (msg.type === 'confirm') {
     onPressConfirm(msg.items, msg.groupingKey, msg.randomize);
-    figma.closePlugin();
   } else if (msg.type === 'cancel') {
     figma.closePlugin();
   }
 };
+
+figma.on("selectionchange", () => {
+  if (figma.currentPage.selection.length > 0) {
+    onStart();
+  } else {
+    figma.ui.postMessage({ type: 'clear' });
+  }
+});

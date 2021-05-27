@@ -2,173 +2,191 @@
   html {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
   }
-  textarea {
-    resize: none;
-    width: 100%;
+  body {
+    padding-left: 8px;
+    padding-right: 8px;
   }
-  h3 {
-    font-size: 14;
+  h2 {
+    font-size: 12;
+    padding-top: 8px;
   }
   p, div, input, label, textarea {
     font-size: 11;
   }
   .buttons {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 16px;
+    gap: 16px;
   }
   button {
     flex: 1;
-    margin: 4px;
-    padding: 8px;
+    height: 40px;
     font-size: 11;
+    border-width: 0;
+  }
+  button:hover {
+    background-color: rgb(221, 221, 221);
+  }
+  button.primary {
+    background-color: rgb(98, 140, 255);
+    color: white;
+  }
+  button.primary:hover {
+    background-color: rgb(75, 112, 214);
+  }
+  select {
+    width: 100%;
+    padding: 8px;
+  }
+  textarea {
+    resize: none;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+  #input-textbox {
+    margin-top: 8px;
   }
 </style>
 
 <body>
   <link rel="stylesheet" href="main.css" />
 
-  <h3>Input</h3>
-  <div>
-    <input id='input-kind-preset' value='preset' type='radio' name='kind' checked='true' />
-    <label for='input-kind-preset'>Preset</label><br>
-    <input id='input-kind-url' value='url' type='radio' name='kind' />
-    <label for='input-kind-url'>Url</label><br>
-    <input id='input-kind-custom' value='custom' type='radio' name='kind' />
-    <label for='input-kind-custom'>Custom</label><br>
-  </div>
-  <p id='list-entry-description'></p>
-  <textarea id="list-textbox" rows="5"></textarea>
-  <select id="list-dropdown" name="cars">
-    <option value="truck-stop" name='list-dropdown-preset'>Truck stops</option>
-  </select>
+  <h2>Output</h2>
+  <p>Choose the group of text fields to fill.</p>
+  <select id="nodes-dropdown"></select>
 
-  <br><br>
+  <h2>Input</h2>
+  <p>Choose a type of data to paste into the selected fields.</p>
+  <input type="text" id="input-repo-textbox" placeholder="Url to index.json file" value="https://raw.githubusercontent.com/TruckMap/truckmap-figma/main" />
+  <select id="input-dropdown" onchange="onChangeInputKind()"></select>
+  <textarea id="input-textbox" rows="5"></textarea>
 
-  <h3>Output</h3>
-  <p>Choose the text fields to fill with the above content.</p>
-  <div id='output-options' style="display: block;"></div>
-
-  <br>
-
-  <h3>Options</h3>
+  <h2>Options</h2>
   <input type="checkbox" id="randomize-checkbox" checked='true'>
   <label for="randomize">Randomize</label><br>
 
   <br>
 
   <div class='buttons'>
-    <button id="confirm">Paste!</button>
     <button id="cancel">Cancel</button>
+    <button id="confirm" class='primary'>Paste</button>
   </div>
 </body>
 
 <script>
-  const listField = document.getElementById('list-textbox');
-  listField.placeholder = listField.placeholder.replace(/\\n/g, '\n');
-  
-  const inputKindPreset = document.getElementById('input-kind-preset');
-  const inputKindManual = document.getElementById('input-kind-custom');
-  const inputKindUrl = document.getElementById('input-kind-url');
-  inputKindPreset.onclick = onChangeInputKind;
-  inputKindManual.onclick = onChangeInputKind;
-  inputKindUrl.onclick = onChangeInputKind;
-
-  onChangeInputKind({ target: { value: 'preset' }}); // Forces update.
+  const inputRepoTextbox = document.getElementById('input-repo-textbox');
+  const inputDropdown = document.getElementById('input-dropdown');
+  const nodesDropdown = document.getElementById('nodes-dropdown');
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
-    const container = document.getElementById('output-options');
-    const confirmButton = document.getElementById('confirm');
+
+    [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
+    [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
 
     if (msg.type === 'init') {
-      confirmButton.disabled = true;
+      const baseUrl = inputRepoTextbox.value;
+      fetch(`${baseUrl}/index.json`, (response) => {
+        const lists = JSON.parse(response).lists;
+        lists.forEach((list, index) => {
+          const inputOption = document.createElement('option');
+          inputOption.id = `input-option-${index}`;
+          inputOption.innerHTML = list.name;
+          inputOption.dataset.url = `${baseUrl}/${list.path}`;
+          inputDropdown.appendChild(inputOption);
+        });
+      });
 
       const nodeGroups = msg.nodeGroups;
-      nodeGroups.forEach(nodeGroup => {
-        const rowWrap = document.createElement('div');
-        container.appendChild(rowWrap);
-
-        const radioInput = document.createElement('input');
-        radioInput.type = 'radio';
-        radioInput.id = nodeGroup.key;
-        radioInput.name = 'option-input';
-        radioInput.value = nodeGroup.key;
-        radioInput.count = nodeGroup.count;
-        radioInput.onchange = ({ target }) => {
-          confirmButton.disabled = false;
-        };
-        rowWrap.appendChild(radioInput);
-
+      nodeGroups.forEach((nodeGroup, i) => {
         const nodes = Object.values(nodeGroup.nodesMap);
         const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 20)))];
-        const nodesDisplayText = nodeGroupTexts.slice(0, 3).join(', ');
-        const nameAndCountLabel = document.createElement('label');
-        nameAndCountLabel.for = nodeGroup.key;
-        nameAndCountLabel.innerHTML = `${nodesDisplayText} (${nodeGroup.count})`;
-        rowWrap.appendChild(nameAndCountLabel);
-      })
+        const fieldCountDisplay = `(${nodeGroupTexts.length} fields)`;
+        const nodesDisplayText = `${nodeGroupTexts[0]}${nodeGroupTexts.length > 1 ? ', ...' : ''}${nodeGroupTexts.length > 1 ? ' ' + fieldCountDisplay : ''}`;
+        // const nodesDisplayText = nodeGroupTexts.slice(0, 3).join(', ');
+
+        const nodeOption = document.createElement('option');
+        nodeOption.value = nodeGroup.key;
+        nodeOption.innerHTML = nodesDisplayText;
+        if (i === 0) nodeOption.selected = true;
+        nodesDropdown.appendChild(nodeOption);
+      });
+
+      onChangeInputKind(); // Forces update.
+    } else if (msg.type === 'clear') {
+      [...inputDropdown.children].forEach(child => inputDropdown.removeChild(child));
+      [...nodesDropdown.children].forEach(child => nodesDropdown.removeChild(child));
     }
   };
 
-  function onChangeInputKind({ target }) {
-    const value = target.value;
+  function onChangeInputKind() {
+    const listTextbox = document.getElementById('input-textbox');
 
-    const descriptionLabel = document.getElementById('list-entry-description');
-    const textbox = document.getElementById('list-textbox');
-    const dropdown = document.getElementById('list-dropdown');
+    const inputDropdown = document.getElementById('input-dropdown');
+    const inputDropdownOptions = [...inputDropdown.children];
+    const selectedInputDropdownOption = inputDropdownOptions.filter(o => o.selected == true)[0];
 
-    if (value == 'preset') {
-      textbox.hidden = true;
-      dropdown.hidden = false;
-      descriptionLabel.innerHTML = 'Choose a type of data.';
-    } else if (value == 'url') {
-      textbox.hidden = false;
-      dropdown.hidden = true;
-      descriptionLabel.innerHTML = 'Enter a url to a text file to paste into the selected components, separated by new lines.';
-      textbox.placeholder = 'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt';
-      textbox.innerHTML = '';
-    } else if (value == 'custom') {
-      textbox.hidden = false;
-      dropdown.hidden = true;
-      descriptionLabel.innerHTML = 'Enter text to paste into the selected components, separated by new lines.';
-      textbox.placeholder = 'Milk\nEggs\nButter';
-      textbox.innerHTML = '';
+    if (selectedInputDropdownOption?.id == 'custom') {
+      listTextbox.hidden = false;
+      listTextbox.placeholder = 'Enter a url to a newline-separated text list, or paste one directly.';
+      listTextbox.innerHTML = '';
+    } else {
+      listTextbox.hidden = true;
     }
   }
 
   document.getElementById('confirm').onclick = () => {
-    const listDropdownPresets = [...document.getElementsByName('list-dropdown-preset')];
-    const selectedPreset = listDropdownPresets.filter(o => o.selected == true)[0].value;
+    const inputTextbox = document.getElementById('input-textbox');
+
+    const inputDropdown = document.getElementById('input-dropdown');
+    const inputDropdownOptions = [...inputDropdown.children];
+    const selectedInputDropdownOption = inputDropdownOptions.filter(o => o.selected == true)[0];
+
+    const nodesDropdown = document.getElementById('nodes-dropdown');
+    const nodesDropdownOptions = [...nodesDropdown.children];
+    const selectedNodeDropdownOption = nodesDropdownOptions.filter(o => o.selected == true)[0];
     
-    const listFieldText = document.getElementById('list-textbox').value;
-
-    const inputOptions = [...document.getElementsByName('option-input')];
-    const selectedInputOption = inputOptions.filter(field => field.checked)[0];
-    const selectedInputOptionText = selectedInputOption.value;
-
     const randomize = document.getElementById('randomize-checkbox').checked;
+
+    console.log('Selected:', selectedInputDropdownOption.id);
 
     const config = {
       type: 'confirm',
       items: [],
-      groupingKey: selectedInputOptionText,
+      groupingKey: selectedNodeDropdownOption.value,
       randomize,
     };
 
-    if (inputKindPreset.checked) {
-      // TODO: In progress.
-      let items = [];
-      if (selectedPreset === 'truck-stop') {
-        items = ['Truck Stop 1', 'Truck Stop 2', 'Truck Stop 3'];
+    let inputUrl = null;
+    let inputText = null;
+
+    if (selectedInputDropdownOption.id === 'custom') {
+      if (inputTextbox.value.match(/.+\.txt/)) {
+        inputUrl = inputTextbox.value;
+      } else {
+        inputText = inputTextbox.value;
       }
-      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
-    } else if (inputKindUrl.checked) {
-      fetchItems(listFieldText, (items) => {
+    } else {
+      inputUrl = selectedInputDropdownOption.dataset.url;
+    }
+
+    if (inputUrl) {
+      console.log('Fetching:', inputUrl);
+      fetch(inputUrl, (response) => {
+        const items = itemsFromStr(response);
         parent.postMessage({ pluginMessage: { ...config, items } }, '*');
-      })
-    } else if (inputKindManual.checked) {
-      parent.postMessage({ pluginMessage: { ...config, items: itemsFromStr(listFieldText) } }, '*');
+      });
+    } else if (inputText) {
+      console.log('Pasting:', inputText);
+      const items = itemsFromStr(inputText);
+      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
   };
 
@@ -176,11 +194,11 @@
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
   };
 
-  function fetchItems(url, onResponse) {
+  function fetch(url, onResponse) {
     let request = new XMLHttpRequest();
     request.open('GET', url);
     request.responseType = 'text';
-    request.onload = () => onResponse(itemsFromStr(request.response));
+    request.onload = () => onResponse(request.response);
     request.send();
   }
 
