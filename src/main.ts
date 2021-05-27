@@ -22,7 +22,7 @@ const onStart = () => {
   figma.ui.postMessage({ type: 'init', nodeGroups });
 };
 
-const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean) => {
+const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean, capitalize: boolean) => {
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
   textNodes.forEach(async (textNode, index) => {
@@ -30,7 +30,9 @@ const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean
       await figma.loadFontAsync(textNode.fontName as FontName);
       let finalIndex = index % items.length;
       if (randomize) finalIndex = Math.floor(Math.random() * items.length);
-      textNode.characters = items[finalIndex];
+      let text = items[finalIndex];
+      if (capitalize) text = text.slice(0, 1).toUpperCase() + text.slice(1);
+      textNode.characters = text;
     } else {
       console.log('Text node is missing a font and cannot be edited.')
     }
@@ -85,7 +87,7 @@ figma.ui.onmessage = msg => {
   if (msg.type === 'init') {
     onStart();
   } else if (msg.type === 'confirm') {
-    onPressConfirm(msg.items, msg.groupingKey, msg.randomize);
+    onPressConfirm(msg.items, msg.groupingKey, msg.randomize, msg.capitalize);
   } else if (msg.type === 'cancel') {
     figma.closePlugin();
   }
