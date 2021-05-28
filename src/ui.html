@@ -125,16 +125,7 @@
 
   <div id='settings-overlay' class='overlay'>
     <p>Add a url to a publicly available index.json file that follows the format below.</p>
-    <pre>
-{
-  "name": "Household Objects",
-  "lists": [
-    {
-      "name": "Animals",
-      "url": "https://raw.githubusercontent.com/verachell/English-word-lists-miscellaneous-categories/main/wordlists/Animals.txt"
-    }
-  ]
-}</pre>    
+    <pre id='settings-index-code-example'></pre>    
     <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file"></textarea>
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
     <button id="settings-restore-button" class='link margin-above' onclick="restoreDefaultInputOptions()">Restore default url</button>
@@ -155,11 +146,22 @@
   const settingsTextbox = document.getElementById('settings-textbox');
   const settingsErrorLabel = document.getElementById('settings-error-label');
   const settingsBackButton = document.getElementById('settings-back-button');
+  const settingsIndexCodeExample = document.getElementById('settings-index-code-example');
   const confirmButton = document.getElementById('confirm-button');
   const cancelButton = document.getElementById('cancel-button');
 
   settingsOverlay.hidden = true;
   confirmButton.disabled = true;
+
+  settingsIndexCodeExample.innerHTML = `{
+  "name": "Household Objects",
+  "lists": [
+    {
+      "name": "Animals",
+      "url": "https://raw.githubusercontent.com/verachell/English-word-lists-miscellaneous-categories/main/wordlists/Animals.txt"
+    }
+  ]
+}`;
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
