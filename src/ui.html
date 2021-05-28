@@ -107,6 +107,16 @@
   .margin-above {
     margin-top: 8px;
   }
+  .small-label-and-input-wrap {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+  }
+  input[type=number] {
+    width: 50px;
+    height: 40px;
+  }
 </style>
 
 <body>
@@ -120,7 +130,7 @@
   <button id="settings-button" class='link margin-above'>Customize</button>
 
   <h2>Options</h2>
-  <div id='options-section-words'>
+  <div id='options-section-strings'>
     <p>Capitalization</p>
     <select id="casing-dropdown">
       <option value="none">Use original</option>
@@ -132,6 +142,22 @@
     <div class='input-wrap margin-above'>
       <input id="randomize-checkbox" type="checkbox" checked='true' />
       <label for="randomize-checkbox">Randomize</label><br>
+    </div>
+  </div>
+  <div id='options-section-numbers'>
+    <div class='input-wrap'>
+      <div class="small-label-and-input-wrap">
+        <label for="min-number-input">Min</label>
+        <input id="min-number-input" type="number" value="0" />
+      </div>
+      <div class="small-label-and-input-wrap">
+        <label for="max-number-input">Max</label>
+        <input id="max-number-input" type="number" value="100" />
+      </div>
+      <div class="small-label-and-input-wrap">
+        <label for="precision-number-input">Decimals</label>
+        <input id="precision-number-input" type="number" value="0" min="0" max="100" />
+      </div>
     </div>
   </div>
 
@@ -160,14 +186,22 @@
 <script>
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
+
+  const optionsSectionStrings = document.getElementById('options-section-strings');
+  const optionsSectionNumbers = document.getElementById('options-section-numbers');
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
   const casingDropdown = document.getElementById('casing-dropdown');
+  const minNumberInput = document.getElementById('min-number-input');
+  const maxNumberInput = document.getElementById('max-number-input');
+  const precisionNumberInput = document.getElementById('precision-number-input');
+
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
   const settingsUrlsList = document.getElementById('settings-urls-list');
   const settingsErrorLabel = document.getElementById('settings-error-label');
-  const settingsBackButton = document.getElementById('settings-back-button');
   const settingsIndexCodeExample = document.getElementById('settings-index-code-example');
+  const settingsBackButton = document.getElementById('settings-back-button');
+
   const confirmButton = document.getElementById('confirm-button');
   const cancelButton = document.getElementById('cancel-button');
 
@@ -203,6 +237,9 @@
       createSettingsUrlElements(urls);
       fetchAndCreateInputElements(urls);
       createNodeGroupElements(nodeGroups);
+
+      inputDropdown.onchange = onInputDropdownChange;
+      onInputDropdownChange();
     } else if (type === 'clear') {
       clearNodeGroupElements();
       confirmButton.disabled = true;
@@ -298,7 +335,7 @@
       inputOption.id = slugify(name);
       inputOption.innerHTML = name;
       inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : '';
-      inputOption.dataset.type = type ?? '';
+      inputOption.dataset.type = type ?? 'strings';
       inputOptionGroup.appendChild(inputOption);
     });
   }
@@ -326,6 +363,25 @@
 
     if (nodeGroups.length > 0) {
       confirmButton.disabled = false;
+    }
+  }
+  
+  const onInputDropdownChange = (event) => {
+    if (!event) {
+      optionsSectionStrings.hidden = false;
+      optionsSectionNumbers.hidden = true;
+      return;
+    }
+    
+    const type = event.target.options[event.target.selectedIndex].dataset.type;
+    console.log(`Changed input: ${type}`);
+
+    if (type === 'strings') {
+      optionsSectionStrings.hidden = false;
+      optionsSectionNumbers.hidden = true;
+    } else if (type === 'numbers') {
+      optionsSectionStrings.hidden = true;
+      optionsSectionNumbers.hidden = false;
     }
   }
 
@@ -357,7 +413,7 @@
     } else if (inputType === 'numbers') {
       const items = [];
       for (let i = 0; i < 1000; i++) {
-        items.push(`${Math.round(Math.random() * 100)}`);
+        items.push(`${randomNumberString(minNumberInput.value, maxNumberInput.value, precisionNumberInput.value)}`);
       }
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
@@ -416,6 +472,10 @@
     while (settingsUrlsList.firstChild) {
       settingsUrlsList.removeChild(settingsUrlsList.firstChild);
     }
+  }
+
+  const randomNumberString = (min, max, precision) => {
+    return Math.floor(Math.random() * (max - min + 1) + min).toFixed(precision);
   }
 
   const slugify = (text) => {
