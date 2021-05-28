@@ -281,21 +281,24 @@
   }
 
   const createInputElements = (response) => {
-    console.log(`Creating input elements from ${response.name}`);
+    const { baseUrl, name: sectionName, lists } = response;
 
-    const { baseUrl, name, lists } = response;
+    console.log(`Creating input elements from ${sectionName}`);
 
-    if (!name || !lists) return;
+    if (!sectionName || !lists) return;
 
     const inputOptionGroup = document.createElement('optgroup');
-    inputOptionGroup.label = name;
+    inputOptionGroup.label = sectionName;
     inputDropdown.appendChild(inputOptionGroup);
 
     lists.forEach((list, index) => {
+      const { name, path, url, type } = list;
+
       const inputOption = document.createElement('option');
-      inputOption.id = slugify(list.name);
-      inputOption.innerHTML = list.name;
-      inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
+      inputOption.id = slugify(name);
+      inputOption.innerHTML = name;
+      inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : '';
+      inputOption.dataset.type = type ?? '';
       inputOptionGroup.appendChild(inputOption);
     });
   }
@@ -343,12 +346,20 @@
     };
 
     const inputUrl = selectedInputDropdownOption.dataset.url;
-    if (inputUrl) {
+    const inputType = selectedInputDropdownOption.dataset.type;
+
+    if (inputUrl.length > 0) {
       console.log('Fetching:', inputUrl);
       fetch(inputUrl, (response) => {
         const items = itemsFromStr(response);
         parent.postMessage({ pluginMessage: { ...config, items } }, '*');
       });
+    } else if (inputType === 'numbers') {
+      const items = [];
+      for (let i = 0; i < 1000; i++) {
+        items.push(`${Math.round(Math.random() * 100)}`);
+      }
+      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
   };
 
