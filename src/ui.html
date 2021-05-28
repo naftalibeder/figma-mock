@@ -120,17 +120,19 @@
   <button id="settings-button" class='link margin-above'>Customize</button>
 
   <h2>Options</h2>
-  <p>Capitalization</p>
-  <select id="casing-dropdown">
-    <option value="none">Use original</option>
-    <option value="sentence">Sentence case</option>
-    <option value="title">Title case</option>
-    <option value="upper">Upper case</option>
-    <option value="lower">Lower case</option>
-  </select>
-  <div class='input-wrap margin-above'>
-    <input id="randomize-checkbox" type="checkbox" checked='true' />
-    <label for="randomize-checkbox">Randomize</label><br>
+  <div id='options-section-words'>
+    <p>Capitalization</p>
+    <select id="casing-dropdown">
+      <option value="none">Use original</option>
+      <option value="sentence">Sentence case</option>
+      <option value="title">Title case</option>
+      <option value="upper">Upper case</option>
+      <option value="lower">Lower case</option>
+    </select>
+    <div class='input-wrap margin-above'>
+      <input id="randomize-checkbox" type="checkbox" checked='true' />
+      <label for="randomize-checkbox">Randomize</label><br>
+    </div>
   </div>
 
   <br>
@@ -146,8 +148,8 @@
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
 
     <h2>Rules</h2>
-    <p>Each index.json file listed above must follow this format:</p>
-    <pre id='settings-index-code-example'></pre>    
+    <p>Each JSON file listed above must follow this format:</p>
+    <pre id='settings-index-code-example'></pre>
 
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
@@ -301,9 +303,16 @@
   const createNodeGroupElements = (nodeGroups) => {
     nodeGroups.forEach((nodeGroup, i) => {
       const nodes = Object.values(nodeGroup.nodesMap);
-      const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 30)))];
-      const fieldCountDisplay = `(${nodeGroupTexts.length} fields)`;
-      const nodesDisplayText = `${nodeGroupTexts[0]}${nodeGroupTexts.length > 1 ? ', ...' : ''}${nodeGroupTexts.length > 1 ? ' ' + fieldCountDisplay : ''}`;
+      const nodeGroupTexts = [...new Set(nodes.map(o => o.characters))];
+      const fieldCountDisplay = `(${nodes.length} fields)`;
+      const multipleTextValues = nodeGroupTexts.length > 1;
+      
+      let nodesDisplayText = '';
+      if (multipleTextValues) {
+        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 12)}, ${nodeGroupTexts[1].slice(0, 12)}, ... ${fieldCountDisplay}`;
+      } else {
+        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 30)} ${fieldCountDisplay}`;
+      }
 
       const nodeOption = document.createElement('option');
       nodeOption.value = nodeGroup.key;
