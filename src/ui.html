@@ -22,7 +22,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
     background-color: white;
   }
   .buttons {
@@ -73,12 +74,28 @@
     width: 100%;
     padding: 8px;
   }
-  input.text {
+  .vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .input-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     width: 100%;
+  }
+  input[type=checkbox] {
+    width: 14;
+    height: 14;
+    margin-right: 8px;
+  }
+  input[type=text] {
+    flex: 1;
     height: 40px;
     padding-left: 8px;
     padding-right: 8px;
-    margin-bottom: 8px;
+    box-sizing: border-box;
   }
   pre {
     font-family: monospace;
@@ -111,8 +128,8 @@
     <option value="upper">Upper case</option>
     <option value="lower">Lower case</option>
   </select>
-  <div class='margin-above'>
-    <input id="randomize-checkbox" type="checkbox" checked='true'>
+  <div class='input-wrap margin-above'>
+    <input id="randomize-checkbox" type="checkbox" checked='true' />
     <label for="randomize-checkbox">Randomize</label><br>
   </div>
 
@@ -124,11 +141,13 @@
   </div>
 
   <div id='settings-overlay' class='overlay'>
-    <p>Add a url to a publicly available index.json file that follows the format below.</p>
-    <pre id='settings-index-code-example'></pre>    
-    <textarea id="settings-textbox" class='text' type="text" rows="3" onblur="fetchInputs()" placeholder="Url to index.json file"></textarea>
+    <h2>Urls</h2>
+    <div id='settings-urls-list' class='vertical-list'></div>
     <p id="settings-error-label" class="error">Error fetching data from this url.</p>
-    <button id="settings-restore-button" class='link margin-above' onclick="restoreDefaultInputOptions()">Restore default url</button>
+
+    <h2>Rules</h2>
+    <p>Each index.json file listed above must follow this format:</p>
+    <pre id='settings-index-code-example'></pre>    
 
     <div class='buttons'>
       <button id="settings-back-button">Back</button>
@@ -143,7 +162,7 @@
   const casingDropdown = document.getElementById('casing-dropdown');
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
-  const settingsTextbox = document.getElementById('settings-textbox');
+  const settingsUrlsList = document.getElementById('settings-urls-list');
   const settingsErrorLabel = document.getElementById('settings-error-label');
   const settingsBackButton = document.getElementById('settings-back-button');
   const settingsIndexCodeExample = document.getElementById('settings-index-code-example');
@@ -154,87 +173,148 @@
   confirmButton.disabled = true;
 
   settingsIndexCodeExample.innerHTML = `{
-  "name": "Household Objects",
+  "name": "Common Words",
   "lists": [
     {
       "name": "Animals",
       "url": "https://raw.githubusercontent.com/verachell/English-word-lists-miscellaneous-categories/main/wordlists/Animals.txt"
+    }
+    {
+      "name": "Colors",
+      "path": "colors.txt"
     }
   ]
 }`;
 
   onmessage = event => {
     const msg = event.data.pluginMessage;
+    const { type } = msg;
 
-    clearInputOptions();
-    clearNodeOptions();
+    if (type === 'init') {
+      clearInputOptionSections();
+      clearNodeGroupElements();
+      clearSettingsUrlElements();
 
-    if (msg.type === 'init') {
-      if (msg.url) {
-        settingsTextbox.innerHTML = msg.url;
-      } else {
-        settingsTextbox.innerHTML = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
-      }
+      const { url, nodeGroups } = msg;
+      const urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json', url];
 
-      fetchInputs();
-
-      const nodeGroups = msg.nodeGroups;
-      nodeGroups.forEach((nodeGroup, i) => {
-        const nodes = Object.values(nodeGroup.nodesMap);
-        const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 30)))];
-        const fieldCountDisplay = `(${nodeGroupTexts.length} fields)`;
-        const nodesDisplayText = `${nodeGroupTexts[0]}${nodeGroupTexts.length > 1 ? ', ...' : ''}${nodeGroupTexts.length > 1 ? ' ' + fieldCountDisplay : ''}`;
-        // const nodesDisplayText = nodeGroupTexts.slice(0, 3).join(', ');
-
-        const nodeOption = document.createElement('option');
-        nodeOption.value = nodeGroup.key;
-        nodeOption.innerHTML = nodesDisplayText;
-        if (i === 0) nodeOption.selected = true;
-        nodesDropdown.appendChild(nodeOption);
-      });
-
-      if (nodeGroups.length > 0) {
-        confirmButton.disabled = false;
-      }
-    } else if (msg.type === 'clear') {
-      clearInputOptions();
-      clearNodeOptions();
+      createSettingsUrlElements(urls);
+      fetchAndCreateInputElements(urls);
+      createNodeGroupElements(nodeGroups);
+    } else if (type === 'clear') {
+      clearNodeGroupElements();
       confirmButton.disabled = true;
     }
   };
 
-  const fetchInputs = () => {
-    clearInputOptions();
+  const createSettingsUrlElements = (urls) => {
+    urls.forEach((u, index) => {
+      const urlWrap = document.createElement('div');
+      urlWrap.className = 'input-wrap';
+      settingsUrlsList.appendChild(urlWrap);
 
-    const baseUrl = settingsTextbox.value.replace('/index.json', '');
-    const url = `${baseUrl}/index.json`;
+      const urlCheckbox = document.createElement('input');
+      urlCheckbox.id = `settings-url-checkbox-${u}`;
+      urlCheckbox.type = 'checkbox';
+      urlCheckbox.checked = true;
+      if (index === 0) urlCheckbox.disabled = true;
+      urlWrap.appendChild(urlCheckbox);
+
+      const urlTextField = document.createElement('input');
+      urlTextField.id = `settings-url-textfield-${u}`;
+      urlTextField.for = urlCheckbox.id;
+      urlTextField.type = 'text';
+      urlTextField.placeholder = "https://mysite.com/index.json";
+      urlTextField.value = u;
+      urlTextField.onblur = () => {
+        parent.postMessage({ pluginMessage: { type: 'url', url: urlTextField.value } }, '*');
+        const urlsCopy = [...urls];
+        urlsCopy[index] = urlTextField.value;
+        fetchAndCreateInputElements(urlsCopy);
+      };
+      if (index === 0) urlTextField.disabled = true;
+      urlWrap.appendChild(urlTextField);
+    });
+  }
+
+  const fetchAndCreateInputElements = (urls) => {
+    console.log(`Fetching from all urls: ${urls}`);
+
+    clearInputOptionSections();
+
+    let responses = [];
+    const next = (i) => {
+      fetchInputs(urls[i], i, (response) => {
+        responses.push(response);
+        if (i < urls.length - 1) {
+          next(i + 1);
+        } else {
+          for (let i = 0; i < responses.length; i++) {
+            const response = responses[i];
+            createInputElements(response);
+          }
+        }
+      });
+    };
+    next(0);
+  }
+
+  const fetchInputs = (url, index, completion) => {
+    console.log(`Fetching from ${url} at index ${index}`);
+
+    const baseUrl = url.replace('/index.json', '');
+
     fetch(url, (response, error) => {
       try {
         response = JSON.parse(response);
+        const { name, lists } = response;
         settingsErrorLabel.hidden = true;
-        parent.postMessage({ pluginMessage: { type: 'url', url } }, '*');
+        completion?.({ baseUrl, name, lists });
       } catch (error) {
         console.log(`Error: ${error}`);
         settingsErrorLabel.hidden = false;
-        return;
+        completion?.({ baseUrl });
       }
-
-      const { lists, name } = response;
-      
-      const inputOptionGroup = document.createElement('optgroup');
-      inputOptionGroup.label = name;
-      inputDropdown.appendChild(inputOptionGroup);
-
-      lists.forEach((list, index) => {
-        const inputOption = document.createElement('option');
-        inputOption.id = slugify(list.name);
-        inputOption.innerHTML = list.name;
-        inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
-        inputOptionGroup.appendChild(inputOption);
-      });
-
-      console.log(`Fetched ${lists.length} input lists`);
     });
+  }
+
+  const createInputElements = (response) => {
+    console.log(`Creating input elements from ${response.name}`);
+
+    const { baseUrl, name, lists } = response;
+
+    if (!name || !lists) return;
+
+    const inputOptionGroup = document.createElement('optgroup');
+    inputOptionGroup.label = name;
+    inputDropdown.appendChild(inputOptionGroup);
+
+    lists.forEach((list, index) => {
+      const inputOption = document.createElement('option');
+      inputOption.id = slugify(list.name);
+      inputOption.innerHTML = list.name;
+      inputOption.dataset.url = list.path ? `${baseUrl}/${list.path}` : list.url;
+      inputOptionGroup.appendChild(inputOption);
+    });
+  }
+
+  const createNodeGroupElements = (nodeGroups) => {
+    nodeGroups.forEach((nodeGroup, i) => {
+      const nodes = Object.values(nodeGroup.nodesMap);
+      const nodeGroupTexts = [...new Set(nodes.map(o => o.characters.slice(0, 30)))];
+      const fieldCountDisplay = `(${nodeGroupTexts.length} fields)`;
+      const nodesDisplayText = `${nodeGroupTexts[0]}${nodeGroupTexts.length > 1 ? ', ...' : ''}${nodeGroupTexts.length > 1 ? ' ' + fieldCountDisplay : ''}`;
+
+      const nodeOption = document.createElement('option');
+      nodeOption.value = nodeGroup.key;
+      nodeOption.innerHTML = nodesDisplayText;
+      if (i === 0) nodeOption.selected = true;
+      nodesDropdown.appendChild(nodeOption);
+    });
+
+    if (nodeGroups.length > 0) {
+      confirmButton.disabled = false;
+    }
   }
 
   confirmButton.onclick = () => {
@@ -300,23 +380,22 @@
     return o;
   }
 
-  const clearInputOptions = () => {
-    for (let i = 0; i < inputDropdown.children.length; i++) {
-      const section = inputDropdown.children[i];
-      inputDropdown.removeChild(section);
+  const clearInputOptionSections = () => {
+    while (inputDropdown.firstChild) {
+      inputDropdown.removeChild(inputDropdown.firstChild);
     }
   }
 
-  const clearNodeOptions = () => {
-    for (let i = 0; i < nodesDropdown.children.length; i++) {
-      const node = nodesDropdown.children[i];
-      nodesDropdown.removeChild(node);
+  const clearNodeGroupElements = () => {
+    while (nodesDropdown.firstChild) {
+      nodesDropdown.removeChild(nodesDropdown.firstChild);
     }
   }
 
-  const restoreDefaultInputOptions = () => {
-    settingsTextbox.innerHTML = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
-    fetchInputs();
+  const clearSettingsUrlElements = () => {
+    while (settingsUrlsList.firstChild) {
+      settingsUrlsList.removeChild(settingsUrlsList.firstChild);
+    }
   }
 
   const slugify = (text) => {
