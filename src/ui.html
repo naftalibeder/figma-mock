@@ -76,26 +76,44 @@
   }
   .vertical-list {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 8px;
   }
-  .input-wrap {
+  .vertical-list-item {
+    flex: 1;
+  }
+  .horizontal-list {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .horizontal-list-item {
     width: 100%;
+  }
+  .icon-and-text {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
   }
   input[type=checkbox] {
     width: 14;
     height: 14;
-    margin-right: 8px;
   }
   input[type=text] {
-    flex: 1;
     height: 40px;
-    padding-left: 8px;
-    padding-right: 8px;
-    box-sizing: border-box;
+    width: 100%;
+  }
+  input[type=number] {
+    height: 40px;
+    width: 100%;
+  }
+  input[type=date] {
+    height: 40px;
+    width: 100%;
   }
   pre {
     font-family: monospace;
@@ -106,16 +124,6 @@
   }
   .margin-above {
     margin-top: 8px;
-  }
-  .small-label-and-input-wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 4px;
-  }
-  input[type=number] {
-    width: 50px;
-    height: 40px;
   }
 </style>
 
@@ -139,25 +147,41 @@
       <option value="upper">Upper case</option>
       <option value="lower">Lower case</option>
     </select>
-    <div class='input-wrap margin-above'>
+    <div class='icon-and-text margin-above'>
       <input id="randomize-checkbox" type="checkbox" checked='true' />
       <label for="randomize-checkbox">Randomize</label><br>
     </div>
   </div>
   <div id='options-section-numbers'>
-    <div class='input-wrap'>
-      <div class="small-label-and-input-wrap">
+    <div class='horizontal-list'>
+      <div class="horizontal-list-item">
         <label for="min-number-input">Min</label>
         <input id="min-number-input" type="number" value="0" />
       </div>
-      <div class="small-label-and-input-wrap">
+      <div class="horizontal-list-item">
         <label for="max-number-input">Max</label>
         <input id="max-number-input" type="number" value="100" />
       </div>
-      <div class="small-label-and-input-wrap">
+      <div class="horizontal-list-item">
         <label for="precision-number-input">Decimals</label>
         <input id="precision-number-input" type="number" value="0" min="0" max="100" />
       </div>
+    </div>
+  </div>
+  <div id='options-section-dates'>
+    <div class='horizontal-list'>
+      <div class="horizontal-list-item">
+        <label for="min-date-input">Min</label>
+        <input id="min-date-input" type="date" value="2021-01-01" />
+      </div>
+      <div class="horizontal-list-item">
+        <label for="max-date-input">Max</label>
+        <input id="max-date-input" type="date" value="2021-12-31" />
+      </div>
+    </div>
+    <div class="horizontal-list-item margin-above">
+      <label for="format-date-input">Format</label>
+      <input id="format-date-input" type="text" value="YYYY-MM-DD" />
     </div>
   </div>
 
@@ -189,11 +213,18 @@
 
   const optionsSectionStrings = document.getElementById('options-section-strings');
   const optionsSectionNumbers = document.getElementById('options-section-numbers');
+  const optionsSectionDates = document.getElementById('options-section-dates');
+  
   const randomizeCheckbox = document.getElementById('randomize-checkbox');
   const casingDropdown = document.getElementById('casing-dropdown');
+
   const minNumberInput = document.getElementById('min-number-input');
   const maxNumberInput = document.getElementById('max-number-input');
   const precisionNumberInput = document.getElementById('precision-number-input');
+
+  const minDateInput = document.getElementById('min-date-input');
+  const maxDateInput = document.getElementById('max-date-input');
+  const formatDateInput = document.getElementById('format-date-input');
 
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
@@ -249,7 +280,7 @@
   const createSettingsUrlElements = (urls) => {
     urls.forEach((u, index) => {
       const urlWrap = document.createElement('div');
-      urlWrap.className = 'input-wrap';
+      urlWrap.className = 'icon-and-text';
       settingsUrlsList.appendChild(urlWrap);
 
       const urlCheckbox = document.createElement('input');
@@ -307,6 +338,7 @@
       try {
         response = JSON.parse(response);
         const { name, lists } = response;
+        console.log(`Fetched ${lists.length} lists from ${url}`);
         settingsErrorLabel.hidden = true;
         completion?.({ baseUrl, name, lists });
       } catch (error) {
@@ -367,9 +399,12 @@
   }
   
   const onInputDropdownChange = (event) => {
+    optionsSectionStrings.hidden = true;
+    optionsSectionNumbers.hidden = true;
+    optionsSectionDates.hidden = true;
+    
     if (!event) {
       optionsSectionStrings.hidden = false;
-      optionsSectionNumbers.hidden = true;
       return;
     }
     
@@ -378,10 +413,10 @@
 
     if (type === 'strings') {
       optionsSectionStrings.hidden = false;
-      optionsSectionNumbers.hidden = true;
     } else if (type === 'numbers') {
-      optionsSectionStrings.hidden = true;
       optionsSectionNumbers.hidden = false;
+    } else if (type === 'dates') {
+      optionsSectionDates.hidden = false;
     }
   }
 
@@ -414,6 +449,18 @@
       const items = [];
       for (let i = 0; i < 1000; i++) {
         items.push(`${randomNumberString(minNumberInput.value, maxNumberInput.value, precisionNumberInput.value)}`);
+      }
+      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
+    } else if (inputType === 'dates') {
+      const items = [];
+      const minDate = new Date(minDateInput.value).getTime();
+      const maxDate = new Date(maxDateInput.value).getTime();
+      const format = formatDateInput.value;
+      console.log(`Date: ${minDate} to ${maxDate}, ${format}`);
+      for (let i = 0; i < 1000; i++) {
+        const randDate = new Date(minDate + Math.random() * (maxDate - minDate));
+        const randDateStr = `${format.replace('MM', randDate.getMonth()).replace('DD', randDate.getDate()).replace('YYYY', randDate.getFullYear())}`;
+        items.push(randDateStr);
       }
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
