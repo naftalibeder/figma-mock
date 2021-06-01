@@ -181,8 +181,9 @@
     </div>
     <div class="horizontal-list-item margin-above">
       <label for="format-date-input">Format</label>
-      <input id="format-date-input" type="text" value="YYYY-MM-DD" />
+      <input id="format-date-input" type="text" placeholder="MM/DD/YYYY" value="MM/DD/YYYY" />
     </div>
+    <p>DD = 31; dddd = Monday; ddd = Mon; mmmm = January; mmm = Jan; MM = 1; YYYY = 2021</p>
   </div>
 
   <br>
@@ -283,16 +284,8 @@
       urlWrap.className = 'icon-and-text';
       settingsUrlsList.appendChild(urlWrap);
 
-      const urlCheckbox = document.createElement('input');
-      urlCheckbox.id = `settings-url-checkbox-${u}`;
-      urlCheckbox.type = 'checkbox';
-      urlCheckbox.checked = true;
-      if (index === 0) urlCheckbox.disabled = true;
-      urlWrap.appendChild(urlCheckbox);
-
       const urlTextField = document.createElement('input');
       urlTextField.id = `settings-url-textfield-${u}`;
-      urlTextField.for = urlCheckbox.id;
       urlTextField.type = 'text';
       urlTextField.placeholder = "https://mysite.com/index.json";
       urlTextField.value = u;
@@ -458,9 +451,7 @@
       const format = formatDateInput.value;
       console.log(`Date: ${minDate} to ${maxDate}, ${format}`);
       for (let i = 0; i < 1000; i++) {
-        const randDate = new Date(minDate + Math.random() * (maxDate - minDate));
-        const randDateStr = `${format.replace('MM', randDate.getMonth()).replace('DD', randDate.getDate()).replace('YYYY', randDate.getFullYear())}`;
-        items.push(randDateStr);
+        items.push(`${randomDateString(minDate, maxDate, format)}`);
       }
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
@@ -523,6 +514,18 @@
 
   const randomNumberString = (min, max, precision) => {
     return Math.floor(Math.random() * (max - min + 1) + min).toFixed(precision);
+  }
+
+  const randomDateString = (min, max, format) => {
+    const randDate = new Date(min + Math.random() * (max - min));
+    return format
+    .replace('DD', randDate.getDate())
+    .replace('dddd', randDate.toLocaleString("default", { weekday: "long" }))
+    .replace('ddd', randDate.toLocaleString("default", { weekday: "short" }))
+    .replace('mmmm', randDate.toLocaleString("default", { month: "long" }))
+    .replace('mmm', randDate.toLocaleString("default", { month: "short" }))
+    .replace('MM', randDate.getMonth() + 1)
+    .replace('YYYY', randDate.getFullYear());
   }
 
   const slugify = (text) => {
