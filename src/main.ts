@@ -143,11 +143,7 @@ figma.ui.onmessage = (message: MessageInit | MessageConfirm | MessageUrl) => {
 };
 
 figma.on("selectionchange", () => {
-  if (figma.currentPage.selection.length > 0) {
-    onStart();
-  } else {
-    figma.ui.postMessage({ type: 'clear' });
-  }
+  onStart();
 });
 
 const sentenceCase = (text: string) => {

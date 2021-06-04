@@ -68,7 +68,14 @@
     text-decoration: underline;
     cursor: pointer;
   }
+  button.link:hover {
+    color: rgb(108, 144, 245);
+  }
   button:disabled {
+    background-color: lightgray;
+    color: gray;
+  }
+  button:disabled:hover {
     background-color: lightgray;
     color: gray;
   }
@@ -132,12 +139,16 @@
     height: 40px;
     width: 100%;
   }
+  input:hover, select:hover {
+    background-color: rgb(245, 245, 245);
+  }
   pre {
     font-family: monospace;
     background-color: rgb(231, 231, 231);
     overflow-x: scroll;
     overflow-y: hidden;
     padding: 16px;
+    border-radius: 2px;
   }
   .margin-above {
     margin-top: 8px;
@@ -277,29 +288,29 @@
   confirmButton.disabled = true;
 
   settingsIndexCodeExample.innerHTML = `{
-  "name": "Common Words",
+  "name": "Coffee",
   "lists": [
     {
-      "name": "Animals",
-      "url": "https://raw.githubusercontent.com/verachell/English-word-lists-miscellaneous-categories/main/wordlists/Animals.txt"
+      "name": "Bean Types",
+      "url": "https://public.coffee/bean-types.txt"
     }
     {
-      "name": "Colors",
-      "path": "colors.txt"
+      "name": "Roasts",
+      "path": "roasts.txt"
     }
   ]
 }`;
 
   onmessage = event => {
-    const msg = event.data.pluginMessage;
-    const { type } = msg;
+    const message = event.data.pluginMessage;
+    const { type } = message;
 
     if (type === 'init') {
       clearInputOptionSections();
       clearNodeGroupElements();
       clearSettingsUrlElements();
 
-      const { url, nodeGroups } = msg;
+      const { url, nodeGroups } = message;
       const urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json', url];
 
       createSettingsUrlElements(urls);
@@ -308,9 +319,6 @@
 
       inputDropdown.onchange = onInputDropdownChange;
       onInputDropdownChange();
-    } else if (type === 'clear') {
-      clearNodeGroupElements();
-      confirmButton.disabled = true;
     }
   };
 
@@ -409,29 +417,40 @@
     });
   }
 
+  const createEmptyNodeGroupElement = () => {
+    const nodeOption = document.createElement('option');
+    nodeOption.innerHTML = 'No items selected';
+    nodesDropdown.appendChild(nodeOption);
+  };
+
   const createNodeGroupElements = (nodeGroups) => {
-    nodeGroups.forEach((nodeGroup, i) => {
-      const nodes = Object.values(nodeGroup.nodesMap);
-      const nodeGroupTexts = [...new Set(nodes.map(o => o.characters))];
-      const fieldCountDisplay = `(${nodes.length} fields)`;
-      const multipleTextValues = nodeGroupTexts.length > 1;
-      
-      let nodesDisplayText = '';
-      if (multipleTextValues) {
-        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 12)}, ${nodeGroupTexts[1].slice(0, 12)}, ... ${fieldCountDisplay}`;
-      } else {
-        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 30)} ${fieldCountDisplay}`;
-      }
+    if (nodeGroups.length === 0) {
+      clearNodeGroupElements();
+      createEmptyNodeGroupElement();
 
-      const nodeOption = document.createElement('option');
-      nodeOption.value = nodeGroup.key;
-      nodeOption.innerHTML = nodesDisplayText;
-      if (i === 0) nodeOption.selected = true;
-      nodesDropdown.appendChild(nodeOption);
-    });
+      nodesDropdown.disabled = true;
+    } else {
+      nodeGroups.forEach((nodeGroup, i) => {
+        const nodes = Object.values(nodeGroup.nodesMap);
+        const nodeGroupTexts = [...new Set(nodes.map(o => o.characters))];
+        const fieldCountDisplay = `(${nodes.length} fields)`;
+        const multipleTextValues = nodeGroupTexts.length > 1;
+        
+        let nodesDisplayText = '';
+        if (multipleTextValues) {
+          nodesDisplayText = `${nodeGroupTexts[0].slice(0, 12)}, ${nodeGroupTexts[1].slice(0, 12)}, ... ${fieldCountDisplay}`;
+        } else {
+          nodesDisplayText = `${nodeGroupTexts[0].slice(0, 30)} ${fieldCountDisplay}`;
+        }
 
-    if (nodeGroups.length > 0) {
-      confirmButton.disabled = false;
+        const nodeOption = document.createElement('option');
+        nodeOption.value = nodeGroup.key;
+        nodeOption.innerHTML = nodesDisplayText;
+        if (i === 0) nodeOption.selected = true;
+        nodesDropdown.appendChild(nodeOption);
+      });
+
+      nodesDropdown.disabled = false;
     }
   }
   
