@@ -163,6 +163,10 @@
         <option value="upper">Upper case</option>
         <option value="lower">Lower case</option>
       </select>
+      <div class='horizontal-item-and-text margin-above'>
+        <input id="randomize-checkbox" type="checkbox" checked='true' />
+        <label for="randomize-checkbox">Randomize</label><br>
+      </div>
     </div>
     <div id='options-section-numbers'>
       <div class='horizontal-list'>
@@ -209,10 +213,6 @@
           <label for="append-input">Append with</label>
           <input id="append-input" type="text" placeholder="Optional text" />
         </div>
-      </div>
-      <div class='horizontal-item-and-text margin-above'>
-        <input id="randomize-checkbox" type="checkbox" checked='true' />
-        <label for="randomize-checkbox">Randomize</label><br>
       </div>
     </div>
   </div>
@@ -556,7 +556,11 @@
   }
 
   const randomNumberString = (min, max, precision) => {
-    return Math.floor(Math.random() * (max - min + 1) + min).toFixed(precision);
+    min = parseFloat(min);
+    max = parseFloat(max);
+    precision = parseFloat(precision);
+    const randNum = min + Math.random() * (max - min);
+    return randNum.toFixed(precision);
   }
 
   const randomDateString = (min, max, format) => {
