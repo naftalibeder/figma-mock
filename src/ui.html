@@ -153,7 +153,7 @@
     <p>Choose a type of data to paste. <button id="settings-button" class='link'>Edit lists</button></p>
     <select id="input-dropdown"></select>
 
-    <h2>Options</h2>
+    <h2 id="type-options-title">Options</h2>
     <div id='options-section-strings'>
       <p>Capitalization</p>
       <select id="casing-dropdown">
@@ -163,10 +163,6 @@
         <option value="upper">Upper case</option>
         <option value="lower">Lower case</option>
       </select>
-      <div class='horizontal-item-and-text margin-above'>
-        <input id="randomize-checkbox" type="checkbox" checked='true' />
-        <label for="randomize-checkbox">Randomize</label><br>
-      </div>
     </div>
     <div id='options-section-numbers'>
       <div class='horizontal-list'>
@@ -187,11 +183,11 @@
     <div id='options-section-dates'>
       <div class='horizontal-list'>
         <div class="horizontal-list-item vertical-item-and-text">
-          <label for="min-date-input">Min</label>
+          <label for="min-date-input">Earliest</label>
           <input id="min-date-input" type="date" value="2021-01-01" />
         </div>
         <div class="horizontal-list-item vertical-item-and-text">
-          <label for="max-date-input">Max</label>
+          <label for="max-date-input">Latest</label>
           <input id="max-date-input" type="date" value="2021-12-31" />
         </div>
       </div>
@@ -201,6 +197,8 @@
       </div>
       <p class="meta">DD = 31; dddd = Monday; ddd = Mon; mmmm = January; mmm = Jan; MM = 1; YYYY = 2021</p>
     </div>
+
+    <h2>Other options</h2>
     <div id='options-section-concat' class='margin-above'>
       <div class='horizontal-list'>
         <div class="horizontal-list-item vertical-item-and-text">
@@ -211,6 +209,10 @@
           <label for="append-input">Append with</label>
           <input id="append-input" type="text" placeholder="Optional text" />
         </div>
+      </div>
+      <div class='horizontal-item-and-text margin-above'>
+        <input id="randomize-checkbox" type="checkbox" checked='true' />
+        <label for="randomize-checkbox">Randomize</label><br>
       </div>
     </div>
   </div>
@@ -241,24 +243,25 @@
   const nodesDropdown = document.getElementById('nodes-dropdown');
   const inputDropdown = document.getElementById('input-dropdown');
 
+  const typeOptionsTitle = document.getElementById('type-options-title');
   const optionsSectionStrings = document.getElementById('options-section-strings');
   const optionsSectionNumbers = document.getElementById('options-section-numbers');
   const optionsSectionDates = document.getElementById('options-section-dates');
   
-  const randomizeCheckbox = document.getElementById('randomize-checkbox');
   const casingDropdown = document.getElementById('casing-dropdown');
-
+  
   const minNumberInput = document.getElementById('min-number-input');
   const maxNumberInput = document.getElementById('max-number-input');
   const precisionNumberInput = document.getElementById('precision-number-input');
-
+  
   const minDateInput = document.getElementById('min-date-input');
   const maxDateInput = document.getElementById('max-date-input');
   const formatDateInput = document.getElementById('format-date-input');
   
   const prependInput = document.getElementById('prepend-input');
   const appendInput = document.getElementById('append-input');
-
+  const randomizeCheckbox = document.getElementById('randomize-checkbox');
+  
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
   const settingsUrlsList = document.getElementById('settings-urls-list');
@@ -429,6 +432,7 @@
     optionsSectionDates.hidden = true;
     
     if (!event) {
+      typeOptionsTitle.innerHTML = `Text options`;
       optionsSectionStrings.hidden = false;
       return;
     }
@@ -437,10 +441,13 @@
     console.log(`Changed input: ${type}`);
 
     if (type === 'strings') {
+      typeOptionsTitle.innerHTML = `Text options`;
       optionsSectionStrings.hidden = false;
     } else if (type === 'numbers') {
+      typeOptionsTitle.innerHTML = `Number options`;
       optionsSectionNumbers.hidden = false;
     } else if (type === 'dates') {
+      typeOptionsTitle.innerHTML = `Date options`;
       optionsSectionDates.hidden = false;
     }
   }
