@@ -45,6 +45,7 @@
   button {
     flex: 1;
     height: 40px;
+    border-radius: 2px;
     font-size: 11;
     border-width: 0;
   }
@@ -249,6 +250,7 @@
   const optionsSectionDates = document.getElementById('options-section-dates');
   
   const casingDropdown = document.getElementById('casing-dropdown');
+  const randomizeCheckbox = document.getElementById('randomize-checkbox');
   
   const minNumberInput = document.getElementById('min-number-input');
   const maxNumberInput = document.getElementById('max-number-input');
@@ -260,7 +262,6 @@
   
   const prependInput = document.getElementById('prepend-input');
   const appendInput = document.getElementById('append-input');
-  const randomizeCheckbox = document.getElementById('randomize-checkbox');
   
   const settingsButton = document.getElementById('settings-button');
   const settingsOverlay = document.getElementById('settings-overlay');
@@ -339,6 +340,7 @@
     console.log(`Fetching from all urls: ${urls}`);
 
     clearInputOptionSections();
+    createLoadingInputElement();
 
     let responses = [];
     const next = (i) => {
@@ -347,6 +349,7 @@
         if (i < urls.length - 1) {
           next(i + 1);
         } else {
+          clearInputOptionSections();
           for (let i = 0; i < responses.length; i++) {
             const response = responses[i];
             createInputElements(response);
@@ -375,6 +378,12 @@
         completion?.({ baseUrl });
       }
     });
+  }
+
+  const createLoadingInputElement = (response) => {
+    const inputOption = document.createElement('option');
+    inputOption.innerHTML = 'Loading...';
+    inputDropdown.appendChild(inputOption);
   }
 
   const createInputElements = (response) => {
