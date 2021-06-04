@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 300, height: 500 });
+figma.showUI(__html__, { width: 320, height: 550 });
 
 interface TextNodeInfo {
   id: string,
@@ -17,6 +17,25 @@ class TextNodeGroup {
   }
 }
 
+type Message = {
+  type: 'init' | 'confirm' | 'url';
+}
+
+type MessageInit = Message & {}
+
+type MessageConfirm = Message & {
+  items: string[];
+  groupingKey: string;
+  randomize: boolean;
+  casing: Casing;
+  prepend: string;
+  append: string;
+}
+
+type MessageUrl = Message & {
+  url: string;
+}
+
 enum Casing {
   None = 'none',
   Sentence = 'sentence',
@@ -31,7 +50,9 @@ const onStart = async () => {
   figma.ui.postMessage({ type: 'init', nodeGroups, url });
 };
 
-const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean, casing: Casing) => {
+const onPressConfirm = (message: MessageConfirm) => {
+  const { items, groupingKey, randomize, casing, prepend, append } = message;
+
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
   textNodes.forEach(async (textNode, index) => {
@@ -46,6 +67,9 @@ const onPressConfirm = (items: string[], groupingKey: string, randomize: boolean
       if (casing === Casing.Title) text = titleCase(text);
       if (casing === Casing.Upper) text = text.toUpperCase();
       if (casing === Casing.Lower) text = text.toLowerCase();
+
+      if (prepend) text = prepend + text;
+      if (append) text = text + append;
 
       textNode.characters = text;
     } else {
@@ -102,18 +126,18 @@ const getUrl = async (): Promise<string> => {
   return figma.clientStorage.getAsync('url');
 }
 
-const setUrl = async (url: string) => {
-  await figma.clientStorage.setAsync('url', url);
+const onUrl = async (message: MessageUrl) => {
+  await figma.clientStorage.setAsync('url', message.url);
 }
 
-figma.ui.onmessage = msg => {
-  if (msg.type === 'init') {
+figma.ui.onmessage = (message: MessageInit | MessageConfirm | MessageUrl) => {
+  if (message.type === 'init') {
     onStart();
-  } else if (msg.type === 'url') {
-    setUrl(msg.url);
-  } else if (msg.type === 'confirm') {
-    onPressConfirm(msg.items, msg.groupingKey, msg.randomize, msg.casing);
-  } else if (msg.type === 'cancel') {
+  } else if (message.type === 'url') {
+    onUrl(message as MessageUrl);
+  } else if (message.type === 'confirm') {
+    onPressConfirm(message as MessageConfirm);
+  } else if (message.type === 'cancel') {
     figma.closePlugin();
   }
 };
