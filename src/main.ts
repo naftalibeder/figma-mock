@@ -79,14 +79,15 @@ const onPressConfirm = (message: MessageConfirm) => {
 };
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
-  if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'INSTANCE') {
+  if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'INSTANCE' || node.type === 'COMPONENT') {
     node.children.forEach((node) => appendChildTextNodes(nodes, node));
   } else if (node.type === 'TEXT') {
     nodes.push(node);
   }
 }
 
-const getAllTextNodes = (selectedNodes: readonly SceneNode[]): TextNode[] => {
+const getAllSelectedTextNodes = (): TextNode[] => {
+  const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
   let all: TextNode[] = [];
   selectedNodes.forEach((node) => appendChildTextNodes(all, node));
   return all;
@@ -101,8 +102,7 @@ const getTextNodesWithGroupingKey = (key: string): TextNode[] => {
 }
 
 const getTextNodeGroups = (): TextNodeGroup[] => {
-  const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
-  const nodes = getAllTextNodes(selectedNodes);
+  const nodes = getAllSelectedTextNodes();
 
   let groupsMap: {[key: string]: TextNodeGroup} = {};
   nodes.forEach(node => {
