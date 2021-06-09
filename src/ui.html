@@ -319,6 +319,8 @@
 
       inputDropdown.onchange = onInputDropdownChange;
       onInputDropdownChange();
+
+      confirmButton.disabled = nodeGroups.length === 0;
     }
   };
 
