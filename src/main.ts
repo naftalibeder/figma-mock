@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 320, height: 550 });
+figma.showUI(__html__, { width: 320, height: 570 });
 
 interface TextNodeInfo {
   id: string,
