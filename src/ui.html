@@ -175,10 +175,6 @@
         <option value="upper">Upper case</option>
         <option value="lower">Lower case</option>
       </select>
-      <div class='horizontal-item-and-text margin-above'>
-        <input id="randomize-checkbox" type="checkbox" checked='true' />
-        <label for="randomize-checkbox">Randomize</label><br>
-      </div>
     </div>
     <div id='options-section-numbers'>
       <div class='horizontal-list'>
@@ -215,6 +211,12 @@
     </div>
 
     <h2>Other options</h2>
+    <p>Order</p>
+    <select id="order-dropdown">
+      <option value="random" selected="true">Random</option>
+      <option value="ascending">Ascending</option>
+      <option value="descending">Descending</option>
+    </select>
     <div id='options-section-concat' class='margin-above'>
       <div class='horizontal-list'>
         <div class="horizontal-list-item vertical-item-and-text">
@@ -261,7 +263,6 @@
   const optionsSectionDates = document.getElementById('options-section-dates');
   
   const casingDropdown = document.getElementById('casing-dropdown');
-  const randomizeCheckbox = document.getElementById('randomize-checkbox');
   
   const minNumberInput = document.getElementById('min-number-input');
   const maxNumberInput = document.getElementById('max-number-input');
@@ -271,6 +272,7 @@
   const maxDateInput = document.getElementById('max-date-input');
   const formatDateInput = document.getElementById('format-date-input');
   
+  const orderDropdown = document.getElementById('order-dropdown');
   const prependInput = document.getElementById('prepend-input');
   const appendInput = document.getElementById('append-input');
   
@@ -306,12 +308,15 @@
     const { type } = message;
 
     if (type === 'init') {
+      console.log('------');
+
       clearInputOptionSections();
       clearNodeGroupElements();
       clearSettingsUrlElements();
 
       const { url, nodeGroups } = message;
-      const urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json', url];
+      let urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json'];
+      if (url) urls.push(url);
 
       createSettingsUrlElements(urls);
       fetchAndCreateInputElements(urls);
@@ -325,19 +330,22 @@
   };
 
   const createSettingsUrlElements = (urls) => {
-    urls.forEach((u, index) => {
+    let urlsCopy = [...urls];
+    if (urlsCopy.length === 1) urlsCopy.push(null);
+
+    console.log(`Creating settings url elements from: [${urlsCopy}]`);
+
+    urlsCopy.forEach((url, index) => {
       const urlWrap = document.createElement('div');
       urlWrap.className = 'horizontal-item-and-text';
       settingsUrlsList.appendChild(urlWrap);
 
       const urlTextField = document.createElement('input');
-      urlTextField.id = `settings-url-textfield-${u}`;
       urlTextField.type = 'text';
       urlTextField.placeholder = "https://mysite.com/index.json";
-      urlTextField.value = u;
+      urlTextField.value = url;
       urlTextField.onblur = () => {
         parent.postMessage({ pluginMessage: { type: 'url', url: urlTextField.value } }, '*');
-        const urlsCopy = [...urls];
         urlsCopy[index] = urlTextField.value;
         fetchAndCreateInputElements(urlsCopy);
       };
@@ -347,12 +355,13 @@
   }
 
   const fetchAndCreateInputElements = (urls) => {
-    console.log(`Fetching from all urls: ${urls}`);
+    console.log(`Fetching from all urls: [${urls}]`);
 
     clearInputOptionSections();
     createLoadingInputElement();
 
-    let responses = [];
+    let responses = []; // { baseUrl, name, lists, error }
+
     const next = (i) => {
       fetchInputs(urls[i], i, (response) => {
         responses.push(response);
@@ -367,13 +376,19 @@
         }
       });
     };
+
     next(0);
   }
 
-  const fetchInputs = (url, index, completion) => {
-    console.log(`Fetching from ${url} at index ${index}`);
-
+  const fetchInputs = (url, index, onResponse) => {
     const baseUrl = url.replace('/index.json', '');
+
+    if (!url || url.length === 0) {
+      onResponse?.({ baseUrl });
+      return;
+    }
+
+    console.log(`Fetching from ${url} at index ${index}`);
 
     fetch(url, (response, error) => {
       try {
@@ -381,11 +396,11 @@
         const { name, lists } = response;
         console.log(`Fetched ${lists.length} lists from ${url}`);
         settingsErrorLabel.hidden = true;
-        completion?.({ baseUrl, name, lists });
+        if (error) throw error;
+        onResponse?.({ baseUrl, ...response, error });
       } catch (error) {
         console.log(`Error: ${error}`);
-        settingsErrorLabel.hidden = false;
-        completion?.({ baseUrl });
+        onResponse?.({ baseUrl, error });
       }
     });
   }
@@ -397,11 +412,16 @@
   }
 
   const createInputElements = (response) => {
-    const { baseUrl, name: sectionName, lists } = response;
+    const { baseUrl, name: sectionName, lists, error } = response;
 
-    console.log(`Creating input elements from ${sectionName}`);
-
+    if (error) {
+      settingsErrorLabel.hidden = false;
+      return;
+    }
+    
     if (!sectionName || !lists) return;
+
+    console.log(`Creating input elements from ${sectionName} (${baseUrl})`);
 
     const inputOptionGroup = document.createElement('optgroup');
     inputOptionGroup.label = sectionName;
@@ -448,6 +468,7 @@
         const nodeOption = document.createElement('option');
         nodeOption.value = nodeGroup.key;
         nodeOption.innerHTML = nodesDisplayText;
+        nodeOption.dataset.nodeCount = nodeGroup.count;
         if (i === 0) nodeOption.selected = true;
         nodesDropdown.appendChild(nodeOption);
       });
@@ -485,47 +506,51 @@
   confirmButton.onclick = () => {
     const selectedInputDropdownOption = inputOptions().filter(o => o.selected == true)[0];
     const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
-    const randomize = randomizeCheckbox.checked;
+    
+    const order = [...orderDropdown.children].filter(o => o.selected == true)[0].value;
     const casing = casingDropdown.value;
     const prepend = prependInput.value;
     const append = appendInput.value;
 
-    console.log(`Selected: ${selectedInputDropdownOption.id} with casing ${casing}`);
+    const inputUrl = selectedInputDropdownOption.dataset.url;
+    const inputType = selectedInputDropdownOption.dataset.type;
+    const nodeCount = selectedNodeDropdownOption.dataset.nodeCount;
+
+    console.log(`Selected ${selectedInputDropdownOption.id}, casing ${casing}, order ${order}, count ${nodeCount}`);
 
     const config = {
       type: 'confirm',
       items: [],
       groupingKey: selectedNodeDropdownOption.value,
-      randomize,
       casing,
       prepend,
       append,
     };
 
-    const inputUrl = selectedInputDropdownOption.dataset.url;
-    const inputType = selectedInputDropdownOption.dataset.type;
-
     if (inputUrl.length > 0) {
       console.log('Fetching:', inputUrl);
-      fetch(inputUrl, (response) => {
-        const items = itemsFromStr(response);
+      fetch(inputUrl, (response, error) => {
+        let items = itemsFromStr(response);
+        items = ordered(items, order);
         parent.postMessage({ pluginMessage: { ...config, items } }, '*');
       });
     } else if (inputType === 'numbers') {
-      const items = [];
-      for (let i = 0; i < 1000; i++) {
+      let items = [];
+      for (let i = 0; i < nodeCount; i++) {
         items.push(`${randomNumberString(minNumberInput.value, maxNumberInput.value, precisionNumberInput.value)}`);
       }
+      items = ordered(items, order);
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     } else if (inputType === 'dates') {
-      const items = [];
+      let items = [];
       const minDate = new Date(minDateInput.value).getTime();
       const maxDate = new Date(maxDateInput.value).getTime();
       const format = formatDateInput.value;
-      console.log(`Date: ${minDate} to ${maxDate}, ${format}`);
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < nodeCount; i++) {
         items.push(`${randomDateString(minDate, maxDate, format)}`);
       }
+      // TODO: Order dates _before_ stringifying.
+      items = ordered(items, order);
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     }
   };
@@ -542,13 +567,17 @@
     settingsOverlay.hidden = true;
   };
 
-  const fetch = (url, onResponse, onError) => {
+  const fetch = (url, onResponse) => {
     let request = new XMLHttpRequest();
-    request.open('GET', url);
-    request.responseType = 'text';
-    request.onload = () => onResponse(request.response);
-    request.onerror = onError;
-    request.send();
+    try {
+      request.open('GET', url);
+      request.responseType = 'text';
+      request.onload = () => onResponse(request.response);
+      request.onerror = (error) => onResponse(null, error);
+      request.send();
+    } catch (error) {
+      onResponse(null, error)
+    }
   }
 
   const itemsFromStr = (str) => {
@@ -603,6 +632,20 @@
     .replace('mmm', randDate.toLocaleString("default", { month: "short" }))
     .replace('MM', randDate.getMonth() + 1)
     .replace('YYYY', randDate.getFullYear());
+  }
+
+  const ordered = (randomItems, rule) => {
+    console.log(`Ordering ${randomItems.length} items with ${rule} rule`);
+
+    if (rule === 'random') {
+      return randomItems;
+    } else if (rule === 'ascending') {
+      return randomItems.sort((a, b) => a - b);
+    } else if (rule === 'descending') {
+      return randomItems.sort((a, b) => b - a);
+    } else {
+      return randomItems;
+    }
   }
 
   const slugify = (text) => {

@@ -26,7 +26,6 @@ type MessageInit = Message & {}
 type MessageConfirm = Message & {
   items: string[];
   groupingKey: string;
-  randomize: boolean;
   casing: Casing;
   prepend: string;
   append: string;
@@ -51,7 +50,7 @@ const onStart = async () => {
 };
 
 const onPressConfirm = (message: MessageConfirm) => {
-  const { items, groupingKey, randomize, casing, prepend, append } = message;
+  const { items, groupingKey, casing, prepend, append } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
@@ -59,8 +58,7 @@ const onPressConfirm = (message: MessageConfirm) => {
     if (!textNode.hasMissingFont) {
       await figma.loadFontAsync(textNode.fontName as FontName);
 
-      let finalIndex = index % items.length;
-      if (randomize) finalIndex = Math.floor(Math.random() * items.length);
+      const finalIndex = index % items.length;
       let text = items[finalIndex];
 
       if (casing === Casing.Sentence) text = sentenceCase(text);
