@@ -634,17 +634,23 @@
     .replace('YYYY', randDate.getFullYear());
   }
 
-  const ordered = (randomItems, rule) => {
-    console.log(`Ordering ${randomItems.length} items with ${rule} rule`);
+  const ordered = (items, rule) => {
+    console.log(`Ordering ${items.length} items with ${rule} rule`);
 
     if (rule === 'random') {
-      return randomItems;
+      const unrandomized = [...items];
+      const randomized = [];
+      while (unrandomized.length > 0) {
+        const item = unrandomized.splice(Math.floor(Math.random() * unrandomized.length), 1)[0];
+        randomized.push(item);
+      }
+      return randomized;
     } else if (rule === 'ascending') {
-      return randomItems.sort((a, b) => a - b);
+      return items.sort((a, b) => a - b);
     } else if (rule === 'descending') {
-      return randomItems.sort((a, b) => b - a);
+      return items.sort((a, b) => b - a);
     } else {
-      return randomItems;
+      return items;
     }
   }
 
