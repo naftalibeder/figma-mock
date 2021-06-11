@@ -18,7 +18,7 @@ class TextNodeGroup {
 }
 
 type Message = {
-  type: 'init' | 'confirm' | 'url';
+  type: 'init' | 'get-nodes' | 'confirm' | 'save-url';
 }
 
 type MessageInit = Message & {}
@@ -43,13 +43,18 @@ enum Casing {
   Lower = 'lower',
 }
 
-const onStart = async () => {
+const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();
   const url = await getUrl();
   figma.ui.postMessage({ type: 'init', nodeGroups, url });
 };
 
-const onPressConfirm = (message: MessageConfirm) => {
+const refreshSelectedNodes = async () => {
+  const nodeGroups = getTextNodeGroups();
+  figma.ui.postMessage({ type: 'get-nodes', nodeGroups });
+};
+
+const writeToNodes = (message: MessageConfirm) => {
   const { items, groupingKey, casing, prepend, append } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
@@ -72,6 +77,10 @@ const onPressConfirm = (message: MessageConfirm) => {
       textNode.characters = text;
     } else {
       console.log('Text node is missing a font and cannot be edited.')
+    }
+
+    if (index === textNodes.length - 1) {
+      refreshSelectedNodes();
     }
   });
 };
@@ -124,24 +133,26 @@ const getUrl = async (): Promise<string> => {
   return figma.clientStorage.getAsync('url');
 }
 
-const onUrl = async (message: MessageUrl) => {
+const saveUrl = async (message: MessageUrl) => {
   await figma.clientStorage.setAsync('url', message.url);
 }
 
 figma.ui.onmessage = (message: MessageInit | MessageConfirm | MessageUrl) => {
   if (message.type === 'init') {
-    onStart();
-  } else if (message.type === 'url') {
-    onUrl(message as MessageUrl);
+    refreshEverything();
+  } else if (message.type === 'get-nodes') {
+    refreshSelectedNodes();
+  } else if (message.type === 'save-url') {
+    saveUrl(message as MessageUrl);
   } else if (message.type === 'confirm') {
-    onPressConfirm(message as MessageConfirm);
+    writeToNodes(message as MessageConfirm);
   } else if (message.type === 'cancel') {
     figma.closePlugin();
   }
 };
 
 figma.on("selectionchange", () => {
-  onStart();
+  refreshSelectedNodes();
 });
 
 const sentenceCase = (text: string) => {

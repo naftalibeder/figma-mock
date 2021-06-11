@@ -308,28 +308,30 @@
     const { type } = message;
 
     if (type === 'init') {
-      console.log('------');
-
-      clearInputOptionSections();
-      clearNodeGroupElements();
-      clearSettingsUrlElements();
-
       const { url, nodeGroups } = message;
       let urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json'];
       if (url) urls.push(url);
 
       createSettingsUrlElements(urls);
-      fetchAndCreateInputElements(urls);
+
       createNodeGroupElements(nodeGroups);
+      confirmButton.disabled = nodeGroups.length === 0;
+      
+      fetchAndCreateInputElements(urls);
 
       inputDropdown.onchange = onInputDropdownChange;
       onInputDropdownChange();
+    } else if (type === 'get-nodes') {
+      const { nodeGroups } = message;
 
+      createNodeGroupElements(nodeGroups);
       confirmButton.disabled = nodeGroups.length === 0;
     }
   };
 
   const createSettingsUrlElements = (urls) => {
+    clearSettingsUrlElements();
+
     let urlsCopy = [...urls];
     if (urlsCopy.length === 1) urlsCopy.push(null);
 
@@ -345,7 +347,7 @@
       urlTextField.placeholder = "https://mysite.com/index.json";
       urlTextField.value = url;
       urlTextField.onblur = () => {
-        parent.postMessage({ pluginMessage: { type: 'url', url: urlTextField.value } }, '*');
+        parent.postMessage({ pluginMessage: { type: 'save-url', url: urlTextField.value } }, '*');
         urlsCopy[index] = urlTextField.value;
         fetchAndCreateInputElements(urlsCopy);
       };
@@ -446,10 +448,10 @@
   };
 
   const createNodeGroupElements = (nodeGroups) => {
-    if (nodeGroups.length === 0) {
-      clearNodeGroupElements();
-      createEmptyNodeGroupElement();
+    clearNodeGroupElements();
 
+    if (nodeGroups.length === 0) {
+      createEmptyNodeGroupElement();
       nodesDropdown.disabled = true;
     } else {
       nodeGroups.forEach((nodeGroup, i) => {
