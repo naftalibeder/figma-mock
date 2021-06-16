@@ -1,4 +1,4 @@
-import { TextNodeGroup } from "./code";
+import { TextNodeGroup } from "./types";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 const inputDropdown = document.getElementById('input-dropdown') as HTMLInputElement;
