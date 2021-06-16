@@ -43,3 +43,20 @@ export const sorted = (items: string[], sort: Sort): string[] => {
 export const slugify = (text: string): string => {
   return text.replace(' ', '-').toLowerCase();
 }
+
+export const linesFromStr = (str: string): string[] => {
+  return str.split('\n').filter(line => line.length > 0);
+}
+
+export const fetchFromUrl = (url: string, onResponse: (response: string, error?: any) => void) => {
+  let request = new XMLHttpRequest();
+  try {
+    request.open('GET', url);
+    request.responseType = 'text';
+    request.onload = () => onResponse(request.response);
+    request.onerror = (error) => onResponse(null, error);
+    request.send();
+  } catch (error) {
+    onResponse(null, error)
+  }
+}

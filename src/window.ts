@@ -1,5 +1,6 @@
-import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, TextNodeGroup } from "./types";
-import { sorted, randomNumberString, randomDateString, slugify } from "./utils";
+import { Casing, Sort } from "./enums";
+import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, TextNodeGroup, WindowMessageConfirm } from "./types";
+import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 const inputDropdown = document.getElementById('input-dropdown') as HTMLInputElement;
@@ -258,18 +259,19 @@ confirmButton.onclick = () => {
   const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
 
   // @ts-ignore
-  const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value;
-  const casing = casingDropdown.value;
+  const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value as Sort;
+
+  const casing = casingDropdown.value as Casing;
   const prepend = prependInput.value;
   const append = appendInput.value;
 
   const inputUrl = selectedInputDropdownOption.dataset.url;
   const inputType = selectedInputDropdownOption.dataset.type;
-  const nodeCount = selectedNodeDropdownOption.dataset.nodeCount;
+  const nodeCount: number = selectedNodeDropdownOption.dataset.nodeCount;
 
   console.log(`Selected ${selectedInputDropdownOption.id}, casing ${casing}, sort ${sort}, count ${nodeCount}`);
 
-  const config = {
+  const config: WindowMessageConfirm = {
     type: 'confirm',
     items: [],
     groupingKey: selectedNodeDropdownOption.value,
@@ -280,8 +282,8 @@ confirmButton.onclick = () => {
 
   if (inputUrl.length > 0) {
     console.log('Fetching:', inputUrl);
-    fetchFromUrl(inputUrl, (response, error) => {
-      let items = itemsFromStr(response);
+    fetchFromUrl(inputUrl, (response) => {
+      let items = linesFromStr(response);
       items = sorted(items, sort);
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     });
@@ -317,23 +319,6 @@ settingsButton.onclick = () => {
 settingsBackButton.onclick = () => {
   settingsOverlay.hidden = true;
 };
-
-const fetchFromUrl = (url: string, onResponse: (response: string, error?: any) => void) => {
-  let request = new XMLHttpRequest();
-  try {
-    request.open('GET', url);
-    request.responseType = 'text';
-    request.onload = () => onResponse(request.response);
-    request.onerror = (error) => onResponse(null, error);
-    request.send();
-  } catch (error) {
-    onResponse(null, error)
-  }
-}
-
-const itemsFromStr = (str: string): string[] => {
-  return str.split('\n').filter(line => line.length > 0);
-}
 
 const inputOptions = () => {
   let o = [];
