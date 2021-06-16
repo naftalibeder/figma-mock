@@ -1,11 +1,11 @@
 figma.showUI(__html__, { width: 320, height: 570 });
 
-interface TextNodeInfo {
+export interface TextNodeInfo {
   id: string,
   characters: string,
 }
 
-class TextNodeGroup {
+export class TextNodeGroup {
   key: string;
   nodesMap: {[id: string]: TextNodeInfo};
   count: number;
@@ -17,13 +17,13 @@ class TextNodeGroup {
   }
 }
 
-type Message = {
+export type Message = {
   type: 'init' | 'get-nodes' | 'confirm' | 'save-url';
 }
 
-type MessageInit = Message & {}
+export type MessageInit = Message & {}
 
-type MessageConfirm = Message & {
+export type MessageConfirm = Message & {
   items: string[];
   groupingKey: string;
   casing: Casing;
@@ -31,7 +31,7 @@ type MessageConfirm = Message & {
   append: string;
 }
 
-type MessageUrl = Message & {
+export type MessageUrl = Message & {
   url: string;
 }
 

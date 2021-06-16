@@ -1,0 +1,254 @@
+<style type="text/css">
+  html {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+  body {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  h2 {
+    font-size: 12;
+    padding-top: 8px;
+  }
+  p, div, input, label, textarea {
+    font-size: 11;
+  }
+  p.error {
+    color: rgb(218, 80, 103);
+  }
+  p.meta {
+    font-size: 9;
+    color: rgb(83, 83, 83);
+  }
+  .overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    background-color: white;
+  }
+  .buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 16px;
+    gap: 8px;
+    background-color: white;
+  }
+  button {
+    flex: 1;
+    height: 40px;
+    border-radius: 2px;
+    font-size: 11;
+    border-width: 0;
+  }
+  button:hover {
+    background-color: rgb(221, 221, 221);
+  }
+  button.primary {
+    background-color: rgb(98, 140, 255);
+    color: white;
+  }
+  button.primary:hover {
+    background-color: rgb(75, 112, 214);
+  }
+  button.link {
+    background: none;
+    border: none;
+    height: auto;
+    padding: 0;
+    color: rgb(75, 112, 214);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  button.link:hover {
+    color: rgb(108, 144, 245);
+  }
+  button:disabled {
+    background-color: lightgray;
+    color: gray;
+  }
+  button:disabled:hover {
+    background-color: lightgray;
+    color: gray;
+  }
+  select {
+    width: 100%;
+    padding: 8px;
+  }
+  textarea {
+    resize: none;
+    width: 100%;
+    padding: 8px;
+  }
+  .vertical-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .vertical-list-item {
+    flex: 1;
+  }
+  .horizontal-list {
+    display: flex;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .horizontal-list-item {
+    width: 100%;
+  }
+  .vertical-item-and-text {
+    display: flex;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .horizontal-item-and-text {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  input[type=checkbox] {
+    width: 14;
+    height: 14;
+  }
+  input[type=text] {
+    height: 40px;
+    width: 100%;
+    padding: 8px;
+  }
+  input[type=number] {
+    height: 40px;
+    width: 100%;
+    padding: 8px;
+  }
+  input[type=date] {
+    height: 40px;
+    width: 100%;
+  }
+  input:hover, select:hover {
+    background-color: rgb(252, 252, 252);
+  }
+  pre {
+    font-family: monospace;
+    background-color: rgb(231, 231, 231);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    padding: 16px;
+    border-radius: 2px;
+  }
+  .margin-above {
+    margin-top: 8px;
+  }
+</style>
+
+<body>
+  <div style="padding-bottom: 60px;">
+    <h2>Output</h2>
+    <p>Choose the group of text fields to fill.</p>
+    <select id="nodes-dropdown"></select>
+
+    <h2>Input</h2>
+    <p>Choose a type of data to paste. <button id="settings-button" class='link'>Edit lists</button></p>
+    <select id="input-dropdown"></select>
+
+    <h2 id="type-options-title">Options</h2>
+    <div id='options-section-strings'>
+      <p>Capitalization</p>
+      <select id="casing-dropdown">
+        <option value="none">Use original</option>
+        <option value="sentence">Sentence case</option>
+        <option value="title">Title case</option>
+        <option value="upper">Upper case</option>
+        <option value="lower">Lower case</option>
+      </select>
+    </div>
+    <div id='options-section-numbers'>
+      <div class='horizontal-list'>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="min-number-input">Min</label>
+          <input id="min-number-input" type="number" value="0" />
+        </div>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="max-number-input">Max</label>
+          <input id="max-number-input" type="number" value="100" />
+        </div>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="precision-number-input">Decimals</label>
+          <input id="precision-number-input" type="number" value="0" min="0" max="100" />
+        </div>
+      </div>
+    </div>
+    <div id='options-section-dates'>
+      <div class='horizontal-list'>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="min-date-input">Earliest</label>
+          <input id="min-date-input" type="date" value="2021-01-01" />
+        </div>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="max-date-input">Latest</label>
+          <input id="max-date-input" type="date" value="2021-12-31" />
+        </div>
+      </div>
+      <div class="horizontal-list-item vertical-item-and-text margin-above">
+        <label for="format-date-input">Format</label>
+        <input id="format-date-input" type="text" placeholder="MM/DD/YYYY" value="MM/DD/YYYY" />
+      </div>
+      <p class="meta">DD = 31; dddd = Monday; ddd = Mon; mmmm = January; mmm = Jan; MM = 1; YYYY = 2021</p>
+    </div>
+
+    <h2>Other options</h2>
+    <p>Order</p>
+    <select id="order-dropdown">
+      <option value="random" selected="true">Random</option>
+      <option value="ascending">Ascending</option>
+      <option value="descending">Descending</option>
+    </select>
+    <div id='options-section-concat' class='margin-above'>
+      <div class='horizontal-list'>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="prepend-input">Prepend with</label>
+          <input id="prepend-input" type="text" placeholder="Optional text" />
+        </div>
+        <div class="horizontal-list-item vertical-item-and-text">
+          <label for="append-input">Append with</label>
+          <input id="append-input" type="text" placeholder="Optional text" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class='buttons'>
+    <button id="cancel-button">Cancel</button>
+    <button id="confirm-button" class='primary'>Paste</button>
+  </div>
+
+  <div id='settings-overlay' class='overlay'>
+    <h2>Urls</h2>
+    <div id='settings-urls-list' class='vertical-list'></div>
+    <p id="settings-error-label" class="error">Error fetching data from this url.</p>
+
+    <h2>Rules</h2>
+    <p>Each JSON file listed above must follow this format:</p>
+    <pre id='settings-index-code-example'></pre>
+
+    <div class='buttons'>
+      <button id="settings-back-button">Back</button>
+    </div>
+  </div>
+</body>
