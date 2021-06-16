@@ -5,7 +5,6 @@ import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, li
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 const inputDropdown = document.getElementById('input-dropdown') as HTMLInputElement;
 
-const typeOptionsTitle = document.getElementById('type-options-title');
 const optionsSectionStrings = document.getElementById('options-section-strings');
 const optionsSectionNumbers = document.getElementById('options-section-numbers');
 const optionsSectionDates = document.getElementById('options-section-dates');
@@ -231,23 +230,19 @@ const onInputDropdownChange = (event?: Event) => {
   optionsSectionNumbers.hidden = true;
   optionsSectionDates.hidden = true;
 
-  if (!event) {
-    typeOptionsTitle.innerHTML = `Text options`;
-    optionsSectionStrings.hidden = false;
-    return;
+  let type = InputType.Strings;
+
+  if (event) {
+    type = event.target['options'][event.target['selectedIndex']].dataset.type as InputType;
   }
 
-  const type = event.target['options'][event.target['selectedIndex']].dataset.type;
   console.log(`Changed input: ${type}`);
 
-  if (type === 'strings') {
-    typeOptionsTitle.innerHTML = `Text options`;
+  if (type === InputType.Strings) {
     optionsSectionStrings.hidden = false;
-  } else if (type === 'numbers') {
-    typeOptionsTitle.innerHTML = `Number options`;
+  } else if (type === InputType.Numbers) {
     optionsSectionNumbers.hidden = false;
-  } else if (type === 'dates') {
-    typeOptionsTitle.innerHTML = `Date options`;
+  } else if (type === InputType.Dates) {
     optionsSectionDates.hidden = false;
   }
 }
@@ -304,6 +299,8 @@ confirmButton.onclick = async () => {
   if (items.length > 0) {
     message.items = items;
     sendMessage(message);
+
+    confirmButton.disabled = true;
   }
 };
 
