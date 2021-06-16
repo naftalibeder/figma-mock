@@ -1,4 +1,5 @@
-import { TextNodeGroup } from "./types";
+import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, TextNodeGroup } from "./types";
+import { sorted, randomNumberString, randomDateString, slugify } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 const inputDropdown = document.getElementById('input-dropdown') as HTMLInputElement;
@@ -18,7 +19,7 @@ const minDateInput = document.getElementById('min-date-input') as HTMLInputEleme
 const maxDateInput = document.getElementById('max-date-input') as HTMLInputElement;
 const formatDateInput = document.getElementById('format-date-input') as HTMLInputElement;
 
-const orderDropdown = document.getElementById('order-dropdown') as HTMLInputElement;
+const sortDropdown = document.getElementById('sort-dropdown') as HTMLInputElement;
 const prependInput = document.getElementById('prepend-input') as HTMLInputElement;
 const appendInput = document.getElementById('append-input') as HTMLInputElement;
 
@@ -50,11 +51,11 @@ settingsIndexCodeExample.innerHTML = `{
 }`;
 
 onmessage = event => {
-  const message = event.data.pluginMessage;
+  const message = event.data.pluginMessage as CodeMessage;
   const { type } = message;
 
   if (type === 'init') {
-    const { url, nodeGroups } = message;
+    const { url, nodeGroups } = message as CodeMessageInit;
     let urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json'];
     if (url) urls.push(url);
 
@@ -67,8 +68,8 @@ onmessage = event => {
 
     inputDropdown.onchange = onInputDropdownChange;
     onInputDropdownChange();
-  } else if (type === 'get-nodes') {
-    const { nodeGroups } = message;
+  } else if (type === 'nodes') {
+    const { nodeGroups } = message as CodeMessageGetNodes;
 
     createNodeGroupElements(nodeGroups);
     confirmButton.disabled = nodeGroups.length === 0;
@@ -138,14 +139,14 @@ const fetchInputs = (url, index, onResponse) => {
 
   console.log(`Fetching from ${url} at index ${index}`);
 
-  fetchLists(url, (response, error) => {
+  fetchFromUrl(url, (response, error) => {
     try {
-      response = JSON.parse(response);
-      const { name, lists } = response;
+      const responseObj = JSON.parse(response);
+      const { name, lists } = responseObj;
       console.log(`Fetched ${lists.length} lists from ${url}`);
       settingsErrorLabel.hidden = true;
       if (error) throw error;
-      onResponse?.({ baseUrl, ...response, error });
+      onResponse?.({ baseUrl, ...responseObj, error });
     } catch (error) {
       console.log(`Error: ${error}`);
       onResponse?.({ baseUrl, error });
@@ -175,7 +176,7 @@ const createInputElements = (response) => {
   inputOptionGroup.label = sectionName;
   inputDropdown.appendChild(inputOptionGroup);
 
-  lists.forEach((list, index) => {
+  lists.forEach((list, index: number) => {
     const { name, path, url, type } = list;
 
     const inputOption = document.createElement('option');
@@ -257,7 +258,7 @@ confirmButton.onclick = () => {
   const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
 
   // @ts-ignore
-  const order = [...orderDropdown.children].filter(o => o.selected == true)[0].value;
+  const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value;
   const casing = casingDropdown.value;
   const prepend = prependInput.value;
   const append = appendInput.value;
@@ -266,7 +267,7 @@ confirmButton.onclick = () => {
   const inputType = selectedInputDropdownOption.dataset.type;
   const nodeCount = selectedNodeDropdownOption.dataset.nodeCount;
 
-  console.log(`Selected ${selectedInputDropdownOption.id}, casing ${casing}, order ${order}, count ${nodeCount}`);
+  console.log(`Selected ${selectedInputDropdownOption.id}, casing ${casing}, sort ${sort}, count ${nodeCount}`);
 
   const config = {
     type: 'confirm',
@@ -279,17 +280,17 @@ confirmButton.onclick = () => {
 
   if (inputUrl.length > 0) {
     console.log('Fetching:', inputUrl);
-    fetchLists(inputUrl, (response, error) => {
+    fetchFromUrl(inputUrl, (response, error) => {
       let items = itemsFromStr(response);
-      items = ordered(items, order);
+      items = sorted(items, sort);
       parent.postMessage({ pluginMessage: { ...config, items } }, '*');
     });
   } else if (inputType === 'numbers') {
     let items = [];
     for (let i = 0; i < nodeCount; i++) {
-      items.push(`${randomNumberString(minNumberInput.value, maxNumberInput.value, precisionNumberInput.value)}`);
+      items.push(`${randomNumberString(parseFloat(minNumberInput.value), parseFloat(maxNumberInput.value), parseFloat(precisionNumberInput.value))}`);
     }
-    items = ordered(items, order);
+    items = sorted(items, sort);
     parent.postMessage({ pluginMessage: { ...config, items } }, '*');
   } else if (inputType === 'dates') {
     let items = [];
@@ -300,7 +301,7 @@ confirmButton.onclick = () => {
       items.push(`${randomDateString(minDate, maxDate, format)}`);
     }
     // TODO: Order dates _before_ stringifying.
-    items = ordered(items, order);
+    items = sorted(items, sort);
     parent.postMessage({ pluginMessage: { ...config, items } }, '*');
   }
 };
@@ -317,7 +318,7 @@ settingsBackButton.onclick = () => {
   settingsOverlay.hidden = true;
 };
 
-const fetchLists = (url: string, onResponse) => {
+const fetchFromUrl = (url: string, onResponse: (response: string, error?: any) => void) => {
   let request = new XMLHttpRequest();
   try {
     request.open('GET', url);
@@ -330,7 +331,7 @@ const fetchLists = (url: string, onResponse) => {
   }
 }
 
-const itemsFromStr = (str) => {
+const itemsFromStr = (str: string): string[] => {
   return str.split('\n').filter(line => line.length > 0);
 }
 
@@ -362,50 +363,6 @@ const clearSettingsUrlElements = () => {
   while (settingsUrlsList.firstChild) {
     settingsUrlsList.removeChild(settingsUrlsList.firstChild);
   }
-}
-
-const randomNumberString = (min, max, precision) => {
-  min = parseFloat(min);
-  max = parseFloat(max);
-  precision = parseFloat(precision);
-  const randNum = min + Math.random() * (max - min);
-  return randNum.toFixed(precision);
-}
-
-const randomDateString = (min, max, format) => {
-  const randDate = new Date(min + Math.random() * (max - min));
-  return format
-    .replace('DD', randDate.getDate())
-    .replace('dddd', randDate.toLocaleString("default", { weekday: "long" }))
-    .replace('ddd', randDate.toLocaleString("default", { weekday: "short" }))
-    .replace('mmmm', randDate.toLocaleString("default", { month: "long" }))
-    .replace('mmm', randDate.toLocaleString("default", { month: "short" }))
-    .replace('MM', randDate.getMonth() + 1)
-    .replace('YYYY', randDate.getFullYear());
-}
-
-const ordered = (items, rule) => {
-  console.log(`Ordering ${items.length} items with ${rule} rule`);
-
-  if (rule === 'random') {
-    const unrandomized = [...items];
-    const randomized = [];
-    while (unrandomized.length > 0) {
-      const item = unrandomized.splice(Math.floor(Math.random() * unrandomized.length), 1)[0];
-      randomized.push(item);
-    }
-    return randomized;
-  } else if (rule === 'ascending') {
-    return items.sort((a, b) => a - b);
-  } else if (rule === 'descending') {
-    return items.sort((a, b) => b - a);
-  } else {
-    return items;
-  }
-}
-
-const slugify = (text) => {
-  return text.replace(' ', '-').toLowerCase();
 }
 
 parent.postMessage({ pluginMessage: { type: 'init' } }, '*');

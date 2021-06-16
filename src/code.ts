@@ -1,5 +1,5 @@
 import { Casing } from "./enums";
-import { MessageConfirm, TextNodeGroup, MessageUrl, MessageInit } from "./types";
+import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessageInit } from "./types";
 
 figma.showUI(__html__, { width: 320, height: 570 });
 
@@ -11,10 +11,10 @@ const refreshEverything = async () => {
 
 const refreshSelectedNodes = async () => {
   const nodeGroups = getTextNodeGroups();
-  figma.ui.postMessage({ type: 'get-nodes', nodeGroups });
+  figma.ui.postMessage({ type: 'nodes', nodeGroups });
 };
 
-const writeToNodes = (message: MessageConfirm) => {
+const writeToNodes = (message: WindowMessageConfirm) => {
   const { items, groupingKey, casing, prepend, append } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
@@ -93,19 +93,19 @@ const getUrl = async (): Promise<string> => {
   return figma.clientStorage.getAsync('url');
 }
 
-const saveUrl = async (message: MessageUrl) => {
+const saveUrl = async (message: WindowMessageUrl) => {
   await figma.clientStorage.setAsync('url', message.url);
 }
 
-figma.ui.onmessage = (message: MessageInit | MessageConfirm | MessageUrl) => {
+figma.ui.onmessage = (message: WindowMessageInit | WindowMessageConfirm | WindowMessageUrl) => {
   if (message.type === 'init') {
     refreshEverything();
   } else if (message.type === 'get-nodes') {
     refreshSelectedNodes();
   } else if (message.type === 'save-url') {
-    saveUrl(message as MessageUrl);
+    saveUrl(message as WindowMessageUrl);
   } else if (message.type === 'confirm') {
-    writeToNodes(message as MessageConfirm);
+    writeToNodes(message as WindowMessageConfirm);
   } else if (message.type === 'cancel') {
     figma.closePlugin();
   }

@@ -17,13 +17,26 @@ export class TextNodeGroup {
   }
 }
 
-export type Message = {
+export type CodeMessage = {
+  type: 'init' | 'nodes';
+}
+
+export type CodeMessageInit = CodeMessage & {
+  url: string;
+  nodeGroups: TextNodeGroup[];
+}
+
+export type CodeMessageGetNodes = CodeMessage & {
+  nodeGroups: TextNodeGroup[];
+}
+
+export type WindowMessage = {
   type: 'init' | 'get-nodes' | 'confirm' | 'save-url';
 }
 
-export type MessageInit = Message & {}
+export type WindowMessageInit = WindowMessage & {}
 
-export type MessageConfirm = Message & {
+export type WindowMessageConfirm = WindowMessage & {
   items: string[];
   groupingKey: string;
   casing: Casing;
@@ -31,6 +44,6 @@ export type MessageConfirm = Message & {
   append: string;
 }
 
-export type MessageUrl = Message & {
+export type WindowMessageUrl = WindowMessage & {
   url: string;
 }

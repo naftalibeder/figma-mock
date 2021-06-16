@@ -5,3 +5,9 @@ export enum Casing {
   Upper = 'upper',
   Lower = 'lower',
 }
+
+export enum Sort {
+  Random = 'random',
+  Ascending = 'ascending',
+  Descending = 'descending',
+}
