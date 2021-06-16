@@ -1,5 +1,5 @@
-import { Casing, Sort } from "./enums";
-import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, TextNodeGroup, WindowMessageConfirm } from "./types";
+import { Casing, InputType, Sort } from "./enums";
+import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, InputResponse, InputResponseList, TextNodeGroup, WindowMessage, WindowMessageConfirm } from "./types";
 import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
@@ -110,49 +110,46 @@ const fetchAndCreateInputElements = (urls) => {
   clearInputOptionSections();
   createLoadingInputElement();
 
-  let responses = []; // { baseUrl, name, lists, error }
+  let responses: InputResponse[] = [];
 
-  const next = (i) => {
-    fetchInputs(urls[i], i, (response) => {
-      responses.push(response);
-      if (i < urls.length - 1) {
-        next(i + 1);
-      } else {
-        clearInputOptionSections();
-        for (let i = 0; i < responses.length; i++) {
-          const response = responses[i];
-          createInputElements(response);
-        }
+  const next = async (i: number) => {
+    const response = await fetchInputs(urls[i], i);
+    responses.push(response);
+    if (i < urls.length - 1) {
+      next(i + 1);
+    } else {
+      clearInputOptionSections();
+      for (let i = 0; i < responses.length; i++) {
+        const response = responses[i];
+        createInputElements(response);
       }
-    });
+    }
   };
 
   next(0);
 }
 
-const fetchInputs = (url, index, onResponse) => {
+const fetchInputs = async (url: string, index: number): Promise<InputResponse> => {
   const baseUrl = url.replace('/index.json', '');
 
   if (!url || url.length === 0) {
-    onResponse?.({ baseUrl });
-    return;
+    return Promise.resolve({ baseUrl });
   }
 
   console.log(`Fetching from ${url} at index ${index}`);
 
-  fetchFromUrl(url, (response, error) => {
-    try {
-      const responseObj = JSON.parse(response);
-      const { name, lists } = responseObj;
-      console.log(`Fetched ${lists.length} lists from ${url}`);
-      settingsErrorLabel.hidden = true;
-      if (error) throw error;
-      onResponse?.({ baseUrl, ...responseObj, error });
-    } catch (error) {
-      console.log(`Error: ${error}`);
-      onResponse?.({ baseUrl, error });
-    }
-  });
+  try {
+    const response = await fetchFromUrl(url);
+    const responseObj = JSON.parse(response.response);
+    const { name, lists } = responseObj;
+    console.log(`Fetched ${lists.length} lists from ${url}`);
+    settingsErrorLabel.hidden = true;
+    if (response.error) throw response.error;
+    return Promise.resolve({ baseUrl, ...responseObj });
+  } catch (error) {
+    console.log(`Error: ${error}`);
+    return Promise.reject({ baseUrl, error });
+  }
 }
 
 const createLoadingInputElement = () => {
@@ -161,7 +158,7 @@ const createLoadingInputElement = () => {
   inputDropdown.appendChild(inputOption);
 }
 
-const createInputElements = (response) => {
+const createInputElements = (response: InputResponse) => {
   const { baseUrl, name: sectionName, lists, error } = response;
 
   if (error) {
@@ -177,14 +174,14 @@ const createInputElements = (response) => {
   inputOptionGroup.label = sectionName;
   inputDropdown.appendChild(inputOptionGroup);
 
-  lists.forEach((list, index: number) => {
+  lists.forEach((list: InputResponseList, index: number) => {
     const { name, path, url, type } = list;
 
     const inputOption = document.createElement('option');
     inputOption.id = slugify(name);
     inputOption.innerHTML = name;
     inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : '';
-    inputOption.dataset.type = type ?? 'strings';
+    inputOption.dataset.type = type ?? InputType.Strings;
     inputOptionGroup.appendChild(inputOption);
   });
 }
@@ -253,7 +250,7 @@ const onInputDropdownChange = (event?: Event) => {
   }
 }
 
-confirmButton.onclick = () => {
+confirmButton.onclick = async () => {
   const selectedInputDropdownOption = inputOptions().filter(o => o.selected == true)[0];
   // @ts-ignore
   const selectedNodeDropdownOption = [...nodesDropdown.children].filter(o => o.selected == true)[0];
@@ -266,12 +263,12 @@ confirmButton.onclick = () => {
   const append = appendInput.value;
 
   const inputUrl = selectedInputDropdownOption.dataset.url;
-  const inputType = selectedInputDropdownOption.dataset.type;
+  const inputType = selectedInputDropdownOption.dataset.type as InputType;
   const nodeCount: number = selectedNodeDropdownOption.dataset.nodeCount;
 
-  console.log(`Selected ${selectedInputDropdownOption.id}, casing ${casing}, sort ${sort}, count ${nodeCount}`);
+  console.log(`Selected ${selectedInputDropdownOption.id}, type: ${inputType}, casing ${casing}, sort ${sort}, count ${nodeCount}`);
 
-  const config: WindowMessageConfirm = {
+  const message: WindowMessageConfirm = {
     type: 'confirm',
     items: [],
     groupingKey: selectedNodeDropdownOption.value,
@@ -279,23 +276,19 @@ confirmButton.onclick = () => {
     prepend,
     append,
   };
+  let items: string[] = [];
 
-  if (inputUrl.length > 0) {
+  if (inputType === InputType.Strings && inputUrl.length > 0) {
     console.log('Fetching:', inputUrl);
-    fetchFromUrl(inputUrl, (response) => {
-      let items = linesFromStr(response);
-      items = sorted(items, sort);
-      parent.postMessage({ pluginMessage: { ...config, items } }, '*');
-    });
-  } else if (inputType === 'numbers') {
-    let items = [];
+    const response = await fetchFromUrl(inputUrl);
+    items = linesFromStr(response.response);
+    items = sorted(items, sort);
+  } else if (inputType === InputType.Numbers) {
     for (let i = 0; i < nodeCount; i++) {
       items.push(`${randomNumberString(parseFloat(minNumberInput.value), parseFloat(maxNumberInput.value), parseFloat(precisionNumberInput.value))}`);
     }
     items = sorted(items, sort);
-    parent.postMessage({ pluginMessage: { ...config, items } }, '*');
-  } else if (inputType === 'dates') {
-    let items = [];
+  } else if (inputType === InputType.Dates) {
     const minDate = new Date(minDateInput.value).getTime();
     const maxDate = new Date(maxDateInput.value).getTime();
     const format = formatDateInput.value;
@@ -304,8 +297,16 @@ confirmButton.onclick = () => {
     }
     // TODO: Order dates _before_ stringifying.
     items = sorted(items, sort);
-    parent.postMessage({ pluginMessage: { ...config, items } }, '*');
   }
+
+  if (items.length > 0) {
+    message.items = items;
+    sendMessage(message);
+  }
+};
+
+const sendMessage = (message: WindowMessage) => {
+  parent.postMessage({ pluginMessage: message }, '*');
 };
 
 cancelButton.onclick = () => {

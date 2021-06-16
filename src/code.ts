@@ -1,5 +1,5 @@
 import { Casing } from "./enums";
-import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessageInit } from "./types";
+import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessageInit, WindowMessage } from "./types";
 
 figma.showUI(__html__, { width: 320, height: 570 });
 
@@ -97,7 +97,7 @@ const saveUrl = async (message: WindowMessageUrl) => {
   await figma.clientStorage.setAsync('url', message.url);
 }
 
-figma.ui.onmessage = (message: WindowMessageInit | WindowMessageConfirm | WindowMessageUrl) => {
+figma.ui.onmessage = (message: WindowMessage) => {
   if (message.type === 'init') {
     refreshEverything();
   } else if (message.type === 'get-nodes') {

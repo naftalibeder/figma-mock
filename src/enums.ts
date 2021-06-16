@@ -11,3 +11,9 @@ export enum Sort {
   Ascending = 'ascending',
   Descending = 'descending',
 }
+
+export enum InputType {
+  Strings = 'strings',
+  Numbers = 'numbers',
+  Dates = 'dates',
+}

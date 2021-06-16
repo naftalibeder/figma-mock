@@ -48,15 +48,22 @@ export const linesFromStr = (str: string): string[] => {
   return str.split('\n').filter(line => line.length > 0);
 }
 
-export const fetchFromUrl = (url: string, onResponse: (response: string, error?: any) => void) => {
-  let request = new XMLHttpRequest();
-  try {
-    request.open('GET', url);
-    request.responseType = 'text';
-    request.onload = () => onResponse(request.response);
-    request.onerror = (error) => onResponse(null, error);
-    request.send();
-  } catch (error) {
-    onResponse(null, error)
-  }
+interface FetchResponse {
+  response?: string;
+  error?: any;
+}
+
+export const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
+  return new Promise((resolve, reject) => {
+    let request = new XMLHttpRequest();
+    try {
+      request.open('GET', url);
+      request.responseType = 'text';
+      request.onload = () => resolve({ response: request.response });
+      request.onerror = (error) => reject({ error });
+      request.send();
+    } catch (error) {
+      return reject({ error });
+    }
+  });
 }

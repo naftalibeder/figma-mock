@@ -1,4 +1,18 @@
-import { Casing } from "./enums";
+import { Casing, InputType } from "./enums";
+
+export interface InputResponse {
+  baseUrl: string;
+  name?: string;
+  lists?: InputResponseList[];
+  error?: string;
+}
+
+export interface InputResponseList {
+  name: string;
+  path?: string;
+  url?: string;
+  type?: InputType;
+}
 
 export interface TextNodeInfo {
   id: string,
