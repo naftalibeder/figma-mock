@@ -104,29 +104,32 @@ const createSettingsUrlElements = (urls) => {
   });
 }
 
-const fetchAndCreateInputElements = (urls) => {
+const fetchAndCreateInputElements = async (urls: string[]) => {
   console.log(`Fetching from all urls: [${urls}]`);
+
+  settingsErrorLabel.hidden = true;
 
   clearInputOptionSections();
   createLoadingInputElement();
 
   let responses: InputResponse[] = [];
 
-  const next = async (i: number) => {
-    const response = await fetchInputs(urls[i], i);
-    responses.push(response);
-    if (i < urls.length - 1) {
-      next(i + 1);
-    } else {
-      clearInputOptionSections();
-      for (let i = 0; i < responses.length; i++) {
-        const response = responses[i];
-        createInputElements(response);
-      }
+  try {
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      const response = await fetchInputs(url, i);
+      responses.push(response);
     }
-  };
+  } catch (error) {
+    settingsErrorLabel.hidden = false;
+  }
 
-  next(0);
+  clearInputOptionSections();
+
+  for (let i = 0; i < responses.length; i++) {
+    const response = responses[i];
+    createInputElements(response);
+  }
 }
 
 const fetchInputs = async (url: string, index: number): Promise<InputResponse> => {
@@ -143,7 +146,6 @@ const fetchInputs = async (url: string, index: number): Promise<InputResponse> =
     const responseObj = JSON.parse(response.response);
     const { name, lists } = responseObj;
     console.log(`Fetched ${lists.length} lists from ${url}`);
-    settingsErrorLabel.hidden = true;
     if (response.error) throw response.error;
     return Promise.resolve({ baseUrl, ...responseObj });
   } catch (error) {
