@@ -1,7 +1,7 @@
 import { Casing } from "./enums";
 import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessageInit, WindowMessage } from "./types";
 
-figma.showUI(__html__, { width: 320, height: 570 });
+figma.showUI(__html__, { width: 350, height: 570 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();

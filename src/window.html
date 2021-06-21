@@ -186,8 +186,7 @@
     gap: 8px;
     margin-right: 36px;
   }
-  #input-config-holder {
-    margin-top: 8px;
+  .gray-box {
     padding: 8px;
     border-radius: 2px;
     background-color: rgb(243, 243, 243);
@@ -206,11 +205,11 @@
         <button id="input-add-button" class="tag">+</button>
       </div>
     </div>
-    <div id="input-config-holder">
+    <div id="input-config-holder" class="gray-box margin-above">
       <p>Type of data <button id="settings-button" class='link'>Edit lists</button></p>
       <select id="input-lists-dropdown"></select>
 
-      <div id='options-section-strings'>
+      <div id='options-section-strings' class="margin-above">
         <p>Capitalization</p>
         <select id="casing-dropdown" value="none">
           <option value="none">Use original</option>
@@ -220,7 +219,7 @@
           <option value="lower">Lower case</option>
         </select>
       </div>
-      <div id='options-section-numbers'>
+      <div id='options-section-numbers' class="margin-above">
         <div class='horizontal-list'>
           <div class="horizontal-list-item vertical-item-and-text">
             <label for="min-number-input">Min</label>
@@ -236,7 +235,7 @@
           </div>
         </div>
       </div>
-      <div id='options-section-dates'>
+      <div id='options-section-dates' class="margin-above">
         <div class='horizontal-list'>
           <div class="horizontal-list-item vertical-item-and-text">
             <label for="min-date-input">Earliest</label>
@@ -261,6 +260,9 @@
         <option value="descending">Descending</option>
       </select>
     </div>
+
+    <h2>Example</h2>
+    <div id="example-output" class="gray-box margin-above">Nothing selected</div>
   </div>
 
   <br>
