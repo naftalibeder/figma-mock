@@ -126,10 +126,10 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
   }
 }
 
-addTagButton.onclick = () => {
+const onClickAddTagButton = () => {
   const newConfig: InputConfig = {
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
-    title: getSelectedListDropdownOption().innerHTML,
+    title: 'First Names',
     listId: 'first-names', // TODO: Set initial list item?
     confirmed: false,
   };
@@ -142,7 +142,9 @@ addTagButton.onclick = () => {
   inputTag.onfocus = () => onInputTagFocus(inputTag.id);
   tagsHolder.insertBefore(inputTag, tagsHolder.childNodes[tagsHolder.childNodes.length - 2])
   inputTag.focus();
-}
+};
+
+addTagButton.onclick = onClickAddTagButton;
 
 const onInputTagFocus = (id: string) => {
   inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
