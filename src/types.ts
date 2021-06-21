@@ -1,17 +1,43 @@
-import { Casing, InputType } from "./enums";
+import { Casing, ListType, Sort } from "./enums";
 
-export interface InputResponse {
+export interface InputConfig {
+  id: string;
+  title: string;
+  listId: string;
+  confirmed: boolean;
+}
+
+export interface InputStringConfig extends InputConfig {
+  casing: Casing;
+  sort: Sort;
+}
+
+export interface InputNumberConfig extends InputConfig {
+  min: number;
+  max: number;
+  decimals: number;
+  sort: Sort;
+}
+
+export interface InputDateConfig extends InputConfig {
+  earliest: Date;
+  latest: Date;
+  format: string;
+  sort: Sort;
+}
+
+export interface ListResponse {
   baseUrl: string;
   name?: string;
-  lists?: InputResponseList[];
+  lists?: ListResponseList[];
   error?: string;
 }
 
-export interface InputResponseList {
+export interface ListResponseList {
   name: string;
   path?: string;
   url?: string;
-  type?: InputType;
+  type?: ListType;
 }
 
 export interface TextNodeInfo {
@@ -54,8 +80,6 @@ export type WindowMessageConfirm = WindowMessage & {
   items: string[];
   groupingKey: string;
   casing: Casing;
-  prepend: string;
-  append: string;
 }
 
 export type WindowMessageUrl = WindowMessage & {

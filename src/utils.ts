@@ -41,7 +41,7 @@ export const sorted = (items: string[], sort: Sort): string[] => {
 }
 
 export const slugify = (text: string): string => {
-  return text.replace(' ', '-').toLowerCase();
+  return text.replaceAll(' ', '-').toLowerCase();
 }
 
 export const linesFromStr = (str: string): string[] => {

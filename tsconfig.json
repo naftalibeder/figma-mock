@@ -5,6 +5,6 @@
       "./node_modules/@types",
       "./node_modules/@figma"
     ],
-    "lib": ["dom", "es2017"]
+    "lib": ["dom", "es2017", "esnext"]
   }
 }

@@ -15,7 +15,7 @@ const refreshSelectedNodes = async () => {
 };
 
 const writeToNodes = (message: WindowMessageConfirm) => {
-  const { items, groupingKey, casing, prepend, append } = message;
+  const { items, groupingKey, casing } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
@@ -30,9 +30,6 @@ const writeToNodes = (message: WindowMessageConfirm) => {
       if (casing === Casing.Title) text = titleCase(text);
       if (casing === Casing.Upper) text = text.toUpperCase();
       if (casing === Casing.Lower) text = text.toLowerCase();
-
-      if (prepend) text = prepend + text;
-      if (append) text = text + append;
 
       textNode.characters = text;
     } else {

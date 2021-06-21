@@ -12,7 +12,7 @@ export enum Sort {
   Descending = 'descending',
 }
 
-export enum InputType {
+export enum ListType {
   Strings = 'strings',
   Numbers = 'numbers',
   Dates = 'dates',
