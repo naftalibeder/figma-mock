@@ -1,5 +1,5 @@
 export enum Casing {
-  None = 'none',
+  Original = 'original',
   Sentence = 'sentence',
   Title = 'title',
   Upper = 'upper',
@@ -7,6 +7,7 @@ export enum Casing {
 }
 
 export enum Sort {
+  Original = 'original',
   Random = 'random',
   Ascending = 'ascending',
   Descending = 'descending',

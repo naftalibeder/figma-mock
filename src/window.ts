@@ -135,7 +135,7 @@ const onClickAddTagButton = () => {
     title: '',
     listId: '', // TODO: Set initial list item?
     url: '',
-    casing: Casing.None,
+    casing: Casing.Original,
     sort: Sort.Random,
   };
   inputConfigs.push(inputConfig);
@@ -184,7 +184,7 @@ const populateListPreferencesElement = () => {
 
   if (selectedOptionType === ListType.Strings) {
     const config = activeInputConfig as InputConfigString;
-    casingDropdown.value = config.casing ?? Casing.None;
+    casingDropdown.value = config.casing ?? Casing.Original;
     sortDropdown.value = config.sort ?? Sort.Random;
   } else if (selectedOptionType === ListType.Numbers) {
     const config = activeInputConfig as InputConfigNumber;
@@ -226,7 +226,7 @@ const saveListDropdownOption = () => {
       listId: selectedOption.id,
       sort: configPrev.sort,
       url: selectedOption.dataset.url,
-      casing: Casing.None,
+      casing: Casing.Original,
     }
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Numbers) {
@@ -247,6 +247,8 @@ const saveListDropdownOption = () => {
 
   const focusedInputTag = getFocusedInputTag();
   focusedInputTag.innerHTML = selectedOption.innerHTML;
+
+  refreshExampleOutputLabel();
 };
 
 const saveListPreferences = () => {
@@ -269,25 +271,31 @@ const saveListPreferences = () => {
 
   if (selectedOptionType === ListType.Strings) {
     const casing = casingDropdown.value as Casing;
-    inputConfig = { ...inputConfigBase, casing, sort } as InputConfigString;
+    const newConfig: InputConfigString = {
+      type: 'InputConfigString',
+      ...inputConfigBase,
+      url: selectedOption.dataset.url,
+      casing,
+      sort,
+    };
+    inputConfig = newConfig;
   } else if (selectedOptionType === ListType.Numbers) {
-    const min = parseFloat(minNumberInput.value)
-    const max = parseFloat(maxNumberInput.value);
-    const decimals = parseFloat(precisionNumberInput.value);
-    inputConfig = { ...inputConfigBase, min, max, decimals, sort } as InputConfigNumber;
+    const newConfig: InputConfigNumber = {
+      type: 'InputConfigNumber',
+      ...inputConfigBase,
+      min: parseFloat(minNumberInput.value),
+      max: parseFloat(maxNumberInput.value),
+      decimals: parseFloat(precisionNumberInput.value),
+      sort,
+    };
+    inputConfig = newConfig;
   } else if (selectedOptionType === ListType.Dates) {
     // TODO
   }
 
   inputConfigs[inputConfigActiveIndex] = inputConfig;
 
-  console.log(`Saved ${JSON.stringify(inputConfig)} to index ${inputConfigActiveIndex}`);
-
-  updateExampleOutputLabel();
-};
-
-const updateExampleOutputLabel = () => {
-  exampleOutputLabel.innerHTML = inputConfigs.map(o => o.title).join(' ');
+  refreshExampleOutputLabel();
 };
 
 const createSettingsUrlElements = (urls: string[]) => {
@@ -356,7 +364,7 @@ const fetchListData = async (url: string, index: number): Promise<ListResponse> 
 
   try {
     const response = await fetchFromUrl(url);
-    const responseObj = JSON.parse(response.response);
+    const responseObj = JSON.parse(response.response) as ListResponse;
     const { lists } = responseObj;
     console.log(`Fetched ${lists.length} lists from ${url}`);
     if (response.error) throw response.error;
@@ -437,19 +445,25 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
   return selectedOption.dataset.type as ListType;
 };
 
+const refreshExampleOutputLabel = async () => {
+  const itemsSequence = await getItemsSequence(inputConfigs);
+  const text = itemsSequence.map(o => o[0]).join('');
+  exampleOutputLabel.innerHTML = text;
+};
+
 const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   const selectedNodeDropdownOption = getSelectedNodeDropdownOption();
   const nodeCount: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount);
+
+  console.log('Getting items:', inputConfig);
 
   const sort = inputConfig.sort;
 
   let items: string[] = [];
 
-  if (inputConfig.type === 'InputConfigString') {
-    const url = inputConfig.url;
-    console.log('Fetching:', url);
+  if (inputConfig.type === 'InputConfigString' && inputConfig.url.length > 0) {
     const casing = inputConfig.casing;
-    const response = await fetchFromUrl(url);
+    const response = await fetchFromUrl(inputConfig.url);
     items = linesFromStr(response.response);
     items = sorted(items, sort);
     items = items.map(o => cased(o, casing));
@@ -472,16 +486,18 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   return items;
 };
 
-confirmButton.onclick = async () => {
+const getItemsSequence = async (inputConfigs: InputConfig[]): Promise<string[][]> => {
   let itemsSequence: string[][] = [];
   for (let i = 0; i < inputConfigs.length; i++) {
     const inputConfig = inputConfigs[i];
     const items = await getItems(inputConfig);
     itemsSequence.push(items);
   }
+  return itemsSequence;
+};
 
-  console.log('items:', itemsSequence.map(o => o[0]).join(''));
-  return;
+confirmButton.onclick = async () => {
+  const itemsSequence = await getItemsSequence(inputConfigs);
 
   const message: WindowMessageConfirm = {
     type: "CONFIRM",

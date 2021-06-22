@@ -66,7 +66,7 @@ export const slugify = (text: string): string => {
 }
 
 export const linesFromStr = (str: string): string[] => {
-  return str.split('\n').filter(line => line.length > 0);
+  return str.split('\n').filter(line => line.length > 0).map(o => o.trim());
 }
 
 interface FetchResponse {
