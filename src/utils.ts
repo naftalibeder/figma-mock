@@ -1,4 +1,4 @@
-import { Sort } from "./enums";
+import { Casing, Sort } from "./enums";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
   min = min;
@@ -40,6 +40,25 @@ export const sorted = (items: string[], sort: Sort): string[] => {
   }
 }
 
+export const cased = (text: string, casing: Casing) => {
+  if (casing === Casing.Sentence) {
+    return sentenceCase(text);
+  } else if (casing === Casing.Title) {
+    return titleCase(text);
+  } else if (casing === Casing.Upper) {
+    return text.toUpperCase();
+  } else if (casing === Casing.Lower) {
+    return text.toLowerCase();
+  }
+};
+
+const sentenceCase = (text: string) => {
+  return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+const titleCase = (text: string) => {
+  return text.split(' ').map(word => sentenceCase(word)).join(' ');
+}
 export const slugify = (text: string): string => {
   return text.replaceAll(' ', '-').toLowerCase();
 }

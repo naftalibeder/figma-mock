@@ -1,6 +1,6 @@
 import { Casing, ListType, Sort } from "./enums";
 import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, InputConfig, InputNumberConfig, ListResponse, ListResponseList, InputStringConfig, TextNodeGroup, WindowMessage, WindowMessageConfirm } from "./types";
-import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr } from "./utils";
+import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr, cased } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 
@@ -25,6 +25,8 @@ const maxDateInput = document.getElementById('max-date-input') as HTMLInputEleme
 const formatDateInput = document.getElementById('format-date-input') as HTMLInputElement;
 
 const sortDropdown = document.getElementById('sort-dropdown') as HTMLInputElement;
+
+const exampleOutputLabel = document.getElementById('example-output-label');
 
 const settingsButton = document.getElementById('settings-button');
 const settingsOverlay = document.getElementById('settings-overlay');
@@ -256,6 +258,12 @@ const saveListPreferences = () => {
   inputConfigs[inputConfigActiveIndex] = inputConfig;
 
   console.log(`Saved ${JSON.stringify(inputConfig)} to index ${inputConfigActiveIndex}`);
+
+  updateExampleOutputLabel();
+};
+
+const updateExampleOutputLabel = () => {
+  exampleOutputLabel.innerHTML = inputConfigs.map(o => o.title).join(' ');
 };
 
 const createSettingsUrlElements = (urls: string[]) => {
@@ -424,7 +432,6 @@ confirmButton.onclick = async () => {
     type: 'confirm',
     items: [],
     groupingKey: selectedNodeDropdownOption.value,
-    casing,
   };
   let items: string[] = [];
 
@@ -433,6 +440,7 @@ confirmButton.onclick = async () => {
     const response = await fetchFromUrl(inputUrl);
     items = linesFromStr(response.response);
     items = sorted(items, sort);
+    items = items.map(o => cased(o, casing));
   } else if (inputType === ListType.Numbers) {
     for (let i = 0; i < nodeCount; i++) {
       items.push(`${randomNumberString(parseFloat(minNumberInput.value), parseFloat(maxNumberInput.value), parseFloat(precisionNumberInput.value))}`);

@@ -15,7 +15,7 @@ const refreshSelectedNodes = async () => {
 };
 
 const writeToNodes = (message: WindowMessageConfirm) => {
-  const { items, groupingKey, casing } = message;
+  const { items, groupingKey } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
@@ -25,12 +25,6 @@ const writeToNodes = (message: WindowMessageConfirm) => {
 
       const finalIndex = index % items.length;
       let text = items[finalIndex];
-
-      if (casing === Casing.Sentence) text = sentenceCase(text);
-      if (casing === Casing.Title) text = titleCase(text);
-      if (casing === Casing.Upper) text = text.toUpperCase();
-      if (casing === Casing.Lower) text = text.toLowerCase();
-
       textNode.characters = text;
     } else {
       console.log('Text node is missing a font and cannot be edited.')
@@ -111,11 +105,3 @@ figma.ui.onmessage = (message: WindowMessage) => {
 figma.on("selectionchange", () => {
   refreshSelectedNodes();
 });
-
-const sentenceCase = (text: string) => {
-  return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
-}
-
-const titleCase = (text: string) => {
-  return text.split(' ').map(word => sentenceCase(word)).join(' ');
-}

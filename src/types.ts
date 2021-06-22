@@ -79,7 +79,6 @@ export type WindowMessageInit = WindowMessage & {}
 export type WindowMessageConfirm = WindowMessage & {
   items: string[];
   groupingKey: string;
-  casing: Casing;
 }
 
 export type WindowMessageUrl = WindowMessage & {
