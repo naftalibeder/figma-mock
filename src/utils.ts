@@ -49,6 +49,8 @@ export const cased = (text: string, casing: Casing) => {
     return text.toUpperCase();
   } else if (casing === Casing.Lower) {
     return text.toLowerCase();
+  } else {
+    return text;
   }
 };
 

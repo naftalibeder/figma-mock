@@ -1,5 +1,5 @@
 import { Casing, ListType, Sort } from "./enums";
-import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, InputConfig, InputNumberConfig, ListResponse, ListResponseList, InputStringConfig, TextNodeGroup, WindowMessage, WindowMessageConfirm } from "./types";
+import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, InputConfig, InputConfigNumber, ListResponse, ListResponseList, InputConfigString, TextNodeGroup, WindowMessage, WindowMessageConfirm, InputConfigDate, InputConfigBase, WindowMessageInit, WindowMessageCancel } from "./types";
 import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr, cased } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
@@ -61,10 +61,11 @@ let inputConfigActiveIndex: number | null = null;
 
 onmessage = (event: MessageEvent<any>) => {
   const message = event.data.pluginMessage as CodeMessage;
-  const { type } = message;
 
-  if (type === 'init') {
-    const { url, nodeGroups } = message as CodeMessageInit;
+  console.log('Message:', message);
+
+  if (message.type === "INIT") {
+    const { url, nodeGroups } = message;
 
     let urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json'];
     if (url) urls.push(url);
@@ -82,9 +83,8 @@ onmessage = (event: MessageEvent<any>) => {
     [casingDropdown, minNumberInput, maxNumberInput, precisionNumberInput, sortDropdown].forEach(o => {
       o.oninput = saveListPreferences;
     });
-  } else if (type === 'nodes') {
-    const { nodeGroups } = message as CodeMessageGetNodes;
-
+  } else if (message.type === 'NODES') {
+    const { nodeGroups } = message;
     createNodeGroupElements(nodeGroups);
     confirmButton.disabled = nodeGroups.length === 0;
   }
@@ -129,18 +129,21 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
 }
 
 const onClickAddTagButton = () => {
-  const newConfig: InputConfig = {
+  const inputConfig: InputConfigString = {
+    type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
-    title: 'First Names',
-    listId: 'first-names', // TODO: Set initial list item?
-    confirmed: false,
+    title: '',
+    listId: '', // TODO: Set initial list item?
+    url: '',
+    casing: Casing.None,
+    sort: Sort.Random,
   };
-  inputConfigs.push(newConfig);
+  inputConfigs.push(inputConfig);
 
   const inputTag = document.createElement('button');
   inputTag.className = 'tag';
-  inputTag.innerHTML = newConfig.title;
-  inputTag.id = newConfig.id;
+  inputTag.innerHTML = inputConfig.title;
+  inputTag.id = inputConfig.id;
   inputTag.onfocus = () => onInputTagFocus(inputTag.id);
   tagsHolder.insertBefore(inputTag, tagsHolder.childNodes[tagsHolder.childNodes.length - 2])
   inputTag.focus();
@@ -180,11 +183,11 @@ const populateListPreferencesElement = () => {
   const selectedOptionType = getSelectedListDropdownOptionType();
 
   if (selectedOptionType === ListType.Strings) {
-    const config = activeInputConfig as InputStringConfig;
+    const config = activeInputConfig as InputConfigString;
     casingDropdown.value = config.casing ?? Casing.None;
     sortDropdown.value = config.sort ?? Sort.Random;
   } else if (selectedOptionType === ListType.Numbers) {
-    const config = activeInputConfig as InputNumberConfig;
+    const config = activeInputConfig as InputConfigNumber;
     minNumberInput.value = `${config.min ?? 0}`;
     maxNumberInput.value = `${config.max ?? 100}`;
     precisionNumberInput.value = `${config.decimals ?? 0}`;
@@ -209,15 +212,38 @@ const getFocusedInputTag = (): HTMLElement => {
 
 const saveListDropdownOption = () => {
   const selectedOption = getSelectedListDropdownOption();
+  const selectedOptionType = getSelectedListDropdownOptionType();
 
   if (!selectedOption) return;
 
-  let updatedConfig: InputConfig = {
-    ...inputConfigs[inputConfigActiveIndex],
-    title: selectedOption.innerHTML,
-    listId: selectedOption.id,
-  };
-  inputConfigs[inputConfigActiveIndex] = updatedConfig;
+  const configPrev = inputConfigs[inputConfigActiveIndex];
+
+  if (selectedOptionType === ListType.Strings) {
+    const config: InputConfigString = {
+      type: "InputConfigString",
+      id: configPrev.id,
+      title: selectedOption.innerHTML,
+      listId: selectedOption.id,
+      sort: configPrev.sort,
+      url: selectedOption.dataset.url,
+      casing: Casing.None,
+    }
+    inputConfigs[inputConfigActiveIndex] = config;
+  } else if (selectedOptionType === ListType.Numbers) {
+    const config: InputConfigNumber = {
+      type: "InputConfigNumber",
+      id: configPrev.id,
+      title: selectedOption.innerHTML,
+      listId: selectedOption.id,
+      sort: configPrev.sort,
+      min: 0,
+      max: 100,
+      decimals: 0,
+    }
+    inputConfigs[inputConfigActiveIndex] = config;
+  } else if (selectedOptionType === ListType.Dates) {
+    // TODO
+  }
 
   const focusedInputTag = getFocusedInputTag();
   focusedInputTag.innerHTML = selectedOption.innerHTML;
@@ -232,27 +258,25 @@ const saveListPreferences = () => {
   // @ts-ignore
   const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value as Sort;
 
-  let inputConfig: InputConfig = {
+  const inputConfigBase: InputConfigBase = {
     id: inputConfigs[inputConfigActiveIndex].id,
     title: selectedOption.innerHTML,
     listId: selectedOption.id,
-    confirmed: inputConfigs[inputConfigActiveIndex].confirmed,
+    sort: Sort.Random,
   };
+
+  let inputConfig: InputConfig;
 
   if (selectedOptionType === ListType.Strings) {
     const casing = casingDropdown.value as Casing;
-    const config: InputStringConfig = { ...inputConfig, casing, sort };
-    inputConfig = config;
+    inputConfig = { ...inputConfigBase, casing, sort } as InputConfigString;
   } else if (selectedOptionType === ListType.Numbers) {
     const min = parseFloat(minNumberInput.value)
     const max = parseFloat(maxNumberInput.value);
     const decimals = parseFloat(precisionNumberInput.value);
-    const config: InputNumberConfig = { ...inputConfig, min, max, decimals, sort };
-    inputConfig = config;
+    inputConfig = { ...inputConfigBase, min, max, decimals, sort } as InputConfigNumber;
   } else if (selectedOptionType === ListType.Dates) {
     // TODO
-    // const config: InputNumberConfig = { ...inputConfig,  };
-    // inputConfig = config;
   }
 
   inputConfigs[inputConfigActiveIndex] = inputConfig;
@@ -413,40 +437,28 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
   return selectedOption.dataset.type as ListType;
 };
 
-confirmButton.onclick = async () => {
+const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   const selectedNodeDropdownOption = getSelectedNodeDropdownOption();
-  const selectedListDropdownOption = getSelectedListDropdownOption();
-
-  // @ts-ignore
-  const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value as Sort;
-
-  const casing = casingDropdown.value as Casing;
-
-  const inputUrl = selectedListDropdownOption.dataset.url;
-  const inputType = selectedListDropdownOption.dataset.type as ListType;
   const nodeCount: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount);
 
-  console.log(`Selected ${selectedListDropdownOption.id}, type: ${inputType}, casing ${casing}, sort ${sort}, count ${nodeCount}`);
+  const sort = inputConfig.sort;
 
-  const message: WindowMessageConfirm = {
-    type: 'confirm',
-    items: [],
-    groupingKey: selectedNodeDropdownOption.value,
-  };
   let items: string[] = [];
 
-  if (inputType === ListType.Strings && inputUrl.length > 0) {
-    console.log('Fetching:', inputUrl);
-    const response = await fetchFromUrl(inputUrl);
+  if (inputConfig.type === 'InputConfigString') {
+    const url = inputConfig.url;
+    console.log('Fetching:', url);
+    const casing = inputConfig.casing;
+    const response = await fetchFromUrl(url);
     items = linesFromStr(response.response);
     items = sorted(items, sort);
     items = items.map(o => cased(o, casing));
-  } else if (inputType === ListType.Numbers) {
+  } else if (inputConfig.type === 'InputConfigNumber') {
     for (let i = 0; i < nodeCount; i++) {
       items.push(`${randomNumberString(parseFloat(minNumberInput.value), parseFloat(maxNumberInput.value), parseFloat(precisionNumberInput.value))}`);
     }
     items = sorted(items, sort);
-  } else if (inputType === ListType.Dates) {
+  } else if (inputConfig.type === 'InputConfigDate') {
     const minDate = new Date(minDateInput.value).getTime();
     const maxDate = new Date(maxDateInput.value).getTime();
     const format = formatDateInput.value;
@@ -457,12 +469,28 @@ confirmButton.onclick = async () => {
     items = sorted(items, sort);
   }
 
-  if (items.length > 0) {
-    message.items = items;
-    sendMessage(message);
+  return items;
+};
 
-    confirmButton.disabled = true;
+confirmButton.onclick = async () => {
+  let itemsSequence: string[][] = [];
+  for (let i = 0; i < inputConfigs.length; i++) {
+    const inputConfig = inputConfigs[i];
+    const items = await getItems(inputConfig);
+    itemsSequence.push(items);
   }
+
+  console.log('items:', itemsSequence.map(o => o[0]).join(''));
+  return;
+
+  const message: WindowMessageConfirm = {
+    type: "CONFIRM",
+    itemsSequence,
+    groupingKey: getSelectedNodeDropdownOption().value,
+  };
+
+  sendMessage(message);
+  confirmButton.disabled = true;
 };
 
 const sendMessage = (message: WindowMessage) => {
@@ -470,7 +498,8 @@ const sendMessage = (message: WindowMessage) => {
 };
 
 cancelButton.onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+  const message: WindowMessageCancel = { type: "CANCEL" };
+  sendMessage(message);
 };
 
 settingsButton.onclick = () => {
@@ -511,4 +540,5 @@ const clearSettingsUrlElements = () => {
   }
 }
 
-parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
+const message: WindowMessageInit = { type: 'INIT' };
+parent.postMessage({ pluginMessage: message }, '*');

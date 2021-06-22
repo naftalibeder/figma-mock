@@ -1,29 +1,32 @@
 import { Casing, ListType, Sort } from "./enums";
 
-export interface InputConfig {
+export interface InputConfigBase {
   id: string;
   title: string;
   listId: string;
-  confirmed: boolean;
-}
-
-export interface InputStringConfig extends InputConfig {
-  casing: Casing;
   sort: Sort;
 }
 
-export interface InputNumberConfig extends InputConfig {
+export type InputConfig = InputConfigString | InputConfigNumber | InputConfigDate;
+
+export interface InputConfigString extends InputConfigBase {
+  readonly type: "InputConfigString";
+  url: string;
+  casing: Casing;
+}
+
+export interface InputConfigNumber extends InputConfigBase {
+  readonly type: "InputConfigNumber";
   min: number;
   max: number;
   decimals: number;
-  sort: Sort;
 }
 
-export interface InputDateConfig extends InputConfig {
+export interface InputConfigDate extends InputConfigBase {
+  readonly type: "InputConfigDate";
   earliest: Date;
   latest: Date;
   format: string;
-  sort: Sort;
 }
 
 export interface ListResponse {
@@ -57,30 +60,40 @@ export class TextNodeGroup {
   }
 }
 
-export type CodeMessage = {
-  type: 'init' | 'nodes';
-}
+export type CodeMessage = CodeMessageInit | CodeMessageGetNodes;
 
-export type CodeMessageInit = CodeMessage & {
+export type CodeMessageInit = {
+  readonly type: "INIT";
   url: string;
   nodeGroups: TextNodeGroup[];
 }
 
-export type CodeMessageGetNodes = CodeMessage & {
+export type CodeMessageGetNodes = {
+  readonly type: "NODES";
   nodeGroups: TextNodeGroup[];
 }
 
-export type WindowMessage = {
-  type: 'init' | 'get-nodes' | 'confirm' | 'save-url';
+export type WindowMessage = WindowMessageInit | WindowMessageConfirm | WindowMessageGetNodes | WindowMessageUrl | WindowMessageCancel;
+
+export type WindowMessageInit = {
+  readonly type: "INIT";
 }
 
-export type WindowMessageInit = WindowMessage & {}
-
-export type WindowMessageConfirm = WindowMessage & {
-  items: string[];
+export type WindowMessageConfirm = {
+  readonly type: "CONFIRM";
+  itemsSequence: string[][];
   groupingKey: string;
 }
 
-export type WindowMessageUrl = WindowMessage & {
+export type WindowMessageGetNodes = {
+  readonly type: "GET_NODES";
+}
+
+export type WindowMessageUrl = {
+  readonly type: "URL";
   url: string;
+}
+
+export type WindowMessageCancel = {
+  readonly type: "CANCEL";
 }

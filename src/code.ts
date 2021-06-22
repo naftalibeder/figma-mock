@@ -1,21 +1,22 @@
-import { Casing } from "./enums";
-import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessageInit, WindowMessage } from "./types";
+import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessage, CodeMessageInit, CodeMessageGetNodes } from "./types";
 
 figma.showUI(__html__, { width: 350, height: 570 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();
   const url = await getUrl();
-  figma.ui.postMessage({ type: 'init', nodeGroups, url });
+  const message: CodeMessageInit = { type: 'INIT', nodeGroups, url };
+  figma.ui.postMessage(message);
 };
 
 const refreshSelectedNodes = async () => {
   const nodeGroups = getTextNodeGroups();
-  figma.ui.postMessage({ type: 'nodes', nodeGroups });
+  const message: CodeMessageGetNodes = { type: 'NODES', nodeGroups };
+  figma.ui.postMessage(message);
 };
 
 const writeToNodes = (message: WindowMessageConfirm) => {
-  const { items, groupingKey } = message;
+  const { itemsSequence, groupingKey } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
 
@@ -23,8 +24,11 @@ const writeToNodes = (message: WindowMessageConfirm) => {
     if (!textNode.hasMissingFont) {
       await figma.loadFontAsync(textNode.fontName as FontName);
 
-      const finalIndex = index % items.length;
-      let text = items[finalIndex];
+      let text = "";
+      itemsSequence.forEach(items => {
+        const finalIndex = index % items.length;
+        text += items[finalIndex];
+      });
       textNode.characters = text;
     } else {
       console.log('Text node is missing a font and cannot be edited.')
@@ -89,15 +93,17 @@ const saveUrl = async (message: WindowMessageUrl) => {
 }
 
 figma.ui.onmessage = (message: WindowMessage) => {
-  if (message.type === 'init') {
+  const { type } = message;
+
+  if (type === 'INIT') {
     refreshEverything();
-  } else if (message.type === 'get-nodes') {
+  } else if (type === 'GET_NODES') {
     refreshSelectedNodes();
-  } else if (message.type === 'save-url') {
+  } else if (type === 'URL') {
     saveUrl(message as WindowMessageUrl);
-  } else if (message.type === 'confirm') {
+  } else if (type === 'CONFIRM') {
     writeToNodes(message as WindowMessageConfirm);
-  } else if (message.type === 'cancel') {
+  } else if (type === 'CANCEL') {
     figma.closePlugin();
   }
 };
