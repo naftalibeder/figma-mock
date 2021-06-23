@@ -7,11 +7,11 @@
     padding-right: 8px;
   }
   h2 {
-    font-size: 12;
+    font-size: 11;
     padding-top: 8px;
   }
   p, div, input, label, textarea {
-    font-size: 11;
+    font-size: 10;
   }
   p.error {
     color: rgb(218, 80, 103);
@@ -56,6 +56,22 @@
     font-size: 11;
     border-width: 0;
     white-space: nowrap;
+  }
+  button.tag.spacer {
+    min-width: 0;
+    width: 6px;
+    padding: 0px;
+    background-color: transparent;
+  }
+  button.tag.spacer.plus {
+    min-width: 0;
+    width: 24px;
+    padding: 0px;
+    margin-left: 8px;
+    background-color: lightgray;
+  }
+  button.tag.spacer:hover {
+    background-color: rgb(168, 168, 168);
   }
   button.tag.selected {
     background-color: rgb(63, 155, 132);
@@ -170,8 +186,10 @@
     display: flex;
     align-items: center;
     min-height: 32px;
-    padding: 8px;
-    gap: 8px;
+    padding: 2px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    gap: 0px;
     border-radius: 2px;
     border-style: solid;
     border-width: 1px;
@@ -183,13 +201,16 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 1px;
     margin-right: 36px;
   }
   .gray-box {
     padding: 8px;
     border-radius: 2px;
     background-color: rgb(243, 243, 243);
+  }
+  .gray-box.disabled {
+    color: rgb(117, 117, 117);
   }
 </style>
 
@@ -200,11 +221,12 @@
     <select id="nodes-dropdown"></select>
 
     <h2>Output</h2>
+    <p>Add one or more tags to create a text string.</p>
     <div id="input-tags-field">
       <div id="input-tags-list">
-        <button id="input-add-button" class="tag">+</button>
       </div>
     </div>
+
     <div id="input-config-holder" class="gray-box margin-above">
       <p>Type of data <button id="settings-button" class='link'>Edit lists</button></p>
       <select id="input-lists-dropdown"></select>
@@ -212,7 +234,7 @@
       <div id='options-section-strings' class="margin-above">
         <p>Capitalization</p>
         <select id="casing-dropdown" value="none">
-          <option value="none">Use original</option>
+          <option value="original">Use original</option>
           <option value="sentence">Sentence case</option>
           <option value="title">Title case</option>
           <option value="upper">Upper case</option>
@@ -255,14 +277,16 @@
 
       <p>Order</p>
       <select id="sort-dropdown" value="random">
-        <option value="random" selected="true">Random</option>
+        <option value="original" selected="true">Original</option>
+        <option value="random">Random</option>
         <option value="ascending">Ascending</option>
         <option value="descending">Descending</option>
       </select>
     </div>
 
     <h2>Example</h2>
-    <div id="example-output-label" class="gray-box margin-above">Nothing selected</div>
+    <p>Similar text will be pasted into each selected field.</p>
+    <div id="example-output-label" class="gray-box margin-above"></div>
   </div>
 
   <br>

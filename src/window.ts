@@ -1,11 +1,10 @@
 import { Casing, ListType, Sort } from "./enums";
-import { CodeMessage, CodeMessageGetNodes, CodeMessageInit, InputConfig, InputConfigNumber, ListResponse, ListResponseList, InputConfigString, TextNodeGroup, WindowMessage, WindowMessageConfirm, InputConfigDate, InputConfigBase, WindowMessageInit, WindowMessageCancel } from "./types";
+import { CodeMessage, InputConfig, InputConfigNumber, ListResponse, ListResponseList, InputConfigString, TextNodeGroup, WindowMessage, WindowMessageConfirm, InputConfigBase, WindowMessageInit, WindowMessageCancel } from "./types";
 import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr, cased } from "./utils";
 
 const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
 
 const tagsHolder = document.getElementById('input-tags-list');
-const addTagButton = document.getElementById('input-add-button');
 const listPreferencesHolder = document.getElementById('input-config-holder');
 
 const listDropdown = document.getElementById('input-lists-dropdown') as HTMLInputElement;
@@ -75,6 +74,8 @@ onmessage = (event: MessageEvent<any>) => {
     createNodeGroupElements(nodeGroups);
     confirmButton.disabled = nodeGroups.length === 0;
 
+    createInputTagElements();
+
     fetchAndCreateListElements(urls);
 
     listDropdown.onchange = onListDropdownChange;
@@ -83,6 +84,8 @@ onmessage = (event: MessageEvent<any>) => {
     [casingDropdown, minNumberInput, maxNumberInput, precisionNumberInput, sortDropdown].forEach(o => {
       o.oninput = saveListPreferences;
     });
+
+    refreshExampleOutputLabel();
   } else if (message.type === 'NODES') {
     const { nodeGroups } = message;
     createNodeGroupElements(nodeGroups);
@@ -128,7 +131,26 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
   }
 }
 
-const onClickAddTagButton = () => {
+const createInputTagElements = () => {
+  const tagSpacer = document.createElement('button');
+  tagSpacer.dataset.kind = 'spacer';
+  tagSpacer.onfocus = () => addInputConfigAndTag();
+  tagsHolder.appendChild(tagSpacer);
+
+  updateTagElementsAppearance();
+};
+
+const onInputTagFocus = (id: string) => {
+  inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
+  updateTagElementsAppearance();
+  populateListPreferencesElement();
+};
+
+const onInputSpacerFocus = (siblingConfigId: string) => {
+  addInputConfigAndTag(siblingConfigId);
+};
+
+const addInputConfigAndTag = (beforeInputConfigId?: string) => {
   const inputConfig: InputConfigString = {
     type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
@@ -138,33 +160,35 @@ const onClickAddTagButton = () => {
     casing: Casing.Original,
     sort: Sort.Random,
   };
+  // TODO: Insert before `beforeInputConfigId`.
   inputConfigs.push(inputConfig);
 
   const inputTag = document.createElement('button');
-  inputTag.className = 'tag';
+  inputTag.dataset.kind = 'tag';
   inputTag.innerHTML = inputConfig.title;
   inputTag.id = inputConfig.id;
   inputTag.onfocus = () => onInputTagFocus(inputTag.id);
-  tagsHolder.insertBefore(inputTag, tagsHolder.childNodes[tagsHolder.childNodes.length - 2])
+  tagsHolder.insertBefore(inputTag, tagsHolder.childNodes[tagsHolder.childNodes.length - 1])
   inputTag.focus();
+
+  const tagSpacer = document.createElement('button');
+  tagSpacer.dataset.kind = 'spacer';
+  tagSpacer.onfocus = () => onInputSpacerFocus(inputConfig.id);
+  tagsHolder.insertBefore(tagSpacer, tagsHolder.childNodes[tagsHolder.childNodes.length - 2])
+
+  updateTagElementsAppearance();
 };
 
-addTagButton.onclick = onClickAddTagButton;
-
-const onInputTagFocus = (id: string) => {
-  inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
-  updateTagElements();
-  populateListPreferencesElement();
-
-  console.log('-------');
-  inputConfigs.forEach(o => console.log(JSON.stringify(o)));
-}
-
-const updateTagElements = () => {
-  // @ts-ignore
-  const editableTags = [...tagsHolder.childNodes].slice(0, tagsHolder.childNodes.length - 2);
-  editableTags.forEach((tag: HTMLElement) => {
-    tag.className = tag.id === getActiveInputConfig().id ? "tag selected" : "tag";
+const updateTagElementsAppearance = () => {
+  tagsHolder.childNodes.forEach((tag: HTMLElement, index: number) => {
+    if (tag.dataset?.kind === 'tag') {
+      const tagIsActive = tag.id === getActiveInputConfig().id;
+      tag.className = tagIsActive ? "tag selected" : "tag";
+    } else if (tag.dataset?.kind === 'spacer') {
+      const isLast = index === tagsHolder.childNodes.length - 1;
+      tag.className = isLast ? 'tag spacer plus' : 'tag spacer'
+      tag.innerHTML = isLast ? '+' : '';
+    }
   });
 };
 
@@ -206,8 +230,7 @@ const getActiveInputConfig = (): InputConfig | null => {
 
 const getFocusedInputTag = (): HTMLElement => {
   // @ts-ignore
-  const editableTags = [...tagsHolder.childNodes].slice(0, tagsHolder.childNodes.length - 2);
-  return editableTags.filter(o => o.id === getActiveInputConfig().id)[0];
+  return [...tagsHolder.childNodes].filter(o => o.id === getActiveInputConfig().id)[0];
 };
 
 const saveListDropdownOption = () => {
@@ -226,7 +249,7 @@ const saveListDropdownOption = () => {
       listId: selectedOption.id,
       sort: configPrev.sort,
       url: selectedOption.dataset.url,
-      casing: Casing.Original,
+      casing: configPrev.type === 'InputConfigString' ? configPrev.casing : Casing.Original,
     }
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Numbers) {
@@ -236,9 +259,9 @@ const saveListDropdownOption = () => {
       title: selectedOption.innerHTML,
       listId: selectedOption.id,
       sort: configPrev.sort,
-      min: 0,
-      max: 100,
-      decimals: 0,
+      min: configPrev.type === 'InputConfigNumber' ? configPrev.min : 0,
+      max: configPrev.type === 'InputConfigNumber' ? configPrev.max : 100,
+      decimals: configPrev.type === 'InputConfigNumber' ? configPrev.decimals : 0,
     }
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Dates) {
@@ -448,14 +471,26 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
 const refreshExampleOutputLabel = async () => {
   const itemsSequence = await getItemsSequence(inputConfigs);
   const text = itemsSequence.map(o => o[0]).join('');
-  exampleOutputLabel.innerHTML = text;
+  console.log('items:', itemsSequence.length);
+  exampleOutputLabel.innerHTML = text.length > 0 ? text : 'No selection';
+  exampleOutputLabel.className = text.length > 0 ? 'gray-box' : 'gray-box disabled'
+};
+
+const getItemsSequence = async (inputConfigs: InputConfig[]): Promise<string[][]> => {
+  console.log('Getting items sequence:', inputConfigs);
+
+  let itemsSequence: string[][] = [];
+  for (let i = 0; i < inputConfigs.length; i++) {
+    const inputConfig = inputConfigs[i];
+    const items = await getItems(inputConfig);
+    itemsSequence.push(items);
+  }
+  return itemsSequence;
 };
 
 const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   const selectedNodeDropdownOption = getSelectedNodeDropdownOption();
-  const nodeCount: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount);
-
-  console.log('Getting items:', inputConfig);
+  const nodeCountOr1: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount ?? '1');
 
   const sort = inputConfig.sort;
 
@@ -468,15 +503,20 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
     items = sorted(items, sort);
     items = items.map(o => cased(o, casing));
   } else if (inputConfig.type === 'InputConfigNumber') {
-    for (let i = 0; i < nodeCount; i++) {
-      items.push(`${randomNumberString(parseFloat(minNumberInput.value), parseFloat(maxNumberInput.value), parseFloat(precisionNumberInput.value))}`);
+    for (let i = 0; i < nodeCountOr1; i++) {
+      const rand = randomNumberString(
+        parseFloat(minNumberInput.value),
+        parseFloat(maxNumberInput.value),
+        parseFloat(precisionNumberInput.value),
+      );
+      items.push(rand);
     }
     items = sorted(items, sort);
   } else if (inputConfig.type === 'InputConfigDate') {
     const minDate = new Date(minDateInput.value).getTime();
     const maxDate = new Date(maxDateInput.value).getTime();
     const format = formatDateInput.value;
-    for (let i = 0; i < nodeCount; i++) {
+    for (let i = 0; i < nodeCountOr1; i++) {
       items.push(`${randomDateString(minDate, maxDate, format)}`);
     }
     // TODO: Order dates _before_ stringifying.
@@ -484,16 +524,6 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   }
 
   return items;
-};
-
-const getItemsSequence = async (inputConfigs: InputConfig[]): Promise<string[][]> => {
-  let itemsSequence: string[][] = [];
-  for (let i = 0; i < inputConfigs.length; i++) {
-    const inputConfig = inputConfigs[i];
-    const items = await getItems(inputConfig);
-    itemsSequence.push(items);
-  }
-  return itemsSequence;
 };
 
 confirmButton.onclick = async () => {
