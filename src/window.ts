@@ -129,7 +129,7 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
 
     nodesDropdown.disabled = false;
   }
-}
+};
 
 const onInputTagFocus = (id: string) => {
   inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
