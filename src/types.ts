@@ -5,6 +5,7 @@ export interface InputConfigBase {
   title: string;
   listId: string;
   sort: Sort;
+  confirmed: boolean;
 }
 
 export type InputConfig = InputConfigString | InputConfigNumber | InputConfigDate;

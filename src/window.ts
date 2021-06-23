@@ -133,7 +133,7 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
 
 const onInputTagFocus = (id: string) => {
   inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
-  updateTagElementsAppearance();
+  updateTagElementsSelectedAppearance();
   populateListPreferencesElement();
 };
 
@@ -142,10 +142,11 @@ const addInputConfig = (beforeInputConfigId?: string) => {
     type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
     title: '',
-    listId: '', // TODO: Set initial list item?
+    listId: '',
     url: '',
     casing: Casing.Original,
     sort: Sort.Random,
+    confirmed: false,
   };
   const configIndex = beforeInputConfigId
     ? inputConfigs.findIndex(o => o.id === beforeInputConfigId)
@@ -162,41 +163,41 @@ const refreshInputTagElements = () => {
     tagsHolder.removeChild(tagsHolder.firstChild);
   }
 
-  inputConfigs.forEach(o => {
+  inputConfigs.forEach(config => {
     const spacer = document.createElement('button');
     spacer.dataset.kind = 'spacer';
-    spacer.onfocus = () => addInputConfig(o.id);
+    spacer.className = 'tag spacer';
+    spacer.onfocus = () => addInputConfig(config.id);
     tagsHolder.appendChild(spacer);
 
     const tag = document.createElement('button');
     tag.dataset.kind = 'tag';
-    tag.innerHTML = o.title;
-    tag.id = o.id;
+    tag.className = 'tag';
+    tag.innerHTML = config.title;
+    tag.id = config.id;
     tag.onfocus = () => onInputTagFocus(tag.id);
     tagsHolder.appendChild(tag);
+
+    if (tag.id === getActiveInputConfig()?.id) {
+      tag.focus();
+    }
   });
 
   const addButton = document.createElement('button');
   addButton.dataset.kind = 'spacer';
+  addButton.className = 'tag spacer plus';
+  addButton.innerHTML = '+';
   addButton.onfocus = () => addInputConfig();
   tagsHolder.appendChild(addButton);
 
-  updateTagElementsAppearance();
+  updateTagElementsSelectedAppearance();
 };
 
-const updateTagElementsAppearance = () => {
+const updateTagElementsSelectedAppearance = () => {
   tagsHolder.childNodes.forEach((tag: HTMLElement, index: number) => {
     if (tag.dataset?.kind === 'tag') {
       const tagIsActive = tag.id === getActiveInputConfig().id;
       tag.className = tagIsActive ? "tag selected" : "tag";
-    } else if (tag.dataset?.kind === 'spacer') {
-      const isLast = index === tagsHolder.childNodes.length - 1;
-      tag.className = isLast ? 'tag spacer plus' : 'tag spacer'
-      tag.innerHTML = isLast ? '+' : '';
-    }
-
-    if (tag.id === getActiveInputConfig()?.id) {
-      tag.focus();
     }
   });
 };
@@ -259,6 +260,7 @@ const saveListDropdownOption = () => {
       sort: configPrev.sort,
       url: selectedOption.dataset.url,
       casing: configPrev.type === 'InputConfigString' ? configPrev.casing : Casing.Original,
+      confirmed: true,
     }
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Numbers) {
@@ -271,6 +273,7 @@ const saveListDropdownOption = () => {
       min: configPrev.type === 'InputConfigNumber' ? configPrev.min : 0,
       max: configPrev.type === 'InputConfigNumber' ? configPrev.max : 100,
       decimals: configPrev.type === 'InputConfigNumber' ? configPrev.decimals : 0,
+      confirmed: true,
     }
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Dates) {
@@ -297,6 +300,7 @@ const saveListPreferences = () => {
     title: selectedOption.innerHTML,
     listId: selectedOption.id,
     sort: Sort.Random,
+    confirmed: true,
   };
 
   let inputConfig: InputConfig;
