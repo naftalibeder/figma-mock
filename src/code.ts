@@ -1,6 +1,6 @@
 import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessage, CodeMessageInit, CodeMessageGetNodes } from "./types";
 
-figma.showUI(__html__, { width: 360, height: 590 });
+figma.showUI(__html__, { width: 360, height: 600 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();

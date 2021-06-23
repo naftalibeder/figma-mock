@@ -74,7 +74,7 @@ onmessage = (event: MessageEvent<any>) => {
     createNodeGroupElements(nodeGroups);
     confirmButton.disabled = nodeGroups.length === 0;
 
-    createInputTagElements();
+    refreshInputTagElements();
 
     fetchAndCreateListElements(urls);
 
@@ -131,26 +131,13 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
   }
 }
 
-const createInputTagElements = () => {
-  const tagSpacer = document.createElement('button');
-  tagSpacer.dataset.kind = 'spacer';
-  tagSpacer.onfocus = () => addInputConfigAndTag();
-  tagsHolder.appendChild(tagSpacer);
-
-  updateTagElementsAppearance();
-};
-
 const onInputTagFocus = (id: string) => {
   inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
   updateTagElementsAppearance();
   populateListPreferencesElement();
 };
 
-const onInputSpacerFocus = (siblingConfigId: string) => {
-  addInputConfigAndTag(siblingConfigId);
-};
-
-const addInputConfigAndTag = (beforeInputConfigId?: string) => {
+const addInputConfig = (beforeInputConfigId?: string) => {
   const inputConfig: InputConfigString = {
     type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
@@ -160,21 +147,39 @@ const addInputConfigAndTag = (beforeInputConfigId?: string) => {
     casing: Casing.Original,
     sort: Sort.Random,
   };
-  // TODO: Insert before `beforeInputConfigId`.
-  inputConfigs.push(inputConfig);
+  const configIndex = beforeInputConfigId
+    ? inputConfigs.findIndex(o => o.id === beforeInputConfigId)
+    : inputConfigs.length;
+  inputConfigs.splice(configIndex, 0, inputConfig);
 
-  const inputTag = document.createElement('button');
-  inputTag.dataset.kind = 'tag';
-  inputTag.innerHTML = inputConfig.title;
-  inputTag.id = inputConfig.id;
-  inputTag.onfocus = () => onInputTagFocus(inputTag.id);
-  tagsHolder.insertBefore(inputTag, tagsHolder.childNodes[tagsHolder.childNodes.length - 1])
-  inputTag.focus();
+  inputConfigActiveIndex = configIndex;
 
-  const tagSpacer = document.createElement('button');
-  tagSpacer.dataset.kind = 'spacer';
-  tagSpacer.onfocus = () => onInputSpacerFocus(inputConfig.id);
-  tagsHolder.insertBefore(tagSpacer, tagsHolder.childNodes[tagsHolder.childNodes.length - 2])
+  refreshInputTagElements();
+};
+
+const refreshInputTagElements = () => {
+  while (tagsHolder.firstChild) {
+    tagsHolder.removeChild(tagsHolder.firstChild);
+  }
+
+  inputConfigs.forEach(o => {
+    const spacer = document.createElement('button');
+    spacer.dataset.kind = 'spacer';
+    spacer.onfocus = () => addInputConfig(o.id);
+    tagsHolder.appendChild(spacer);
+
+    const tag = document.createElement('button');
+    tag.dataset.kind = 'tag';
+    tag.innerHTML = o.title;
+    tag.id = o.id;
+    tag.onfocus = () => onInputTagFocus(tag.id);
+    tagsHolder.appendChild(tag);
+  });
+
+  const addButton = document.createElement('button');
+  addButton.dataset.kind = 'spacer';
+  addButton.onfocus = () => addInputConfig();
+  tagsHolder.appendChild(addButton);
 
   updateTagElementsAppearance();
 };
@@ -188,6 +193,10 @@ const updateTagElementsAppearance = () => {
       const isLast = index === tagsHolder.childNodes.length - 1;
       tag.className = isLast ? 'tag spacer plus' : 'tag spacer'
       tag.innerHTML = isLast ? '+' : '';
+    }
+
+    if (tag.id === getActiveInputConfig()?.id) {
+      tag.focus();
     }
   });
 };
