@@ -45,8 +45,8 @@ export interface ListResponseList {
 }
 
 export interface TextNodeInfo {
-  id: string,
-  characters: string,
+  id: string;
+  characters: string;
 }
 
 export class TextNodeGroup {
@@ -67,34 +67,39 @@ export type CodeMessageInit = {
   readonly type: "INIT";
   url: string;
   nodeGroups: TextNodeGroup[];
-}
+};
 
 export type CodeMessageGetNodes = {
   readonly type: "NODES";
   nodeGroups: TextNodeGroup[];
-}
+};
 
-export type WindowMessage = WindowMessageInit | WindowMessageConfirm | WindowMessageGetNodes | WindowMessageUrl | WindowMessageCancel;
+export type WindowMessage =
+  | WindowMessageInit
+  | WindowMessageConfirm
+  | WindowMessageGetNodes
+  | WindowMessageUrl
+  | WindowMessageCancel;
 
 export type WindowMessageInit = {
   readonly type: "INIT";
-}
+};
 
 export type WindowMessageConfirm = {
   readonly type: "CONFIRM";
   itemsSequence: string[][];
   groupingKey: string;
-}
+};
 
 export type WindowMessageGetNodes = {
   readonly type: "GET_NODES";
-}
+};
 
 export type WindowMessageUrl = {
   readonly type: "URL";
   url: string;
-}
+};
 
 export type WindowMessageCancel = {
   readonly type: "CANCEL";
-}
+};

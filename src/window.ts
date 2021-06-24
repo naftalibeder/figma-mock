@@ -1,41 +1,62 @@
 import { Casing, ListType, Sort } from "./enums";
-import { CodeMessage, InputConfig, InputConfigNumber, ListResponse, ListResponseList, InputConfigString, TextNodeGroup, WindowMessage, WindowMessageConfirm, InputConfigBase, WindowMessageInit, WindowMessageCancel } from "./types";
-import { sorted, randomNumberString, randomDateString, slugify, fetchFromUrl, linesFromStr, cased } from "./utils";
+import {
+  CodeMessage,
+  InputConfig,
+  InputConfigNumber,
+  ListResponse,
+  ListResponseList,
+  InputConfigString,
+  TextNodeGroup,
+  WindowMessage,
+  WindowMessageConfirm,
+  InputConfigBase,
+  WindowMessageInit,
+  WindowMessageCancel,
+} from "./types";
+import {
+  sorted,
+  randomNumberString,
+  randomDateString,
+  slugify,
+  fetchFromUrl,
+  linesFromStr,
+  cased,
+} from "./utils";
 
-const nodesDropdown = document.getElementById('nodes-dropdown') as HTMLInputElement;
+const nodesDropdown = document.getElementById("nodes-dropdown") as HTMLInputElement;
 
-const tagsHolder = document.getElementById('input-tags-list');
-const listPreferencesHolder = document.getElementById('input-config-holder');
+const tagsHolder = document.getElementById("input-tags-list");
+const listPreferencesHolder = document.getElementById("input-config-holder");
 
-const listDropdown = document.getElementById('input-lists-dropdown') as HTMLInputElement;
+const listDropdown = document.getElementById("input-lists-dropdown") as HTMLInputElement;
 
-const optionsSectionStrings = document.getElementById('options-section-strings');
-const optionsSectionNumbers = document.getElementById('options-section-numbers');
-const optionsSectionDates = document.getElementById('options-section-dates');
+const optionsSectionStrings = document.getElementById("options-section-strings");
+const optionsSectionNumbers = document.getElementById("options-section-numbers");
+const optionsSectionDates = document.getElementById("options-section-dates");
 
-const casingDropdown = document.getElementById('casing-dropdown') as HTMLInputElement;
+const casingDropdown = document.getElementById("casing-dropdown") as HTMLInputElement;
 
-const minNumberInput = document.getElementById('min-number-input') as HTMLInputElement;
-const maxNumberInput = document.getElementById('max-number-input') as HTMLInputElement;
-const precisionNumberInput = document.getElementById('precision-number-input') as HTMLInputElement;
+const minNumberInput = document.getElementById("min-number-input") as HTMLInputElement;
+const maxNumberInput = document.getElementById("max-number-input") as HTMLInputElement;
+const precisionNumberInput = document.getElementById("precision-number-input") as HTMLInputElement;
 
-const minDateInput = document.getElementById('min-date-input') as HTMLInputElement;
-const maxDateInput = document.getElementById('max-date-input') as HTMLInputElement;
-const formatDateInput = document.getElementById('format-date-input') as HTMLInputElement;
+const minDateInput = document.getElementById("min-date-input") as HTMLInputElement;
+const maxDateInput = document.getElementById("max-date-input") as HTMLInputElement;
+const formatDateInput = document.getElementById("format-date-input") as HTMLInputElement;
 
-const sortDropdown = document.getElementById('sort-dropdown') as HTMLInputElement;
+const sortDropdown = document.getElementById("sort-dropdown") as HTMLInputElement;
 
-const exampleOutputLabel = document.getElementById('example-output-label');
+const exampleOutputLabel = document.getElementById("example-output-label");
 
-const settingsButton = document.getElementById('settings-button');
-const settingsOverlay = document.getElementById('settings-overlay');
-const settingsUrlsList = document.getElementById('settings-urls-list');
-const settingsErrorLabel = document.getElementById('settings-error-label');
-const settingsIndexCodeExample = document.getElementById('settings-index-code-example');
-const settingsBackButton = document.getElementById('settings-back-button');
+const settingsButton = document.getElementById("settings-button");
+const settingsOverlay = document.getElementById("settings-overlay");
+const settingsUrlsList = document.getElementById("settings-urls-list");
+const settingsErrorLabel = document.getElementById("settings-error-label");
+const settingsIndexCodeExample = document.getElementById("settings-index-code-example");
+const settingsBackButton = document.getElementById("settings-back-button");
 
-const confirmButton = document.getElementById('confirm-button') as HTMLInputElement;
-const cancelButton = document.getElementById('cancel-button') as HTMLInputElement;
+const confirmButton = document.getElementById("confirm-button") as HTMLInputElement;
+const cancelButton = document.getElementById("cancel-button") as HTMLInputElement;
 
 listPreferencesHolder.hidden = true;
 settingsOverlay.hidden = true;
@@ -62,12 +83,14 @@ let nodeGroupsAreEmpty = true;
 onmessage = (event: MessageEvent<any>) => {
   const message = event.data.pluginMessage as CodeMessage;
 
-  console.log('Message:', message);
+  console.log("Message:", message);
 
   if (message.type === "INIT") {
     const { url, nodeGroups } = message;
 
-    let urls = ['https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json'];
+    let urls = [
+      "https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json",
+    ];
     if (url) urls.push(url);
 
     createSettingsUrlElements(urls);
@@ -83,12 +106,14 @@ onmessage = (event: MessageEvent<any>) => {
     listDropdown.onchange = onListDropdownChange;
     onListDropdownChange();
 
-    [casingDropdown, minNumberInput, maxNumberInput, precisionNumberInput, sortDropdown].forEach(o => {
-      o.oninput = saveListPreferences;
-    });
+    [casingDropdown, minNumberInput, maxNumberInput, precisionNumberInput, sortDropdown].forEach(
+      (o) => {
+        o.oninput = saveListPreferences;
+      }
+    );
 
     refreshExampleOutputLabel();
-  } else if (message.type === 'NODES') {
+  } else if (message.type === "NODES") {
     const { nodeGroups } = message;
 
     nodeGroupsAreEmpty = nodeGroups.length === 0;
@@ -98,8 +123,8 @@ onmessage = (event: MessageEvent<any>) => {
 };
 
 const createEmptyNodeGroupElement = () => {
-  const nodeOption = document.createElement('option');
-  nodeOption.innerHTML = 'No items selected';
+  const nodeOption = document.createElement("option");
+  nodeOption.innerHTML = "No items selected";
   nodesDropdown.appendChild(nodeOption);
 };
 
@@ -112,18 +137,21 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
   } else {
     nodeGroups.forEach((nodeGroup, i) => {
       const nodes = Object.values(nodeGroup.nodesMap);
-      const nodeGroupTexts = [...new Set(nodes.map(o => o.characters))];
+      const nodeGroupTexts = [...new Set(nodes.map((o) => o.characters))];
       const fieldCountDisplay = `(${nodes.length} fields)`;
       const multipleTextValues = nodeGroupTexts.length > 1;
 
-      let nodesDisplayText = '';
+      let nodesDisplayText = "";
       if (multipleTextValues) {
-        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 12)}, ${nodeGroupTexts[1].slice(0, 12)}, ... ${fieldCountDisplay}`;
+        nodesDisplayText = `${nodeGroupTexts[0].slice(0, 12)}, ${nodeGroupTexts[1].slice(
+          0,
+          12
+        )}, ... ${fieldCountDisplay}`;
       } else {
         nodesDisplayText = `${nodeGroupTexts[0].slice(0, 30)} ${fieldCountDisplay}`;
       }
 
-      const nodeOption = document.createElement('option');
+      const nodeOption = document.createElement("option");
       nodeOption.value = nodeGroup.key;
       nodeOption.innerHTML = nodesDisplayText;
       nodeOption.dataset.nodeCount = `${nodeGroup.count}`;
@@ -136,7 +164,7 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
 };
 
 const onInputTagFocus = (id: string) => {
-  inputConfigActiveIndex = inputConfigs.findIndex(o => o.id === id);
+  inputConfigActiveIndex = inputConfigs.findIndex((o) => o.id === id);
   updateTagElementsSelectedAppearance();
   populateListPreferencesElement();
 };
@@ -145,15 +173,15 @@ const addInputConfig = (beforeInputConfigId?: string) => {
   const inputConfig: InputConfigString = {
     type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
-    title: '',
-    listId: '',
-    url: '',
+    title: "",
+    listId: "",
+    url: "",
     casing: Casing.Original,
     sort: Sort.Random,
     confirmed: false,
   };
   const configIndex = beforeInputConfigId
-    ? inputConfigs.findIndex(o => o.id === beforeInputConfigId)
+    ? inputConfigs.findIndex((o) => o.id === beforeInputConfigId)
     : inputConfigs.length;
   inputConfigs.splice(configIndex, 0, inputConfig);
 
@@ -167,16 +195,16 @@ const refreshInputTagElements = () => {
     tagsHolder.removeChild(tagsHolder.firstChild);
   }
 
-  inputConfigs.forEach(config => {
-    const spacer = document.createElement('button');
-    spacer.dataset.kind = 'spacer';
-    spacer.className = 'tag spacer';
+  inputConfigs.forEach((config) => {
+    const spacer = document.createElement("button");
+    spacer.dataset.kind = "spacer";
+    spacer.className = "tag spacer";
     spacer.onfocus = () => addInputConfig(config.id);
     tagsHolder.appendChild(spacer);
 
-    const tag = document.createElement('button');
-    tag.dataset.kind = 'tag';
-    tag.className = 'tag';
+    const tag = document.createElement("button");
+    tag.dataset.kind = "tag";
+    tag.className = "tag";
     tag.innerHTML = config.title;
     tag.id = config.id;
     tag.onfocus = () => onInputTagFocus(tag.id);
@@ -187,10 +215,10 @@ const refreshInputTagElements = () => {
     }
   });
 
-  const addButton = document.createElement('button');
-  addButton.dataset.kind = 'spacer';
-  addButton.className = 'tag spacer plus';
-  addButton.innerHTML = '+';
+  const addButton = document.createElement("button");
+  addButton.dataset.kind = "spacer";
+  addButton.className = "tag spacer plus";
+  addButton.innerHTML = "+";
   addButton.onfocus = () => addInputConfig();
   tagsHolder.appendChild(addButton);
 
@@ -199,7 +227,7 @@ const refreshInputTagElements = () => {
 
 const updateTagElementsSelectedAppearance = () => {
   tagsHolder.childNodes.forEach((tag: HTMLElement, index: number) => {
-    if (tag.dataset?.kind === 'tag') {
+    if (tag.dataset?.kind === "tag") {
       const tagIsActive = tag.id === getActiveInputConfig().id;
       tag.className = tagIsActive ? "tag selected" : "tag";
     }
@@ -209,8 +237,8 @@ const updateTagElementsSelectedAppearance = () => {
 const populateListPreferencesElement = () => {
   listPreferencesHolder.hidden = false;
 
-  let value = '';
-  listDropdownElements().forEach(o => {
+  let value = "";
+  listDropdownElements().forEach((o) => {
     if (o.id === getActiveInputConfig().listId) value = o.value;
   });
   listDropdown.value = value;
@@ -244,7 +272,7 @@ const getActiveInputConfig = (): InputConfig | null => {
 
 const getFocusedInputTag = (): HTMLElement => {
   // @ts-ignore
-  return [...tagsHolder.childNodes].filter(o => o.id === getActiveInputConfig().id)[0];
+  return [...tagsHolder.childNodes].filter((o) => o.id === getActiveInputConfig().id)[0];
 };
 
 const saveListDropdownOption = () => {
@@ -263,9 +291,9 @@ const saveListDropdownOption = () => {
       listId: selectedOption.id,
       sort: configPrev.sort,
       url: selectedOption.dataset.url,
-      casing: configPrev.type === 'InputConfigString' ? configPrev.casing : Casing.Original,
+      casing: configPrev.type === "InputConfigString" ? configPrev.casing : Casing.Original,
       confirmed: true,
-    }
+    };
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Numbers) {
     const config: InputConfigNumber = {
@@ -274,11 +302,11 @@ const saveListDropdownOption = () => {
       title: selectedOption.innerHTML,
       listId: selectedOption.id,
       sort: configPrev.sort,
-      min: configPrev.type === 'InputConfigNumber' ? configPrev.min : 0,
-      max: configPrev.type === 'InputConfigNumber' ? configPrev.max : 100,
-      decimals: configPrev.type === 'InputConfigNumber' ? configPrev.decimals : 0,
+      min: configPrev.type === "InputConfigNumber" ? configPrev.min : 0,
+      max: configPrev.type === "InputConfigNumber" ? configPrev.max : 100,
+      decimals: configPrev.type === "InputConfigNumber" ? configPrev.decimals : 0,
       confirmed: true,
-    }
+    };
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Dates) {
     // TODO
@@ -297,7 +325,7 @@ const saveListPreferences = () => {
   if (!selectedOption) return;
 
   // @ts-ignore
-  const sort = [...sortDropdown.children].filter(o => o.selected == true)[0].value as Sort;
+  const sort = [...sortDropdown.children].filter((o) => o.selected == true)[0].value as Sort;
 
   const inputConfigBase: InputConfigBase = {
     id: inputConfigs[inputConfigActiveIndex].id,
@@ -312,7 +340,7 @@ const saveListPreferences = () => {
   if (selectedOptionType === ListType.Strings) {
     const casing = casingDropdown.value as Casing;
     const newConfig: InputConfigString = {
-      type: 'InputConfigString',
+      type: "InputConfigString",
       ...inputConfigBase,
       url: selectedOption.dataset.url,
       casing,
@@ -321,7 +349,7 @@ const saveListPreferences = () => {
     inputConfig = newConfig;
   } else if (selectedOptionType === ListType.Numbers) {
     const newConfig: InputConfigNumber = {
-      type: 'InputConfigNumber',
+      type: "InputConfigNumber",
       ...inputConfigBase,
       min: parseFloat(minNumberInput.value),
       max: parseFloat(maxNumberInput.value),
@@ -347,23 +375,23 @@ const createSettingsUrlElements = (urls: string[]) => {
   console.log(`Creating settings url elements from: [${urlsCopy}]`);
 
   urlsCopy.forEach((url, index) => {
-    const urlWrap = document.createElement('div');
-    urlWrap.className = 'horizontal-item-and-text';
+    const urlWrap = document.createElement("div");
+    urlWrap.className = "horizontal-item-and-text";
     settingsUrlsList.appendChild(urlWrap);
 
-    const urlTextField = document.createElement('input');
-    urlTextField.type = 'text';
+    const urlTextField = document.createElement("input");
+    urlTextField.type = "text";
     urlTextField.placeholder = "https://mysite.com/index.json";
     urlTextField.value = url;
     urlTextField.onblur = () => {
-      parent.postMessage({ pluginMessage: { type: 'save-url', url: urlTextField.value } }, '*');
+      parent.postMessage({ pluginMessage: { type: "save-url", url: urlTextField.value } }, "*");
       urlsCopy[index] = urlTextField.value;
       fetchAndCreateListElements(urlsCopy);
     };
     if (index === 0) urlTextField.disabled = true;
     urlWrap.appendChild(urlTextField);
   });
-}
+};
 
 const fetchAndCreateListElements = async (urls: string[]) => {
   console.log(`Fetching from all urls: [${urls}]`);
@@ -391,10 +419,10 @@ const fetchAndCreateListElements = async (urls: string[]) => {
     const response = responses[i];
     createListElements(response);
   }
-}
+};
 
 const fetchListData = async (url: string, index: number): Promise<ListResponse> => {
-  const baseUrl = url.replace('/index.json', '');
+  const baseUrl = url.replace("/index.json", "");
 
   if (!url || url.length === 0) {
     return Promise.resolve({ baseUrl });
@@ -413,13 +441,13 @@ const fetchListData = async (url: string, index: number): Promise<ListResponse> 
     console.log(`Error: ${error}`);
     return Promise.reject({ baseUrl, error });
   }
-}
+};
 
 const createListLoadingElement = () => {
-  const inputOption = document.createElement('option');
-  inputOption.innerHTML = 'Loading...';
+  const inputOption = document.createElement("option");
+  inputOption.innerHTML = "Loading...";
   listDropdown.appendChild(inputOption);
-}
+};
 
 const createListElements = (response: ListResponse) => {
   const { baseUrl, name: sectionName, lists, error } = response;
@@ -433,7 +461,7 @@ const createListElements = (response: ListResponse) => {
 
   console.log(`Creating input elements from ${sectionName} (${baseUrl})`);
 
-  const inputOptionGroup = document.createElement('optgroup');
+  const inputOptionGroup = document.createElement("optgroup");
   inputOptionGroup.label = sectionName;
   listDropdown.appendChild(inputOptionGroup);
 
@@ -442,15 +470,15 @@ const createListElements = (response: ListResponse) => {
 
     const id = slugify(name);
 
-    const inputOption = document.createElement('option');
+    const inputOption = document.createElement("option");
     inputOption.id = id;
     inputOption.value = id;
-    inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : '';
+    inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : "";
     inputOption.dataset.type = type ?? ListType.Strings;
     inputOption.innerHTML = name;
     inputOptionGroup.appendChild(inputOption);
   });
-}
+};
 
 const onListDropdownChange = () => {
   saveListDropdownOption();
@@ -470,15 +498,15 @@ const onListDropdownChange = () => {
   }
 
   updateConfirmButtonEnabled();
-}
+};
 
 const getSelectedNodeDropdownOption = (): HTMLInputElement => {
   // @ts-ignore
-  return [...nodesDropdown.children].filter(o => o.selected == true)[0];
+  return [...nodesDropdown.children].filter((o) => o.selected == true)[0];
 };
 
 const getSelectedListDropdownOption = (): HTMLInputElement => {
-  return listDropdownElements().filter(o => o.selected == true)[0];
+  return listDropdownElements().filter((o) => o.selected == true)[0];
 };
 
 const getSelectedListDropdownOptionType = (): ListType | null => {
@@ -489,13 +517,13 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
 
 const refreshExampleOutputLabel = async () => {
   const itemsSequence = await getItemsSequence(inputConfigs);
-  const text = itemsSequence.map(o => o[0]).join('');
-  exampleOutputLabel.innerHTML = text.length > 0 ? text : 'No selection';
-  exampleOutputLabel.className = text.length > 0 ? 'gray-box' : 'gray-box disabled'
+  const text = itemsSequence.map((o) => o[0]).join("");
+  exampleOutputLabel.innerHTML = text.length > 0 ? text : "No selection";
+  exampleOutputLabel.className = text.length > 0 ? "gray-box" : "gray-box disabled";
 };
 
 const getItemsSequence = async (inputConfigs: InputConfig[]): Promise<string[][]> => {
-  console.log('Getting items sequence:', inputConfigs);
+  console.log("Getting items sequence:", inputConfigs);
 
   let itemsSequence: string[][] = [];
   for (let i = 0; i < inputConfigs.length; i++) {
@@ -508,29 +536,29 @@ const getItemsSequence = async (inputConfigs: InputConfig[]): Promise<string[][]
 
 const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   const selectedNodeDropdownOption = getSelectedNodeDropdownOption();
-  const nodeCountOr1: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount ?? '1');
+  const nodeCountOr1: number = parseInt(selectedNodeDropdownOption.dataset.nodeCount ?? "1");
 
   const sort = inputConfig.sort;
 
   let items: string[] = [];
 
-  if (inputConfig.type === 'InputConfigString' && inputConfig.url.length > 0) {
+  if (inputConfig.type === "InputConfigString" && inputConfig.url.length > 0) {
     const casing = inputConfig.casing;
     const response = await fetchFromUrl(inputConfig.url);
     items = linesFromStr(response.response);
     items = sorted(items, sort);
-    items = items.map(o => cased(o, casing));
-  } else if (inputConfig.type === 'InputConfigNumber') {
+    items = items.map((o) => cased(o, casing));
+  } else if (inputConfig.type === "InputConfigNumber") {
     for (let i = 0; i < nodeCountOr1; i++) {
       const rand = randomNumberString(
         parseFloat(minNumberInput.value),
         parseFloat(maxNumberInput.value),
-        parseFloat(precisionNumberInput.value),
+        parseFloat(precisionNumberInput.value)
       );
       items.push(rand);
     }
     items = sorted(items, sort);
-  } else if (inputConfig.type === 'InputConfigDate') {
+  } else if (inputConfig.type === "InputConfigDate") {
     const minDate = new Date(minDateInput.value).getTime();
     const maxDate = new Date(maxDateInput.value).getTime();
     const format = formatDateInput.value;
@@ -545,11 +573,9 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
 };
 
 const updateConfirmButtonEnabled = () => {
-  const configsConfirmedStatuses = inputConfigs.map(o => o.confirmed);
+  const configsConfirmedStatuses = inputConfigs.map((o) => o.confirmed);
   confirmButton.disabled =
-    nodeGroupsAreEmpty
-    || inputConfigs.length === 0
-    || new Set(configsConfirmedStatuses).has(false);
+    nodeGroupsAreEmpty || inputConfigs.length === 0 || new Set(configsConfirmedStatuses).has(false);
 };
 
 confirmButton.onclick = async () => {
@@ -566,7 +592,7 @@ confirmButton.onclick = async () => {
 };
 
 const sendMessage = (message: WindowMessage) => {
-  parent.postMessage({ pluginMessage: message }, '*');
+  parent.postMessage({ pluginMessage: message }, "*");
 };
 
 cancelButton.onclick = () => {
@@ -592,25 +618,25 @@ const listDropdownElements = () => {
     }
   }
   return o;
-}
+};
 
 const clearListSectionElements = () => {
   while (listDropdown.firstChild) {
     listDropdown.removeChild(listDropdown.firstChild);
   }
-}
+};
 
 const clearNodeGroupElements = () => {
   while (nodesDropdown.firstChild) {
     nodesDropdown.removeChild(nodesDropdown.firstChild);
   }
-}
+};
 
 const clearSettingsUrlElements = () => {
   while (settingsUrlsList.firstChild) {
     settingsUrlsList.removeChild(settingsUrlsList.firstChild);
   }
-}
+};
 
-const message: WindowMessageInit = { type: 'INIT' };
-parent.postMessage({ pluginMessage: message }, '*');
+const message: WindowMessageInit = { type: "INIT" };
+parent.postMessage({ pluginMessage: message }, "*");

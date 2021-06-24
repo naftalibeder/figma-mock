@@ -6,19 +6,19 @@ export const randomNumberString = (min: number, max: number, precision: number):
   precision = precision;
   const randNum = min + Math.random() * (max - min);
   return randNum.toFixed(precision);
-}
+};
 
 export const randomDateString = (min: number, max: number, format: string): string => {
   const randDate = new Date(min + Math.random() * (max - min));
   return format
-    .replace('DD', `${randDate.getDate()}`)
-    .replace('dddd', randDate.toLocaleString("default", { weekday: "long" }))
-    .replace('ddd', randDate.toLocaleString("default", { weekday: "short" }))
-    .replace('mmmm', randDate.toLocaleString("default", { month: "long" }))
-    .replace('mmm', randDate.toLocaleString("default", { month: "short" }))
-    .replace('MM', `${randDate.getMonth() + 1}`)
-    .replace('YYYY', `${randDate.getFullYear()}`);
-}
+    .replace("DD", `${randDate.getDate()}`)
+    .replace("dddd", randDate.toLocaleString("default", { weekday: "long" }))
+    .replace("ddd", randDate.toLocaleString("default", { weekday: "short" }))
+    .replace("mmmm", randDate.toLocaleString("default", { month: "long" }))
+    .replace("mmm", randDate.toLocaleString("default", { month: "short" }))
+    .replace("MM", `${randDate.getMonth() + 1}`)
+    .replace("YYYY", `${randDate.getFullYear()}`);
+};
 
 export const sorted = (items: string[], sort: Sort): string[] => {
   console.log(`Sorting ${items.length} items with ${sort} sort`);
@@ -38,7 +38,7 @@ export const sorted = (items: string[], sort: Sort): string[] => {
   } else {
     return items;
   }
-}
+};
 
 export const cased = (text: string, casing: Casing) => {
   if (casing === Casing.Sentence) {
@@ -56,18 +56,24 @@ export const cased = (text: string, casing: Casing) => {
 
 const sentenceCase = (text: string) => {
   return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
-}
+};
 
 const titleCase = (text: string) => {
-  return text.split(' ').map(word => sentenceCase(word)).join(' ');
-}
+  return text
+    .split(" ")
+    .map((word) => sentenceCase(word))
+    .join(" ");
+};
 export const slugify = (text: string): string => {
-  return text.replaceAll(' ', '-').toLowerCase();
-}
+  return text.replaceAll(" ", "-").toLowerCase();
+};
 
 export const linesFromStr = (str: string): string[] => {
-  return str.split('\n').filter(line => line.length > 0).map(o => o.trim());
-}
+  return str
+    .split("\n")
+    .filter((line) => line.length > 0)
+    .map((o) => o.trim());
+};
 
 interface FetchResponse {
   response?: string;
@@ -78,8 +84,8 @@ export const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
   return new Promise((resolve, reject) => {
     let request = new XMLHttpRequest();
     try {
-      request.open('GET', url);
-      request.responseType = 'text';
+      request.open("GET", url);
+      request.responseType = "text";
       request.onload = () => resolve({ response: request.response });
       request.onerror = (error) => reject({ error });
       request.send();
@@ -87,4 +93,4 @@ export const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
       return reject({ error });
     }
   });
-}
+};

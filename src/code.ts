@@ -1,17 +1,24 @@
-import { WindowMessageConfirm, TextNodeGroup, WindowMessageUrl, WindowMessage, CodeMessageInit, CodeMessageGetNodes } from "./types";
+import {
+  WindowMessageConfirm,
+  TextNodeGroup,
+  WindowMessageUrl,
+  WindowMessage,
+  CodeMessageInit,
+  CodeMessageGetNodes,
+} from "./types";
 
 figma.showUI(__html__, { width: 360, height: 600 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();
   const url = await getUrl();
-  const message: CodeMessageInit = { type: 'INIT', nodeGroups, url };
+  const message: CodeMessageInit = { type: "INIT", nodeGroups, url };
   figma.ui.postMessage(message);
 };
 
 const refreshSelectedNodes = async () => {
   const nodeGroups = getTextNodeGroups();
-  const message: CodeMessageGetNodes = { type: 'NODES', nodeGroups };
+  const message: CodeMessageGetNodes = { type: "NODES", nodeGroups };
   figma.ui.postMessage(message);
 };
 
@@ -25,13 +32,13 @@ const writeToNodes = (message: WindowMessageConfirm) => {
       await figma.loadFontAsync(textNode.fontName as FontName);
 
       let text = "";
-      itemsSequence.forEach(items => {
+      itemsSequence.forEach((items) => {
         const finalIndex = index % items.length;
         text += items[finalIndex];
       });
       textNode.characters = text;
     } else {
-      console.log('Text node is missing a font and cannot be edited.')
+      console.log("Text node is missing a font and cannot be edited.");
     }
 
     if (index === textNodes.length - 1) {
@@ -41,12 +48,17 @@ const writeToNodes = (message: WindowMessageConfirm) => {
 };
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
-  if (node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'INSTANCE' || node.type === 'COMPONENT') {
+  if (
+    node.type === "FRAME" ||
+    node.type === "GROUP" ||
+    node.type === "INSTANCE" ||
+    node.type === "COMPONENT"
+  ) {
     node.children.forEach((node) => appendChildTextNodes(nodes, node));
-  } else if (node.type === 'TEXT') {
+  } else if (node.type === "TEXT") {
     nodes.push(node);
   }
-}
+};
 
 const getAllSelectedTextNodes = (): TextNode[] => {
   const selectedNodes: readonly SceneNode[] = figma.currentPage.selection;
@@ -57,17 +69,17 @@ const getAllSelectedTextNodes = (): TextNode[] => {
 
 const getTextNodesWithGroupingKey = (key: string): TextNode[] => {
   const nodeGroups = getTextNodeGroups();
-  const nodeGroup = nodeGroups.filter(group => group.key == key)[0];
+  const nodeGroup = nodeGroups.filter((group) => group.key == key)[0];
   const nodesInfos = Object.values(nodeGroup.nodesMap);
-  const nodes = nodesInfos.map(o => figma.getNodeById(o.id) as TextNode);
+  const nodes = nodesInfos.map((o) => figma.getNodeById(o.id) as TextNode);
   return nodes;
-}
+};
 
 const getTextNodeGroups = (): TextNodeGroup[] => {
   const nodes = getAllSelectedTextNodes();
 
-  let groupsMap: {[key: string]: TextNodeGroup} = {};
-  nodes.forEach(node => {
+  let groupsMap: { [key: string]: TextNodeGroup } = {};
+  nodes.forEach((node) => {
     const groupingKey = `${node.x},${node.y}`;
 
     if (!groupsMap[groupingKey]) {
@@ -75,35 +87,38 @@ const getTextNodeGroups = (): TextNodeGroup[] => {
     }
 
     const existingGroup = groupsMap[groupingKey];
-    existingGroup.nodesMap[node.id] = { id: node.id, characters: node.characters };
+    existingGroup.nodesMap[node.id] = {
+      id: node.id,
+      characters: node.characters,
+    };
     existingGroup.count += 1;
   });
   const nodeGroups = Object.keys(groupsMap)
-  .map(key => groupsMap[key])
-  .sort((a, b) => b.count - a.count);
+    .map((key) => groupsMap[key])
+    .sort((a, b) => b.count - a.count);
   return nodeGroups;
-}
+};
 
 const getUrl = async (): Promise<string> => {
-  return figma.clientStorage.getAsync('url');
-}
+  return figma.clientStorage.getAsync("url");
+};
 
 const saveUrl = async (message: WindowMessageUrl) => {
-  await figma.clientStorage.setAsync('url', message.url);
-}
+  await figma.clientStorage.setAsync("url", message.url);
+};
 
 figma.ui.onmessage = (message: WindowMessage) => {
   const { type } = message;
 
-  if (type === 'INIT') {
+  if (type === "INIT") {
     refreshEverything();
-  } else if (type === 'GET_NODES') {
+  } else if (type === "GET_NODES") {
     refreshSelectedNodes();
-  } else if (type === 'URL') {
+  } else if (type === "URL") {
     saveUrl(message as WindowMessageUrl);
-  } else if (type === 'CONFIRM') {
+  } else if (type === "CONFIRM") {
     writeToNodes(message as WindowMessageConfirm);
-  } else if (type === 'CANCEL') {
+  } else if (type === "CANCEL") {
     figma.closePlugin();
   }
 };
