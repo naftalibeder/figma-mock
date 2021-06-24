@@ -490,7 +490,6 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
 const refreshExampleOutputLabel = async () => {
   const itemsSequence = await getItemsSequence(inputConfigs);
   const text = itemsSequence.map(o => o[0]).join('');
-  console.log('items:', itemsSequence.length);
   exampleOutputLabel.innerHTML = text.length > 0 ? text : 'No selection';
   exampleOutputLabel.className = text.length > 0 ? 'gray-box' : 'gray-box disabled'
 };
