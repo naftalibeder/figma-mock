@@ -57,6 +57,7 @@ settingsIndexCodeExample.innerHTML = `{
 
 let inputConfigs: InputConfig[] = [];
 let inputConfigActiveIndex: number | null = null;
+let nodeGroupsAreEmpty = true;
 
 onmessage = (event: MessageEvent<any>) => {
   const message = event.data.pluginMessage as CodeMessage;
@@ -71,8 +72,9 @@ onmessage = (event: MessageEvent<any>) => {
 
     createSettingsUrlElements(urls);
 
+    nodeGroupsAreEmpty = nodeGroups.length === 0;
+    updateConfirmButtonEnabled();
     createNodeGroupElements(nodeGroups);
-    confirmButton.disabled = nodeGroups.length === 0;
 
     refreshInputTagElements();
 
@@ -88,8 +90,10 @@ onmessage = (event: MessageEvent<any>) => {
     refreshExampleOutputLabel();
   } else if (message.type === 'NODES') {
     const { nodeGroups } = message;
+
+    nodeGroupsAreEmpty = nodeGroups.length === 0;
+    updateConfirmButtonEnabled();
     createNodeGroupElements(nodeGroups);
-    confirmButton.disabled = nodeGroups.length === 0;
   }
 };
 
@@ -464,6 +468,8 @@ const onListDropdownChange = () => {
   } else if (selectedOptionType === ListType.Dates) {
     optionsSectionDates.hidden = false;
   }
+
+  updateConfirmButtonEnabled();
 }
 
 const getSelectedNodeDropdownOption = (): HTMLInputElement => {
@@ -537,6 +543,14 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   }
 
   return items;
+};
+
+const updateConfirmButtonEnabled = () => {
+  const configsConfirmedStatuses = inputConfigs.map(o => o.confirmed);
+  confirmButton.disabled =
+    nodeGroupsAreEmpty
+    || inputConfigs.length === 0
+    || new Set(configsConfirmedStatuses).has(false);
 };
 
 confirmButton.onclick = async () => {
