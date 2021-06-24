@@ -217,7 +217,7 @@ const refreshInputTagElements = () => {
 
   const addButton = document.createElement("button");
   addButton.dataset.kind = "spacer";
-  addButton.className = "tag spacer plus";
+  addButton.className = "tag plus";
   addButton.innerHTML = "+";
   addButton.onfocus = () => addInputConfig();
   tagsHolder.appendChild(addButton);
