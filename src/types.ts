@@ -8,7 +8,11 @@ export interface InputConfigBase {
   confirmed: boolean;
 }
 
-export type InputConfig = InputConfigString | InputConfigNumber | InputConfigDate | InputConfigCustomString;
+export type InputConfig =
+  | InputConfigString
+  | InputConfigNumber
+  | InputConfigDate
+  | InputConfigCustomString;
 
 export interface InputConfigString extends InputConfigBase {
   readonly type: "InputConfigString";

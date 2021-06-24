@@ -96,7 +96,7 @@ onmessage = (event: MessageEvent<any>) => {
 
     clearAndCreateTagElements();
     fetchAndCreateListElements(urls);
-    addInputConfig()
+    addInputConfig();
     listDropdown.onchange = onListDropdownChange;
     onListDropdownChange();
 
@@ -110,11 +110,9 @@ onmessage = (event: MessageEvent<any>) => {
       formatDateInput,
       customStringInput,
       sortDropdown,
-    ].forEach(
-      (o) => {
-        o.oninput = saveListPreferences;
-      }
-    );
+    ].forEach((o) => {
+      o.oninput = saveListPreferences;
+    });
 
     refreshExampleOutputLabel();
   } else if (message.type === "NODES") {
@@ -206,7 +204,7 @@ const refreshTagElements = () => {
   const activeInputConfig = getActiveInputConfig();
 
   tagsHolder.childNodes.forEach((tag: HTMLElement) => {
-    const config = inputConfigs.filter(o => o.id === tag.id)[0];
+    const config = inputConfigs.filter((o) => o.id === tag.id)[0];
 
     if (tag.dataset?.kind === "tag") {
       tag.className = "tag";
@@ -218,7 +216,7 @@ const refreshTagElements = () => {
 
       const text = config.type === "InputConfigCustomString" ? config.text : config.title;
       const hasText = text.length > 0;
-      tag.innerHTML = hasText ? text : 'No selection';
+      tag.innerHTML = hasText ? text : "No selection";
       if (!hasText) {
         tag.className += " empty";
       }
@@ -280,7 +278,7 @@ const populateListPreferencesElement = () => {
       value = o.value;
     }
   });
-  listDropdown.value = value ?? '';
+  listDropdown.value = value ?? "";
 
   const selectedOptionType = getSelectedListDropdownOptionType();
 
@@ -294,12 +292,12 @@ const populateListPreferencesElement = () => {
     precisionNumberInput.value = `${config.decimals ?? 0}`;
   } else if (selectedOptionType === ListType.Dates) {
     const config = activeInputConfig as InputConfigDate;
-    minDateInput.value = config.earliest.toISOString().split('T')[0];
-    maxDateInput.value = config.latest.toISOString().split('T')[0];
+    minDateInput.value = config.earliest.toISOString().split("T")[0];
+    maxDateInput.value = config.latest.toISOString().split("T")[0];
     formatDateInput.value = config.format;
   } else if (selectedOptionType === ListType.CustomString) {
     const config = activeInputConfig as InputConfigCustomString;
-    console.log('>>>config!', config.text);
+    console.log(">>>config!", config.text);
     customStringInput.value = config.text;
   }
 
@@ -353,9 +351,10 @@ const saveListDropdownOption = () => {
       title: selectedOption.innerHTML,
       listId: selectedOption.id,
       sort: configPrev.sort,
-      earliest: configPrev.type === "InputConfigDate" ? configPrev.earliest : new Date('2021-01-01'),
-      latest: configPrev.type === "InputConfigDate" ? configPrev.latest : new Date('2021-12-31'),
-      format: configPrev.type === "InputConfigDate" ? configPrev.format : 'MM/DD/YYYY',
+      earliest:
+        configPrev.type === "InputConfigDate" ? configPrev.earliest : new Date("2021-01-01"),
+      latest: configPrev.type === "InputConfigDate" ? configPrev.latest : new Date("2021-12-31"),
+      format: configPrev.type === "InputConfigDate" ? configPrev.format : "MM/DD/YYYY",
       confirmed: true,
     };
     inputConfigs[inputConfigActiveIndex] = config;
@@ -366,7 +365,7 @@ const saveListDropdownOption = () => {
       title: selectedOption.innerHTML,
       listId: selectedOption.id,
       sort: configPrev.sort,
-      text: configPrev.type === "InputConfigCustomString" ? configPrev.text : '',
+      text: configPrev.type === "InputConfigCustomString" ? configPrev.text : "",
       confirmed: true,
     };
     inputConfigs[inputConfigActiveIndex] = config;
@@ -475,7 +474,7 @@ const fetchAndCreateListElements = async (urls: string[]) => {
   let responses: ListResponse[] = [];
 
   const defaultResponse: ListResponse = {
-    baseUrl: '',
+    baseUrl: "",
     name: "Customizable",
     lists: generatedLists,
   };
@@ -494,8 +493,8 @@ const fetchAndCreateListElements = async (urls: string[]) => {
   clearListSectionElements();
 
   const emptyOption = document.createElement("option");
-  emptyOption.value = '';
-  emptyOption.innerHTML = 'Choose one';
+  emptyOption.value = "";
+  emptyOption.innerHTML = "Choose one";
   emptyOption.disabled = true;
   emptyOption.selected = true;
   listDropdown.appendChild(emptyOption);
