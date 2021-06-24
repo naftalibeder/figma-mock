@@ -1,3 +1,4 @@
+import { generatedLists, jsonExampleText } from "./constants";
 import { Casing, ListType, Sort } from "./enums";
 import {
   CodeMessage,
@@ -63,19 +64,7 @@ listPreferencesHolder.hidden = true;
 settingsOverlay.hidden = true;
 confirmButton.disabled = true;
 
-settingsIndexCodeExample.innerHTML = `{
-  "name": "Coffee",
-  "lists": [
-    {
-      "name": "Bean Types",
-      "url": "https://public.coffee/bean-types.txt"
-    }
-    {
-      "name": "Roasts",
-      "path": "roasts.txt"
-    }
-  ]
-}`;
+settingsIndexCodeExample.innerHTML = jsonExampleText;
 
 let inputConfigs: InputConfig[] = [];
 let inputConfigActiveIndex: number | null = null;
@@ -101,9 +90,8 @@ onmessage = (event: MessageEvent<any>) => {
     createNodeGroupElements(nodeGroups);
 
     refreshInputTagElements();
-
     fetchAndCreateListElements(urls);
-
+    addInputConfig()
     listDropdown.onchange = onListDropdownChange;
     onListDropdownChange();
 
@@ -215,7 +203,7 @@ const refreshInputTagElements = () => {
     const tag = document.createElement("button");
     tag.dataset.kind = "tag";
     tag.className = "tag";
-    tag.innerHTML = config.title;
+    tag.innerHTML = config.title.length > 0 ? config.title : 'No data';
     tag.id = config.id;
     tag.onfocus = () => onInputTagFocus(tag.id);
     tagsHolder.appendChild(tag);
@@ -247,15 +235,18 @@ const updateTagElementsSelectedAppearance = () => {
 const populateListPreferencesElement = () => {
   listPreferencesHolder.hidden = false;
 
-  let value = "";
+  const activeInputConfig = getActiveInputConfig();
+
+  let value: string | null = null;
   listDropdownElements().forEach((o) => {
-    if (o.id === getActiveInputConfig().listId) value = o.value;
+    if (o.id === activeInputConfig?.listId) {
+      value = o.value;
+    }
   });
-  listDropdown.value = value;
+  listDropdown.value = value ?? '';
 
   onListDropdownChange();
 
-  const activeInputConfig = getActiveInputConfig();
   const selectedOptionType = getSelectedListDropdownOptionType();
 
   if (selectedOptionType === ListType.Strings) {
@@ -435,6 +426,13 @@ const fetchAndCreateListElements = async (urls: string[]) => {
 
   let responses: ListResponse[] = [];
 
+  const defaultResponse: ListResponse = {
+    baseUrl: '',
+    name: "Customizable",
+    lists: generatedLists,
+  };
+  responses.push(defaultResponse);
+
   try {
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
@@ -446,6 +444,13 @@ const fetchAndCreateListElements = async (urls: string[]) => {
   }
 
   clearListSectionElements();
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = '';
+  emptyOption.innerHTML = 'Choose one';
+  emptyOption.disabled = true;
+  emptyOption.selected = true;
+  listDropdown.appendChild(emptyOption);
 
   for (let i = 0; i < responses.length; i++) {
     const response = responses[i];
@@ -476,9 +481,9 @@ const fetchListData = async (url: string, index: number): Promise<ListResponse> 
 };
 
 const createListLoadingElement = () => {
-  const inputOption = document.createElement("option");
-  inputOption.innerHTML = "Loading...";
-  listDropdown.appendChild(inputOption);
+  const listOption = document.createElement("option");
+  listOption.innerHTML = "Loading...";
+  listDropdown.appendChild(listOption);
 };
 
 const createListElements = (response: ListResponse) => {
@@ -493,22 +498,22 @@ const createListElements = (response: ListResponse) => {
 
   console.log(`Creating input elements from ${sectionName} (${baseUrl})`);
 
-  const inputOptionGroup = document.createElement("optgroup");
-  inputOptionGroup.label = sectionName;
-  listDropdown.appendChild(inputOptionGroup);
+  const listGroup = document.createElement("optgroup");
+  listGroup.label = sectionName;
+  listDropdown.appendChild(listGroup);
 
   lists.forEach((list: ListResponseList, index: number) => {
     const { name, path, url, type } = list;
 
     const id = slugify(name);
 
-    const inputOption = document.createElement("option");
-    inputOption.id = id;
-    inputOption.value = id;
-    inputOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : "";
-    inputOption.dataset.type = type ?? ListType.Strings;
-    inputOption.innerHTML = name;
-    inputOptionGroup.appendChild(inputOption);
+    const listOption = document.createElement("option");
+    listOption.id = id;
+    listOption.value = id;
+    listOption.dataset.url = path ? `${baseUrl}/${path}` : url ? url : "";
+    listOption.dataset.type = type ?? ListType.Strings;
+    listOption.innerHTML = name;
+    listGroup.appendChild(listOption);
   });
 };
 
