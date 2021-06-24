@@ -12,6 +12,7 @@ import {
   InputConfigBase,
   WindowMessageInit,
   WindowMessageCancel,
+  InputConfigDate,
 } from "./types";
 import {
   sorted,
@@ -106,7 +107,16 @@ onmessage = (event: MessageEvent<any>) => {
     listDropdown.onchange = onListDropdownChange;
     onListDropdownChange();
 
-    [casingDropdown, minNumberInput, maxNumberInput, precisionNumberInput, sortDropdown].forEach(
+    [
+      casingDropdown,
+      minNumberInput,
+      maxNumberInput,
+      precisionNumberInput,
+      minDateInput,
+      maxDateInput,
+      formatDateInput,
+      sortDropdown,
+    ].forEach(
       (o) => {
         o.oninput = saveListPreferences;
       }
@@ -251,16 +261,19 @@ const populateListPreferencesElement = () => {
   if (selectedOptionType === ListType.Strings) {
     const config = activeInputConfig as InputConfigString;
     casingDropdown.value = config.casing ?? Casing.Original;
-    sortDropdown.value = config.sort ?? Sort.Random;
   } else if (selectedOptionType === ListType.Numbers) {
     const config = activeInputConfig as InputConfigNumber;
     minNumberInput.value = `${config.min ?? 0}`;
     maxNumberInput.value = `${config.max ?? 100}`;
     precisionNumberInput.value = `${config.decimals ?? 0}`;
-    sortDropdown.value = `${config.sort}`;
   } else if (selectedOptionType === ListType.Dates) {
-    // TODO
+    const config = activeInputConfig as InputConfigDate;
+    minDateInput.value = config.earliest.toISOString().split('T')[0];
+    maxDateInput.value = config.latest.toISOString().split('T')[0];
+    formatDateInput.value = config.format;
   }
+
+  sortDropdown.value = activeInputConfig.sort ?? Sort.Random;
 };
 
 const getActiveInputConfig = (): InputConfig | null => {
@@ -309,7 +322,18 @@ const saveListDropdownOption = () => {
     };
     inputConfigs[inputConfigActiveIndex] = config;
   } else if (selectedOptionType === ListType.Dates) {
-    // TODO
+    const config: InputConfigDate = {
+      type: "InputConfigDate",
+      id: configPrev.id,
+      title: selectedOption.innerHTML,
+      listId: selectedOption.id,
+      sort: configPrev.sort,
+      earliest: configPrev.type === "InputConfigDate" ? configPrev.earliest : new Date('2021-01-01'),
+      latest: configPrev.type === "InputConfigDate" ? configPrev.latest : new Date('2021-12-31'),
+      format: configPrev.type === "InputConfigDate" ? configPrev.format : 'MM/DD/YYYY',
+      confirmed: true,
+    };
+    inputConfigs[inputConfigActiveIndex] = config;
   }
 
   const focusedInputTag = getFocusedInputTag();
@@ -358,7 +382,15 @@ const saveListPreferences = () => {
     };
     inputConfig = newConfig;
   } else if (selectedOptionType === ListType.Dates) {
-    // TODO
+    const newConfig: InputConfigDate = {
+      type: "InputConfigDate",
+      ...inputConfigBase,
+      earliest: new Date(minDateInput.value),
+      latest: new Date(maxDateInput.value),
+      format: formatDateInput.value,
+      sort,
+    };
+    inputConfig = newConfig;
   }
 
   inputConfigs[inputConfigActiveIndex] = inputConfig;
