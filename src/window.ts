@@ -167,34 +167,6 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
   }
 };
 
-const onInputTagFocus = (id: string) => {
-  inputConfigActiveIndex = inputConfigs.findIndex((o) => o.id === id);
-  refreshTagElements();
-  populateListPreferencesElement();
-  onListDropdownChange();
-};
-
-const addInputConfig = (beforeInputConfigId?: string) => {
-  const inputConfig: InputConfigString = {
-    type: "InputConfigString",
-    id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
-    title: "",
-    listId: "",
-    url: "",
-    casing: Casing.Original,
-    sort: Sort.Random,
-    confirmed: false,
-  };
-  const configIndex = beforeInputConfigId
-    ? inputConfigs.findIndex((o) => o.id === beforeInputConfigId)
-    : inputConfigs.length;
-  inputConfigs.splice(configIndex, 0, inputConfig);
-
-  inputConfigActiveIndex = configIndex;
-
-  clearAndCreateTagElements();
-};
-
 const clearAndCreateTagElements = () => {
   while (tagsHolder.firstChild) {
     tagsHolder.removeChild(tagsHolder.firstChild);
@@ -211,7 +183,8 @@ const clearAndCreateTagElements = () => {
     tag.dataset.kind = "tag";
     tag.className = "tag";
     tag.id = config.id;
-    tag.onfocus = () => onInputTagFocus(tag.id);
+    tag.onfocus = () => onTagSelect(tag.id);
+    tag.ondblclick = () => onTagDelete(tag.id);
     tagsHolder.appendChild(tag);
 
     if (tag.id === getActiveInputConfig()?.id) {
@@ -245,12 +218,55 @@ const refreshTagElements = () => {
 
       const text = config.type === "InputConfigCustomString" ? config.text : config.title;
       const hasText = text.length > 0;
-      tag.innerHTML = hasText ? text : 'No data';
+      tag.innerHTML = hasText ? text : 'No selection';
       if (!hasText) {
         tag.className += " empty";
       }
     }
   });
+};
+
+const onTagSelect = (id: string) => {
+  inputConfigActiveIndex = inputConfigs.findIndex((o) => o.id === id);
+
+  refreshTagElements();
+  populateListPreferencesElement();
+  onListDropdownChange();
+};
+
+const onTagDelete = (id: string) => {
+  if (inputConfigs.length < 2) return;
+
+  if (inputConfigActiveIndex === inputConfigs.length - 1) {
+    inputConfigActiveIndex -= 1;
+  }
+  const index = inputConfigs.findIndex((o) => o.id === id);
+  inputConfigs.splice(index, 1);
+
+  clearAndCreateTagElements();
+  populateListPreferencesElement();
+  onListDropdownChange();
+};
+
+const addInputConfig = (beforeInputConfigId?: string) => {
+  const inputConfig: InputConfigString = {
+    type: "InputConfigString",
+    id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
+    title: "",
+    listId: "",
+    url: "",
+    casing: Casing.Original,
+    sort: Sort.Random,
+    confirmed: false,
+  };
+  const configIndex = beforeInputConfigId
+    ? inputConfigs.findIndex((o) => o.id === beforeInputConfigId)
+    : inputConfigs.length;
+  inputConfigs.splice(configIndex, 0, inputConfig);
+
+  inputConfigActiveIndex = configIndex;
+
+  clearAndCreateTagElements();
 };
 
 const populateListPreferencesElement = () => {
