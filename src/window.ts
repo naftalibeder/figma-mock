@@ -1,4 +1,3 @@
-import { generatedLists, jsonExampleText } from "./constants";
 import { Casing, ListType, Sort } from "./enums";
 import {
   CodeMessage,
@@ -14,6 +13,7 @@ import {
   WindowMessageInit,
   WindowMessageCancel,
   InputConfigDate,
+  InputConfigCustomString,
 } from "./types";
 import {
   sorted,
@@ -24,6 +24,7 @@ import {
   linesFromStr,
   cased,
 } from "./utils";
+import { generatedLists, jsonExampleText } from "./constants";
 
 const nodesDropdown = document.getElementById("nodes-dropdown") as HTMLInputElement;
 
@@ -35,6 +36,8 @@ const listDropdown = document.getElementById("input-lists-dropdown") as HTMLInpu
 const optionsSectionStrings = document.getElementById("options-section-strings");
 const optionsSectionNumbers = document.getElementById("options-section-numbers");
 const optionsSectionDates = document.getElementById("options-section-dates");
+const optionsSectionCustomString = document.getElementById("options-section-custom-string");
+const optionsSectionSort = document.getElementById("options-section-sort");
 
 const casingDropdown = document.getElementById("casing-dropdown") as HTMLInputElement;
 
@@ -45,6 +48,8 @@ const precisionNumberInput = document.getElementById("precision-number-input") a
 const minDateInput = document.getElementById("min-date-input") as HTMLInputElement;
 const maxDateInput = document.getElementById("max-date-input") as HTMLInputElement;
 const formatDateInput = document.getElementById("format-date-input") as HTMLInputElement;
+
+const customStringInput = document.getElementById("custom-string-input") as HTMLInputElement;
 
 const sortDropdown = document.getElementById("sort-dropdown") as HTMLInputElement;
 
@@ -86,10 +91,10 @@ onmessage = (event: MessageEvent<any>) => {
     createSettingsUrlElements(urls);
 
     nodeGroupsAreEmpty = nodeGroups.length === 0;
-    updateConfirmButtonEnabled();
+    refreshConfirmButtonEnabled();
     createNodeGroupElements(nodeGroups);
 
-    refreshInputTagElements();
+    clearAndCreateTagElements();
     fetchAndCreateListElements(urls);
     addInputConfig()
     listDropdown.onchange = onListDropdownChange;
@@ -103,6 +108,7 @@ onmessage = (event: MessageEvent<any>) => {
       minDateInput,
       maxDateInput,
       formatDateInput,
+      customStringInput,
       sortDropdown,
     ].forEach(
       (o) => {
@@ -115,7 +121,7 @@ onmessage = (event: MessageEvent<any>) => {
     const { nodeGroups } = message;
 
     nodeGroupsAreEmpty = nodeGroups.length === 0;
-    updateConfirmButtonEnabled();
+    refreshConfirmButtonEnabled();
     createNodeGroupElements(nodeGroups);
   }
 };
@@ -163,8 +169,9 @@ const createNodeGroupElements = (nodeGroups: TextNodeGroup[]) => {
 
 const onInputTagFocus = (id: string) => {
   inputConfigActiveIndex = inputConfigs.findIndex((o) => o.id === id);
-  updateTagElementsSelectedAppearance();
+  refreshTagElements();
   populateListPreferencesElement();
+  onListDropdownChange();
 };
 
 const addInputConfig = (beforeInputConfigId?: string) => {
@@ -185,10 +192,10 @@ const addInputConfig = (beforeInputConfigId?: string) => {
 
   inputConfigActiveIndex = configIndex;
 
-  refreshInputTagElements();
+  clearAndCreateTagElements();
 };
 
-const refreshInputTagElements = () => {
+const clearAndCreateTagElements = () => {
   while (tagsHolder.firstChild) {
     tagsHolder.removeChild(tagsHolder.firstChild);
   }
@@ -203,7 +210,6 @@ const refreshInputTagElements = () => {
     const tag = document.createElement("button");
     tag.dataset.kind = "tag";
     tag.className = "tag";
-    tag.innerHTML = config.title.length > 0 ? config.title : 'No data';
     tag.id = config.id;
     tag.onfocus = () => onInputTagFocus(tag.id);
     tagsHolder.appendChild(tag);
@@ -220,14 +226,29 @@ const refreshInputTagElements = () => {
   addButton.onfocus = () => addInputConfig();
   tagsHolder.appendChild(addButton);
 
-  updateTagElementsSelectedAppearance();
+  refreshTagElements();
 };
 
-const updateTagElementsSelectedAppearance = () => {
-  tagsHolder.childNodes.forEach((tag: HTMLElement, index: number) => {
+const refreshTagElements = () => {
+  const activeInputConfig = getActiveInputConfig();
+
+  tagsHolder.childNodes.forEach((tag: HTMLElement) => {
+    const config = inputConfigs.filter(o => o.id === tag.id)[0];
+
     if (tag.dataset?.kind === "tag") {
-      const tagIsActive = tag.id === getActiveInputConfig().id;
-      tag.className = tagIsActive ? "tag selected" : "tag";
+      tag.className = "tag";
+
+      const tagIsActive = tag.id === activeInputConfig.id;
+      if (tagIsActive) {
+        tag.className += " selected";
+      }
+
+      const text = config.type === "InputConfigCustomString" ? config.text : config.title;
+      const hasText = text.length > 0;
+      tag.innerHTML = hasText ? text : 'No data';
+      if (!hasText) {
+        tag.className += " empty";
+      }
     }
   });
 };
@@ -245,8 +266,6 @@ const populateListPreferencesElement = () => {
   });
   listDropdown.value = value ?? '';
 
-  onListDropdownChange();
-
   const selectedOptionType = getSelectedListDropdownOptionType();
 
   if (selectedOptionType === ListType.Strings) {
@@ -262,6 +281,10 @@ const populateListPreferencesElement = () => {
     minDateInput.value = config.earliest.toISOString().split('T')[0];
     maxDateInput.value = config.latest.toISOString().split('T')[0];
     formatDateInput.value = config.format;
+  } else if (selectedOptionType === ListType.CustomString) {
+    const config = activeInputConfig as InputConfigCustomString;
+    console.log('>>>config!', config.text);
+    customStringInput.value = config.text;
   }
 
   sortDropdown.value = activeInputConfig.sort ?? Sort.Random;
@@ -272,11 +295,6 @@ const getActiveInputConfig = (): InputConfig | null => {
     return inputConfigs[inputConfigActiveIndex];
   }
   return null;
-};
-
-const getFocusedInputTag = (): HTMLElement => {
-  // @ts-ignore
-  return [...tagsHolder.childNodes].filter((o) => o.id === getActiveInputConfig().id)[0];
 };
 
 const saveListDropdownOption = () => {
@@ -325,12 +343,18 @@ const saveListDropdownOption = () => {
       confirmed: true,
     };
     inputConfigs[inputConfigActiveIndex] = config;
+  } else if (selectedOptionType === ListType.CustomString) {
+    const config: InputConfigCustomString = {
+      type: "InputConfigCustomString",
+      id: configPrev.id,
+      title: selectedOption.innerHTML,
+      listId: selectedOption.id,
+      sort: configPrev.sort,
+      text: configPrev.type === "InputConfigCustomString" ? configPrev.text : '',
+      confirmed: true,
+    };
+    inputConfigs[inputConfigActiveIndex] = config;
   }
-
-  const focusedInputTag = getFocusedInputTag();
-  focusedInputTag.innerHTML = selectedOption.innerHTML;
-
-  refreshExampleOutputLabel();
 };
 
 const saveListPreferences = () => {
@@ -382,10 +406,18 @@ const saveListPreferences = () => {
       sort,
     };
     inputConfig = newConfig;
+  } else if (selectedOptionType === ListType.CustomString) {
+    const newConfig: InputConfigCustomString = {
+      type: "InputConfigCustomString",
+      ...inputConfigBase,
+      text: customStringInput.value,
+    };
+    inputConfig = newConfig;
   }
 
   inputConfigs[inputConfigActiveIndex] = inputConfig;
 
+  refreshTagElements();
   refreshExampleOutputLabel();
 };
 
@@ -519,22 +551,32 @@ const createListElements = (response: ListResponse) => {
 
 const onListDropdownChange = () => {
   saveListDropdownOption();
+  populateListPreferencesElement();
 
   optionsSectionStrings.hidden = true;
   optionsSectionNumbers.hidden = true;
   optionsSectionDates.hidden = true;
+  optionsSectionCustomString.hidden = true;
+  optionsSectionSort.hidden = true;
 
   const selectedOptionType = getSelectedListDropdownOptionType();
 
   if (selectedOptionType === ListType.Strings) {
     optionsSectionStrings.hidden = false;
+    optionsSectionSort.hidden = false;
   } else if (selectedOptionType === ListType.Numbers) {
     optionsSectionNumbers.hidden = false;
+    optionsSectionSort.hidden = false;
   } else if (selectedOptionType === ListType.Dates) {
     optionsSectionDates.hidden = false;
+    optionsSectionSort.hidden = false;
+  } else if (selectedOptionType === ListType.CustomString) {
+    optionsSectionCustomString.hidden = false;
   }
 
-  updateConfirmButtonEnabled();
+  refreshTagElements();
+  refreshExampleOutputLabel();
+  refreshConfirmButtonEnabled();
 };
 
 const getSelectedNodeDropdownOption = (): HTMLInputElement => {
@@ -596,20 +638,22 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
     }
     items = sorted(items, sort);
   } else if (inputConfig.type === "InputConfigDate") {
-    const minDate = new Date(minDateInput.value).getTime();
-    const maxDate = new Date(maxDateInput.value).getTime();
-    const format = formatDateInput.value;
+    const minDate = inputConfig.earliest;
+    const maxDate = inputConfig.latest;
+    const format = inputConfig.format;
     for (let i = 0; i < nodeCountOr1; i++) {
       items.push(`${randomDateString(minDate, maxDate, format)}`);
     }
     // TODO: Order dates _before_ stringifying.
     items = sorted(items, sort);
+  } else if (inputConfig.type === "InputConfigCustomString") {
+    items = [inputConfig.text];
   }
 
   return items;
 };
 
-const updateConfirmButtonEnabled = () => {
+const refreshConfirmButtonEnabled = () => {
   const configsConfirmedStatuses = inputConfigs.map((o) => o.confirmed);
   confirmButton.disabled =
     nodeGroupsAreEmpty || inputConfigs.length === 0 || new Set(configsConfirmedStatuses).has(false);

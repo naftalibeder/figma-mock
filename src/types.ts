@@ -8,7 +8,7 @@ export interface InputConfigBase {
   confirmed: boolean;
 }
 
-export type InputConfig = InputConfigString | InputConfigNumber | InputConfigDate;
+export type InputConfig = InputConfigString | InputConfigNumber | InputConfigDate | InputConfigCustomString;
 
 export interface InputConfigString extends InputConfigBase {
   readonly type: "InputConfigString";
@@ -28,6 +28,11 @@ export interface InputConfigDate extends InputConfigBase {
   earliest: Date;
   latest: Date;
   format: string;
+}
+
+export interface InputConfigCustomString extends InputConfigBase {
+  readonly type: "InputConfigCustomString";
+  text: string;
 }
 
 export interface ListResponse {

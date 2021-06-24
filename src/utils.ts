@@ -8,8 +8,10 @@ export const randomNumberString = (min: number, max: number, precision: number):
   return randNum.toFixed(precision);
 };
 
-export const randomDateString = (min: number, max: number, format: string): string => {
-  const randDate = new Date(min + Math.random() * (max - min));
+export const randomDateString = (min: Date, max: Date, format: string): string => {
+  const minUnix = min.getTime();
+  const maxUnix = max.getTime();
+  const randDate = new Date(minUnix + Math.random() * (maxUnix - minUnix));
   return format
     .replace("DD", `${randDate.getDate()}`)
     .replace("dddd", randDate.toLocaleString("default", { weekday: "long" }))

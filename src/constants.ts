@@ -24,4 +24,8 @@ export const generatedLists: ListResponseList[] = [
     name: "Dates",
     type: ListType.Dates
   },
+  {
+    name: "Custom Text",
+    type: ListType.CustomString
+  },
 ];

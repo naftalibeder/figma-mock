@@ -84,6 +84,9 @@
   button.tag.selected:hover {
     background-color: rgb(51, 124, 106);
   }
+  button.tag.empty {
+    color: rgba(255, 255, 255, 0.5);
+  }
   button:hover {
     background-color: rgb(221, 221, 221);
   }
@@ -286,14 +289,21 @@
           DD = 31; dddd = Monday; ddd = Mon; mmmm = January; mmm = Jan; MM = 1; YYYY = 2021
         </p>
       </div>
-
-      <p>Order</p>
-      <select id="sort-dropdown" value="random">
-        <option value="original" selected="true">Original</option>
-        <option value="random">Random</option>
-        <option value="ascending">Ascending</option>
-        <option value="descending">Descending</option>
-      </select>
+      <div id="options-section-custom-string" class="margin-above">
+        <div class="horizontal-list-item vertical-item-and-text margin-above">
+          <label for="custom-string-input">Custom text</label>
+          <input id="custom-string-input" type="text" placeholder="Enter custom text" />
+        </div>
+      </div>
+      <div id="options-section-sort" class="margin-above">
+        <p>Order</p>
+        <select id="sort-dropdown" value="random">
+          <option value="original" selected="true">Original</option>
+          <option value="random">Random</option>
+          <option value="ascending">Ascending</option>
+          <option value="descending">Descending</option>
+        </select>
+      </div>
     </div>
 
     <h2>Example</h2>

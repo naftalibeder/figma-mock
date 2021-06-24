@@ -15,6 +15,7 @@ export enum Sort {
 
 export enum ListType {
   Strings = "strings",
+  CustomString = "custom-string",
   Numbers = "numbers",
   Dates = "dates",
 }
