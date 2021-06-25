@@ -29,7 +29,6 @@ export const sorted = (items: string[], sort: Sort): string[] => {
     const maxOptimizedLength = 100;
     const unrandomized = [];
     for (let i = 0; i < items.length; i += Math.ceil(items.length / maxOptimizedLength)) {
-      console.log('> i', i);
       const item = items[i];
       if (item) {
         unrandomized.push(item);
