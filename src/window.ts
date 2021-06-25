@@ -1,3 +1,4 @@
+import "./style.scss";
 import { Casing, ListType, Sort } from "./enums";
 import {
   CodeMessage,
