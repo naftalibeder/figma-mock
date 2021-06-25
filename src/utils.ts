@@ -26,7 +26,11 @@ export const sorted = (items: string[], sort: Sort): string[] => {
   console.log(`Sorting ${items.length} items with ${sort} sort`);
 
   if (sort === Sort.Random) {
-    const unrandomized = [...items];
+    const maxOptimizedLength = 100;
+    const unrandomized = [];
+    for (let i = 0; i < items.length; i += Math.floor(items.length / maxOptimizedLength)) {
+      unrandomized.push(items[i]);
+    }
     const randomized = [];
     while (unrandomized.length > 0) {
       const item = unrandomized.splice(Math.floor(Math.random() * unrandomized.length), 1)[0];
@@ -34,9 +38,9 @@ export const sorted = (items: string[], sort: Sort): string[] => {
     }
     return randomized;
   } else if (sort === Sort.Ascending) {
-    return items.sort((a: any, b: any) => a - b);
+    return items.sort((a: string, b: string) => a > b ? 1 : -1);
   } else if (sort === Sort.Descending) {
-    return items.sort((a: any, b: any) => b - a);
+    return items.sort((a: string, b: string) => a < b ? 1 : -1);
   } else {
     return items;
   }
