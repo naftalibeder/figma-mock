@@ -62,12 +62,15 @@
     border-width: 0;
   }
   button.tag {
+    flex-shrink: 0;
     height: 24px;
     min-width: 24px;
     border-radius: 2px;
     font-size: 11;
     border-width: 0;
     white-space: nowrap;
+    background-color: lightgray;
+    color: black;
   }
   button.tag.spacer {
     min-width: 0;
@@ -80,23 +83,25 @@
     padding: 0px;
     position: absolute;
     right: 24px;
-    background-color: lightgray;
+  }
+  button.tag.empty {
+    color: rgb(0, 0, 0, 0.5);
   }
   button.tag:hover {
     background-color: rgb(168, 168, 168);
   }
   button.tag.selected {
-    background-color: rgb(243, 95, 164);
+    background-color: rgb(158, 109, 223);
     color: white;
   }
+  button.tag.selected.empty {
+    color: rgb(255, 255, 255, 0.5);
+  }
   button.tag.selected:hover {
-    background-color: rgb(221, 73, 142);
+    background-color: rgb(147, 101, 207);
   }
   button.tag.selected.alert {
-    background-color: rgb(226, 73, 119);
-  }
-  button.tag.empty {
-    color: rgba(255, 255, 255, 0.5);
+    background-color: rgb(125, 86, 177);
   }
   button:hover {
     background-color: rgb(221, 221, 221);
@@ -210,7 +215,6 @@
     min-height: 32px;
     padding: 2px;
     padding-top: 8px;
-    padding-bottom: 8px;
     gap: 0px;
     border-radius: 2px;
     border-style: solid;
@@ -220,10 +224,12 @@
   }
   #input-tags-list {
     display: flex;
+    flex-grow: 1;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: scroll;
     align-items: center;
-    gap: 1px;
+    padding-bottom: 8px;
     margin-right: 36px;
   }
   .gray-box {
@@ -233,6 +239,10 @@
   }
   .gray-box.disabled {
     color: rgb(117, 117, 117);
+  }
+  button:focus, input:focus, select:focus {
+    outline: none !important;
+    border: 2px solid rgb(190, 141, 255);
   }
 </style>
 
