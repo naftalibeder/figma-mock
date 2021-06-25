@@ -78,11 +78,14 @@
     background-color: rgb(168, 168, 168);
   }
   button.tag.selected {
-    background-color: rgb(63, 155, 132);
+    background-color: rgb(243, 95, 164);
     color: white;
   }
   button.tag.selected:hover {
-    background-color: rgb(51, 124, 106);
+    background-color: rgb(221, 73, 142);
+  }
+  button.tag.selected.alert {
+    background-color: rgb(226, 73, 119);
   }
   button.tag.empty {
     color: rgba(255, 255, 255, 0.5);
@@ -228,7 +231,7 @@
 <body>
   <div style="padding-bottom: 60px">
     <h2>Fields</h2>
-    <p>Choose the group of text fields to fill.</p>
+    <p>Select the group of text fields to fill.</p>
     <select id="nodes-dropdown"></select>
 
     <h2>Output</h2>
@@ -310,7 +313,7 @@
     </div>
 
     <h2>Example</h2>
-    <p>Similar text will be pasted into each selected field.</p>
+    <p>Text similar to this will be pasted into each selected field.</p>
     <div id="example-output-label" class="gray-box margin-above"></div>
   </div>
 

@@ -194,7 +194,7 @@ const clearAndCreateTagElements = () => {
   addButton.dataset.kind = "spacer";
   addButton.className = "tag plus";
   addButton.innerHTML = "+";
-  addButton.onfocus = () => addInputConfig();
+  addButton.onclick = () => addInputConfig();
   tagsHolder.appendChild(addButton);
 
   refreshTagElements();
@@ -211,14 +211,21 @@ const refreshTagElements = () => {
 
       const tagIsActive = tag.id === activeInputConfig.id;
       if (tagIsActive) {
-        tag.className += " selected";
+        tag.classList.add("selected");
       }
 
-      const text = config.type === "InputConfigCustomString" ? config.text : config.title;
-      const hasText = text.length > 0;
-      tag.innerHTML = hasText ? text : "No selection";
-      if (!hasText) {
-        tag.className += " empty";
+      let isEmpty = false;
+
+      if (config.type === "InputConfigCustomString") {
+        tag.innerHTML = config.text.length > 0 ? config.text : "No text";
+        isEmpty = config.text.length === 0;
+      } else {
+        tag.innerHTML = config.title.length > 0 ? config.title : "No selection";
+        isEmpty = config.title.length === 0;
+      }
+
+      if (isEmpty) {
+        tag.classList.add("empty");
       }
     }
   });
@@ -247,6 +254,23 @@ const onTagDelete = (id: string) => {
 };
 
 const addInputConfig = (beforeInputConfigId?: string) => {
+  const unconfirmedConfigs = inputConfigs.filter(o => o.confirmed === false);
+  if (unconfirmedConfigs.length > 0) {
+    let unconfirmedTag: HTMLElement | null = null;
+    tagsHolder.childNodes.forEach((tag: HTMLElement) => {
+      if (tag.id === unconfirmedConfigs[0].id) {
+        unconfirmedTag = tag;
+      }
+    });
+    if (unconfirmedTag) {
+      unconfirmedTag.classList.add("alert");
+      setTimeout(() => {
+        unconfirmedTag.classList.remove("alert");
+      }, 200);
+      return;
+    }
+  }
+
   const inputConfig: InputConfigString = {
     type: "InputConfigString",
     id: `input-tag-${Math.floor(Math.random() * 10000).toFixed(0)}`,
@@ -261,7 +285,6 @@ const addInputConfig = (beforeInputConfigId?: string) => {
     ? inputConfigs.findIndex((o) => o.id === beforeInputConfigId)
     : inputConfigs.length;
   inputConfigs.splice(configIndex, 0, inputConfig);
-
   inputConfigActiveIndex = configIndex;
 
   clearAndCreateTagElements();
@@ -297,7 +320,6 @@ const populateListPreferencesElement = () => {
     formatDateInput.value = config.format;
   } else if (selectedOptionType === ListType.CustomString) {
     const config = activeInputConfig as InputConfigCustomString;
-    console.log(">>>config!", config.text);
     customStringInput.value = config.text;
   }
 
@@ -366,7 +388,7 @@ const saveListDropdownOption = () => {
       listId: selectedOption.id,
       sort: configPrev.sort,
       text: configPrev.type === "InputConfigCustomString" ? configPrev.text : "",
-      confirmed: true,
+      confirmed: configPrev.type === "InputConfigCustomString" ? configPrev.text.length > 0 : false,
     };
     inputConfigs[inputConfigActiveIndex] = config;
   }
@@ -426,6 +448,7 @@ const saveListPreferences = () => {
       type: "InputConfigCustomString",
       ...inputConfigBase,
       text: customStringInput.value,
+      confirmed: customStringInput.value.length > 0,
     };
     inputConfig = newConfig;
   }
@@ -434,6 +457,7 @@ const saveListPreferences = () => {
 
   refreshTagElements();
   refreshExampleOutputLabel();
+  refreshConfirmButtonEnabled();
 };
 
 const createSettingsUrlElements = (urls: string[]) => {
@@ -494,7 +518,7 @@ const fetchAndCreateListElements = async (urls: string[]) => {
 
   const emptyOption = document.createElement("option");
   emptyOption.value = "";
-  emptyOption.innerHTML = "Choose one";
+  emptyOption.innerHTML = "Select one";
   emptyOption.disabled = true;
   emptyOption.selected = true;
   listDropdown.appendChild(emptyOption);
@@ -669,9 +693,10 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
 };
 
 const refreshConfirmButtonEnabled = () => {
+  const configsAreEmpty = inputConfigs.length === 0;
   const configsConfirmedStatuses = inputConfigs.map((o) => o.confirmed);
-  confirmButton.disabled =
-    nodeGroupsAreEmpty || inputConfigs.length === 0 || new Set(configsConfirmedStatuses).has(false);
+  const hasUnconfirmed = new Set(configsConfirmedStatuses).has(false);
+  confirmButton.disabled = nodeGroupsAreEmpty || configsAreEmpty || hasUnconfirmed;
 };
 
 confirmButton.onclick = async () => {
