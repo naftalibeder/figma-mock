@@ -267,7 +267,7 @@ const addInputConfig = (beforeInputConfigId?: string) => {
       unconfirmedTag.classList.add("alert");
       setTimeout(() => {
         unconfirmedTag.classList.remove("alert");
-      }, 200);
+      }, 100);
       return;
     }
   }

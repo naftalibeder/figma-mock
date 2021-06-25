@@ -117,7 +117,7 @@ button.tag.selected:hover {
   background-color: color.scale($accent-color, $lightness: -10%);
 }
 button.tag.selected.alert {
-  background-color: color.scale($accent-color, $lightness: -20%);
+  background-color: color.scale($accent-color, $lightness: -15%);
 }
 button:hover {
   background-color: $gray-700
