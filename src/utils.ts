@@ -28,8 +28,12 @@ export const sorted = (items: string[], sort: Sort): string[] => {
   if (sort === Sort.Random) {
     const maxOptimizedLength = 100;
     const unrandomized = [];
-    for (let i = 0; i < items.length; i += Math.floor(items.length / maxOptimizedLength)) {
-      unrandomized.push(items[i]);
+    for (let i = 0; i < items.length; i += Math.ceil(items.length / maxOptimizedLength)) {
+      console.log('> i', i);
+      const item = items[i];
+      if (item) {
+        unrandomized.push(item);
+      }
     }
     const randomized = [];
     while (unrandomized.length > 0) {
