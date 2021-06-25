@@ -636,7 +636,7 @@ const getSelectedListDropdownOptionType = (): ListType | null => {
 const refreshExampleOutputLabel = async () => {
   const itemsSequence = await getItemsSequence(inputConfigs);
   const text = itemsSequence.map((o) => o[0]).join("");
-  exampleOutputLabel.innerHTML = text.length > 0 ? text : "No selection";
+  exampleOutputLabel.innerHTML = text.length > 0 ? text : "Example output text will appear here.";
   exampleOutputLabel.className = text.length > 0 ? "gray-box" : "gray-box disabled";
 };
 

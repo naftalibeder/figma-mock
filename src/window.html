@@ -18,11 +18,14 @@
     font-size: 10;
   }
   p.error {
-    color: rgb(218, 80, 103);
+    color: rgb(243, 95, 164);
   }
   p.meta {
     font-size: 9;
     color: rgb(83, 83, 83);
+  }
+  hr {
+    color: black;
   }
   .overlay {
     position: absolute;
@@ -34,17 +37,22 @@
     padding-right: 16px;
     background-color: white;
   }
-  .buttons-fixed-bottom {
-    display: inline-flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  .fixed-bottom {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     padding: 16px;
-    gap: 8px;
+    padding-top: 0px;
     background-color: white;
+  }
+  .buttons {
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
   }
   button.large {
     flex: 1;
@@ -311,17 +319,19 @@
         </select>
       </div>
     </div>
-
-    <h2>Example</h2>
-    <p>Text similar to this will be pasted into each selected field.</p>
-    <div id="example-output-label" class="gray-box margin-above"></div>
   </div>
 
   <br />
 
-  <div class="buttons-fixed-bottom">
-    <button id="cancel-button" class="large">Cancel</button>
-    <button id="confirm-button" class="large primary">Paste</button>
+  <div class="fixed-bottom">
+    <hr style="margin-top: 0px; margin-bottom: 8px;">
+
+    <div id="example-output-label" class="gray-box"></div>
+
+    <div class="buttons margin-above">
+      <button id="cancel-button" class="large">Cancel</button>
+      <button id="confirm-button" class="large primary">Paste</button>
+    </div>
   </div>
 
   <div id="settings-overlay" class="overlay">
@@ -333,8 +343,10 @@
     <p>Each JSON file listed above must follow this format:</p>
     <pre id="settings-index-code-example"></pre>
 
-    <div class="buttons-fixed-bottom">
-      <button id="settings-back-button" class="large">Back</button>
+    <div class="fixed-bottom">
+      <div class="buttons">
+        <button id="settings-back-button" class="large">Back</button>
+      </div>
     </div>
   </div>
 </body>
