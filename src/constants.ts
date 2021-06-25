@@ -17,15 +17,15 @@ export const jsonExampleText = `{
 
 export const generatedLists: ListResponseList[] = [
   {
+    name: "Custom Text",
+    type: ListType.CustomString,
+  },
+  {
     name: "Numbers",
     type: ListType.Numbers,
   },
   {
     name: "Dates",
     type: ListType.Dates,
-  },
-  {
-    name: "Custom Text",
-    type: ListType.CustomString,
   },
 ];
