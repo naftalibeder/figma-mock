@@ -18,17 +18,21 @@
         Type of data
         <button id="settings-button" class="link">Edit lists</button>
       </p>
-      <select id="input-lists-dropdown"></select>
+      <div class="select-holder">
+        <select id="input-lists-dropdown"></select>
+      </div>
 
       <div id="options-section-strings" class="margin-above">
         <p>Capitalization</p>
-        <select id="casing-dropdown" value="none">
-          <option value="original">Use original</option>
-          <option value="sentence">Sentence case</option>
-          <option value="title">Title case</option>
-          <option value="upper">Upper case</option>
-          <option value="lower">Lower case</option>
-        </select>
+        <div class="select-holder">
+          <select id="casing-dropdown" value="none">
+            <option value="original">Use original</option>
+            <option value="sentence">Sentence case</option>
+            <option value="title">Title case</option>
+            <option value="upper">Upper case</option>
+            <option value="lower">Lower case</option>
+          </select>
+        </div>
       </div>
       <div id="options-section-numbers" class="margin-above">
         <div class="horizontal-list">
@@ -73,12 +77,14 @@
       </div>
       <div id="options-section-sort" class="margin-above">
         <p>Order</p>
-        <select id="sort-dropdown" value="random">
-          <option value="original" selected="true">Original</option>
-          <option value="random">Random</option>
-          <option value="ascending">Ascending</option>
-          <option value="descending">Descending</option>
-        </select>
+        <div class="select-holder">
+          <select id="sort-dropdown" value="random">
+            <option value="original" selected="true">Original</option>
+            <option value="random">Random</option>
+            <option value="ascending">Ascending</option>
+            <option value="descending">Descending</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
