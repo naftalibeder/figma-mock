@@ -255,7 +255,7 @@ const onTagDelete = (id: string) => {
 };
 
 const addInputConfig = (beforeInputConfigId?: string) => {
-  const unconfirmedConfigs = inputConfigs.filter(o => o.confirmed === false);
+  const unconfirmedConfigs = inputConfigs.filter((o) => o.confirmed === false);
   if (unconfirmedConfigs.length > 0) {
     let unconfirmedTag: HTMLElement | null = null;
     tagsHolder.childNodes.forEach((tag: HTMLElement) => {

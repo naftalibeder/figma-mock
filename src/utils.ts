@@ -41,9 +41,9 @@ export const sorted = (items: string[], sort: Sort): string[] => {
     }
     return randomized;
   } else if (sort === Sort.Ascending) {
-    return items.sort((a: string, b: string) => a > b ? 1 : -1);
+    return items.sort((a: string, b: string) => (a > b ? 1 : -1));
   } else if (sort === Sort.Descending) {
-    return items.sort((a: string, b: string) => a < b ? 1 : -1);
+    return items.sort((a: string, b: string) => (a < b ? 1 : -1));
   } else {
     return items;
   }
