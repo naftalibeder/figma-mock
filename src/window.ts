@@ -218,7 +218,7 @@ const refreshTagElements = () => {
       let isEmpty = false;
 
       if (config.type === "InputConfigCustomString") {
-        tag.innerHTML = config.text.length > 0 ? config.text : "No text";
+        tag.innerHTML = config.text.length > 0 ? `"${config.text}"` : "No text";
         isEmpty = config.text.length === 0;
       } else {
         tag.innerHTML = config.title.length > 0 ? config.title : "No selection";
