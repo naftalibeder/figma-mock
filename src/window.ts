@@ -670,9 +670,9 @@ const getItems = async (inputConfig: InputConfig): Promise<string[]> => {
   } else if (inputConfig.type === "InputConfigNumber") {
     for (let i = 0; i < nodeCountOr1; i++) {
       const rand = randomNumberString(
-        parseFloat(minNumberInput.value),
-        parseFloat(maxNumberInput.value),
-        parseFloat(precisionNumberInput.value)
+        inputConfig.min,
+        inputConfig.max,
+        inputConfig.decimals
       );
       items.push(rand);
     }
