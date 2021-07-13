@@ -1,9 +1,6 @@
 import { Casing, Sort } from "./enums";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
-  min = min;
-  max = max;
-  precision = precision;
   const randNum = min + Math.random() * (max - min);
   return randNum.toFixed(precision);
 };
