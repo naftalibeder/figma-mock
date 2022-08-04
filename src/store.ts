@@ -8,7 +8,7 @@ type Store = {
   textBlocks: TextBlock[];
 };
 
-const emptyStore = {
+const defaultStore = {
   nodeGroups: [],
   listGroups: [],
   textBlocks: [defaultTextBlockCustomString()],
@@ -20,13 +20,15 @@ const emptyStore = {
 //     const _store = JSON.parse(_storeStr) as Store;
 //     store.set(_store);
 //   } catch (e) {
-//     store.set(emptyStore);
+//     store.set(defaultStore);
 //   }
 // };
 
-export const store = writable<Store>(emptyStore);
+export const store = writable<Store>(defaultStore);
+
 store.subscribe(async (_store) => {
-  const _storeStr = JSON.stringify(_store);
   console.log('store:', _store);
+
+  // const _storeStr = JSON.stringify(_store);
   // await figma.clientStorage.setAsync("store", _storeStr);
 });

@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
   import { SelectMenu, Input } from "figma-plugin-ds-svelte";
-  import { TextBlock, ListGroup, ListGroupList, Casing, SelectMenuOption } from "types";
+  import { TextBlock, ListGroupList, Casing, SelectMenuOption } from "types";
   import { listById } from "utils";
   import { store } from "../store";
   import Label from "./Label.svelte";

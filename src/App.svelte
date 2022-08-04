@@ -1,7 +1,7 @@
 <script lang="ts" type="module">
   import { onMount } from "svelte";
   import { Button } from "figma-plugin-ds-svelte";
-  import { TextNodeGroup, CodeMessage, ListGroup, TextBlock } from "types";
+  import { CodeMessage } from "types";
   import { fetchListGroups } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
@@ -35,7 +35,9 @@
     }
   };
 
-  const onConfirmPaste = () => {};
+  const onConfirmPaste = () => {
+    console.log("TODO");
+  };
 </script>
 
 <div class="wrap">
@@ -43,7 +45,7 @@
   <TextBlocksBuilder />
   <OutputPreview />
   <div class="button-holder">
-    <Button on:click={onConfirmPaste} disabled={false}>Paste into selected text fields</Button>
+    <Button on:click={onConfirmPaste} disabled={false}>Paste into selected fields</Button>
   </div>
 </div>
 
