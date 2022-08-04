@@ -1,5 +1,4 @@
-import { ListResponseList } from "./types";
-import { ListType } from "./enums";
+import { ListGroupList, TextBlockCustomString } from "./types";
 
 export const jsonExampleText = `{
   "name": "Coffee",
@@ -15,17 +14,33 @@ export const jsonExampleText = `{
   ]
 }`;
 
-export const generatedLists: ListResponseList[] = [
+export const defaultListOptions: ListGroupList[] = [
   {
+    id: "custom-text",
     name: "Custom Text",
-    type: ListType.CustomString,
+    type: "TextBlockCustomString",
   },
   {
+    id: "numbers",
     name: "Numbers",
-    type: ListType.Numbers,
+    type: "TextBlockNumber",
   },
   {
+    id: "dates",
     name: "Dates",
-    type: ListType.Dates,
+    type: "TextBlockDate",
   },
 ];
+
+export const defaultTextBlockCustomString = (): TextBlockCustomString => {
+  const list = defaultListOptions[0];
+  return {
+    type: "TextBlockCustomString",
+    id: `${Math.random()}`,
+    title: list.name,
+    listId: list.id,
+    sort: "original",
+    confirmed: false,
+    customText: "My Text",
+  };
+};

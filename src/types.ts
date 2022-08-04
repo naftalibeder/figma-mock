@@ -1,6 +1,15 @@
-import { Casing, ListType, Sort } from "./enums";
+export type ListKind =
+  | "TextBlockString"
+  | "TextBlockNumber"
+  | "TextBlockDate"
+  | "TextBlockCustomString";
 
-export interface InputConfigBase {
+export type Casing = "original" | "sentence" | "title" | "upper" | "lower";
+
+export type Sort = "original" | "random" | "ascending" | "descending";
+
+export interface TextBlockBase {
+  readonly type: ListKind;
   id: string;
   title: string;
   listId: string;
@@ -8,49 +17,46 @@ export interface InputConfigBase {
   confirmed: boolean;
 }
 
-export type InputConfig =
-  | InputConfigString
-  | InputConfigNumber
-  | InputConfigDate
-  | InputConfigCustomString;
+export type TextBlock = TextBlockString | TextBlockNumber | TextBlockDate | TextBlockCustomString;
 
-export interface InputConfigString extends InputConfigBase {
-  readonly type: "InputConfigString";
+export interface TextBlockString extends TextBlockBase {
+  readonly type: "TextBlockString";
   url: string;
   casing: Casing;
 }
 
-export interface InputConfigNumber extends InputConfigBase {
-  readonly type: "InputConfigNumber";
+export interface TextBlockNumber extends TextBlockBase {
+  readonly type: "TextBlockNumber";
   min: number;
   max: number;
   decimals: number;
 }
 
-export interface InputConfigDate extends InputConfigBase {
-  readonly type: "InputConfigDate";
+export interface TextBlockDate extends TextBlockBase {
+  readonly type: "TextBlockDate";
   earliest: Date;
   latest: Date;
   format: string;
 }
 
-export interface InputConfigCustomString extends InputConfigBase {
-  readonly type: "InputConfigCustomString";
-  text: string;
+export interface TextBlockCustomString extends TextBlockBase {
+  readonly type: "TextBlockCustomString";
+  customText: string;
 }
 
-export interface ListResponse {
+export interface ListGroup {
   baseUrl: string;
   name?: string;
-  lists?: ListResponseList[];
+  lists?: ListGroupList[];
   error?: string;
 }
 
-export interface ListResponseList {
+export interface ListGroupList {
+  id: string;
   name: string;
   path?: string;
   url?: string;
-  type?: ListType;
+  type?: ListKind;
 }
 
 export interface TextNodeInfo {
@@ -111,4 +117,11 @@ export type WindowMessageUrl = {
 
 export type WindowMessageCancel = {
   readonly type: "CANCEL";
+};
+
+export type SelectMenuOption<T = any> = {
+  value: T;
+  label: string;
+  group?: string;
+  selected: boolean;
 };

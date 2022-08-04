@@ -7,7 +7,7 @@ import {
   CodeMessageGetNodes,
 } from "./types";
 
-figma.showUI(__html__, { width: 360, height: 600 });
+figma.showUI(__html__, { width: 360, height: 720 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();

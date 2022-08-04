@@ -1,4 +1,5 @@
-import { Casing, Sort } from "./enums";
+import { Casing, ListGroup, ListGroupList, Sort } from "types";
+import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
   const randNum = min + Math.random() * (max - min);
@@ -22,7 +23,7 @@ export const randomDateString = (min: Date, max: Date, format: string): string =
 export const sorted = (items: string[], sort: Sort): string[] => {
   console.log(`Sorting ${items.length} items with ${sort} sort`);
 
-  if (sort === Sort.Random) {
+  if (sort === "random") {
     const maxOptimizedLength = 100;
     const unrandomized = [];
     for (let i = 0; i < items.length; i += Math.ceil(items.length / maxOptimizedLength)) {
@@ -37,9 +38,9 @@ export const sorted = (items: string[], sort: Sort): string[] => {
       randomized.push(item);
     }
     return randomized;
-  } else if (sort === Sort.Ascending) {
+  } else if (sort === "ascending") {
     return items.sort((a: string, b: string) => (a > b ? 1 : -1));
-  } else if (sort === Sort.Descending) {
+  } else if (sort === "descending") {
     return items.sort((a: string, b: string) => (a < b ? 1 : -1));
   } else {
     return items;
@@ -47,13 +48,13 @@ export const sorted = (items: string[], sort: Sort): string[] => {
 };
 
 export const cased = (text: string, casing: Casing) => {
-  if (casing === Casing.Sentence) {
+  if (casing === "sentence") {
     return sentenceCase(text);
-  } else if (casing === Casing.Title) {
+  } else if (casing === "title") {
     return titleCase(text);
-  } else if (casing === Casing.Upper) {
+  } else if (casing === "upper") {
     return text.toUpperCase();
-  } else if (casing === Casing.Lower) {
+  } else if (casing === "lower") {
     return text.toLowerCase();
   } else {
     return text;
@@ -70,15 +71,9 @@ const titleCase = (text: string) => {
     .map((word) => sentenceCase(word))
     .join(" ");
 };
+
 export const slugify = (text: string): string => {
   return text.replaceAll(" ", "-").toLowerCase();
-};
-
-export const linesFromStr = (str: string): string[] => {
-  return str
-    .split("\n")
-    .filter((line) => line.length > 0)
-    .map((o) => o.trim());
 };
 
 interface FetchResponse {
@@ -86,7 +81,7 @@ interface FetchResponse {
   error?: any;
 }
 
-export const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
+const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
   return new Promise((resolve, reject) => {
     let request = new XMLHttpRequest();
     try {
@@ -99,4 +94,87 @@ export const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
       return reject({ error });
     }
   });
+};
+
+export const fetchListGroups = async (urls: string[]): Promise<ListGroup[]> => {
+  console.log(`Fetching list groups from urls: [${urls}]`);
+
+  let groups: ListGroup[] = [];
+
+  const defaultResponse: ListGroup = {
+    baseUrl: "",
+    name: "Customizable",
+    lists: defaultListOptions,
+  };
+  groups.push(defaultResponse);
+
+  try {
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      const group = await fetchListGroup(url, i);
+      groups.push(group);
+    }
+  } catch (error) {}
+
+  return groups;
+};
+
+const fetchListGroup = async (url: string, index: number): Promise<ListGroup> => {
+  const baseUrl = url.replace("/index.json", "");
+
+  if (!url || url.length === 0) {
+    return { baseUrl };
+  }
+
+  try {
+    const response = await fetchFromUrl(url);
+    if (response.error) {
+      throw response.error;
+    }
+
+    const listGroup = JSON.parse(response.response) as ListGroup;
+    listGroup.baseUrl = url.replace("/index.json", "/");
+    const lists: ListGroupList[] = listGroup.lists.map((list) => {
+      return {
+        ...list,
+        id: `${slugify(listGroup.name)}-${slugify(list.name)}`,
+        type: list.type ?? "TextBlockString",
+        url: list.url ?? `${listGroup.baseUrl}${list.path}`,
+      };
+    });
+
+    console.log(`Fetched ${lists.length} lists from ${url}`);
+    return { ...listGroup, baseUrl, lists };
+  } catch (error) {
+    console.log(`Error: ${error}`);
+    return { baseUrl, error };
+  }
+};
+
+export const fetchListContent = async (url: string): Promise<string[]> => {
+  try {
+    const response = await fetchFromUrl(url);
+    if (response.error) {
+      throw response.error;
+    }
+
+    return response.response
+      .split("\n")
+      .filter((line) => line.length > 0)
+      .map((o) => o.trim());
+  } catch (error) {
+    return [];
+  }
+};
+
+export const listById = (id: string, listGroups: ListGroup[]): ListGroupList | undefined => {
+  for (const listGroup of listGroups) {
+    for (const list of listGroup.lists) {
+      if (list.id === id) {
+        return list;
+      }
+    }
+  }
+
+  return undefined;
 };
