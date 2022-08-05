@@ -12,6 +12,29 @@
   }
 </script>
 
-<Button variant={isSelected ? "primary" : "secondary"} on:click>
-  {textBlock.title}
-</Button>
+<div>
+  <div class={isSelected ? "wrap hoverable" : "wrap"}>
+    <Button variant={isSelected ? "primary" : "secondary"} on:click>
+      <div class="wrap-inner">
+        {textBlock.title}
+      </div>
+    </Button>
+  </div>
+</div>
+
+<style>
+  .wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .wrap.hoverable {
+    display: flex;
+  }
+  .wrap-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    white-space: nowrap;
+  }
+</style>

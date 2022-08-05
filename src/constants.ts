@@ -36,7 +36,7 @@ export const defaultTextBlockCustomString = (): TextBlockCustomString => {
   const list = defaultListOptions[0];
   return {
     type: "TextBlockCustomString",
-    id: `${Math.random()}`,
+    id: `${Math.floor(Math.random() * 1000)}`,
     title: list.name,
     listId: list.id,
     sort: "original",

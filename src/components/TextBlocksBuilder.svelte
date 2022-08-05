@@ -20,16 +20,26 @@
     console.log("Selected text block:", selectedBlock);
   };
 
-  const onPressAddTextBlock = (textBlock: TextBlock) => {
-    textBlocks = [...textBlocks, textBlock];
+  const onPressAddTextBlock = (
+    textBlock: TextBlock,
+    placement: "before" | "after",
+    index: number
+  ) => {
+    const blocks = [...textBlocks];
+    blocks.splice(placement === "before" ? index : index + 1, 0, textBlock);
+    textBlocks = [...blocks];
+
     selectedBlock = textBlock;
 
-    console.log("Added text block:", selectedBlock);
+    console.log(`Added text block ${placement} index ${index}:`, selectedBlock);
   };
 
   const onUpdateSelectedBlock = (textBlock: TextBlock) => {
-    const i = textBlocks.findIndex((o) => o.id === textBlock.id);
-    textBlocks[i] = textBlock;
+    const blocks = [...textBlocks];
+    const i = blocks.findIndex((o) => o.id === textBlock.id);
+    blocks[i] = textBlock;
+    textBlocks = [...blocks];
+
     selectedBlock = textBlock;
 
     console.log("Updated selected block:", textBlock);
