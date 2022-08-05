@@ -1,12 +1,12 @@
 <script lang="ts" type="module">
-  import { SelectMenu, Input } from "figma-plugin-ds-svelte";
+  import { SelectMenu, Input, Type } from "figma-plugin-ds-svelte";
   import { TextBlock, ListGroupList, Casing, SelectMenuOption } from "types";
   import { listById } from "utils";
   import { store } from "../store";
   import Label from "./Label.svelte";
 
   export let selectedBlock: TextBlock | undefined;
-  export let onUpdateSelectedBlock: (textBlock: TextBlock) => void;
+  export let onUpdateTextBlock: (textBlock: TextBlock) => void;
 
   $: listGroups = $store.listGroups;
 
@@ -94,7 +94,7 @@
     block.title = selectedList.name;
     selectedBlock = block;
 
-    onUpdateSelectedBlock(selectedBlock);
+    onUpdateTextBlock(selectedBlock);
   };
 
   const _onSelectCasingOption = (casingOption: SelectMenuOption<Casing>) => {
@@ -106,7 +106,7 @@
       selectedBlock = block;
     }
 
-    onUpdateSelectedBlock(selectedBlock);
+    onUpdateTextBlock(selectedBlock);
   };
 
   const _onEditCustomText = (customText: string) => {
@@ -120,7 +120,7 @@
       selectedBlock = block;
     }
 
-    onUpdateSelectedBlock(selectedBlock);
+    onUpdateTextBlock(selectedBlock);
   };
 </script>
 

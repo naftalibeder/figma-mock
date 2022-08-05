@@ -29,20 +29,31 @@
     blocks.splice(placement === "before" ? index : index + 1, 0, textBlock);
     textBlocks = [...blocks];
 
-    selectedBlock = textBlock;
-
     console.log(`Added text block ${placement} index ${index}:`, selectedBlock);
+
+    selectedBlock = textBlock;
   };
 
-  const onUpdateSelectedBlock = (textBlock: TextBlock) => {
+  const onUpdateTextBlock = (textBlock: TextBlock) => {
     const blocks = [...textBlocks];
     const i = blocks.findIndex((o) => o.id === textBlock.id);
     blocks[i] = textBlock;
     textBlocks = [...blocks];
 
-    selectedBlock = textBlock;
-
     console.log("Updated selected block:", textBlock);
+
+    selectedBlock = textBlock;
+  };
+
+  const onPressDeleteTextBlock = (textBlock: TextBlock) => {
+    const blocks = [...textBlocks];
+    const i = blocks.findIndex((o) => o.id === textBlock.id);
+    blocks.splice(i, 1);
+    textBlocks = [...blocks];
+
+    console.log("Deleted selected block:", textBlock);
+
+    selectedBlock = textBlocks[i < textBlocks.length ? i : i - 1];
   };
 
   const updateStore = () => {
@@ -58,11 +69,21 @@
 <div class="section">
   <Section>Output</Section>
   <div class="section-subtitle">
-    <Label>Add one or more tags to create a text string. Click between tags to insert.</Label>
+    <Label>
+      Add one or more tags to create a text string. Click between tags to insert; double-click a tag
+      to delete.
+    </Label>
   </div>
   <div class="rounded-box" style="margin-top: 8px">
-    <TextBlockList {textBlocks} {selectedBlock} {onSelectTextBlock} {onPressAddTextBlock} />
-    <TextBlockDetails {selectedBlock} {onUpdateSelectedBlock} />
+    <TextBlockList
+      {textBlocks}
+      {selectedBlock}
+      {onSelectTextBlock}
+      {onUpdateTextBlock}
+      {onPressAddTextBlock}
+      {onPressDeleteTextBlock}
+    />
+    <TextBlockDetails {selectedBlock} {onUpdateTextBlock} />
   </div>
 </div>
 

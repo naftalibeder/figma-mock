@@ -13,8 +13,8 @@
 </script>
 
 <div>
-  <div class={isSelected ? "wrap hoverable" : "wrap"}>
-    <Button variant={isSelected ? "primary" : "secondary"} on:click>
+  <div class={isSelected ? "wrap hoverable" : "wrap"} on:click on:dblclick>
+    <Button variant={isSelected ? "primary" : "secondary"}>
       <div class="wrap-inner">
         {textBlock.title}
       </div>

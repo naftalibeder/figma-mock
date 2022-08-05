@@ -7,12 +7,13 @@
   export let textBlocks: TextBlock[];
   export let selectedBlock: TextBlock | undefined;
   export let onSelectTextBlock: (textBlock: TextBlock) => void;
+  export let onUpdateTextBlock: (textBlock: TextBlock) => void;
   export let onPressAddTextBlock: (
     textBlock: TextBlock,
     placement: "before" | "after",
     index: number
   ) => void;
-  // export let onPressDeleteTextBlock: (textBlock: TextBlock) => void;
+  export let onPressDeleteTextBlock: (textBlock: TextBlock) => void;
 
   const _onSelectTextBlock = (textBlock: TextBlock) => {
     selectedBlock = textBlock;
@@ -28,6 +29,18 @@
     const textBlock = defaultTextBlockCustomString();
     onPressAddTextBlock(textBlock, "after", textBlocks.length - 1);
   };
+
+  const _onPressDeleteTextBlock = (textBlock: TextBlock) => {
+    if (textBlocks.length === 1) {
+      textBlock = {
+        ...defaultTextBlockCustomString(),
+        id: textBlock.id,
+      };
+      onUpdateTextBlock(textBlock);
+    } else {
+      onPressDeleteTextBlock(textBlock);
+    }
+  };
 </script>
 
 <div class="scroll-box">
@@ -42,7 +55,7 @@
       {textBlock}
       isSelected={selectedBlock?.id === textBlock.id}
       on:click={() => _onSelectTextBlock(textBlock)}
-      on:delete={() => console.log("TODO", textBlock.id)}
+      on:dblclick={() => _onPressDeleteTextBlock(textBlock)}
     />
   {/each}
   <div class="add-button">
