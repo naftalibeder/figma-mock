@@ -1,3 +1,16 @@
+type UUID = string;
+
+export type CachedStore = {
+  nodeGroups: TextNodeGroup[];
+  listGroups: ListGroup[];
+  textBlocks: TextBlock[];
+};
+
+export type PersistedStore = {
+  listUrls: Record<UUID, string[]>;
+  textBlocks: Record<UUID, TextBlock[]>;
+};
+
 export type ListKind =
   | "TextBlockString"
   | "TextBlockNumber"
@@ -10,9 +23,9 @@ export type Sort = "original" | "random" | "ascending" | "descending";
 
 export interface TextBlockBase {
   readonly type: ListKind;
-  id: string;
+  id: UUID;
   title: string;
-  listId: string;
+  listId: UUID;
   sort: Sort;
   confirmed: boolean;
 }
@@ -52,7 +65,7 @@ export interface ListGroup {
 }
 
 export interface ListGroupList {
-  id: string;
+  id: UUID;
   name: string;
   path?: string;
   url?: string;
@@ -60,7 +73,7 @@ export interface ListGroupList {
 }
 
 export interface TextNodeInfo {
-  id: string;
+  id: UUID;
   characters: string;
 }
 
@@ -76,47 +89,47 @@ export class TextNodeGroup {
   }
 }
 
-export type CodeMessage = CodeMessageInit | CodeMessageGetNodes;
+export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 
-export type CodeMessageInit = {
-  readonly type: "INIT";
-  url: string;
+export type CodeMessageSelectedAndStore = {
+  readonly type: "SELECTED_AND_STORE";
   nodeGroups: TextNodeGroup[];
+  persistedStore: PersistedStore;
 };
 
-export type CodeMessageGetNodes = {
-  readonly type: "NODES";
+export type CodeMessageSelected = {
+  readonly type: "SELECTED";
   nodeGroups: TextNodeGroup[];
 };
 
 export type WindowMessage =
-  | WindowMessageInit
-  | WindowMessageConfirm
-  | WindowMessageGetNodes
-  | WindowMessageUrl
-  | WindowMessageCancel;
+  | WindowMessageGetSelectedAndStore
+  | WindowMessageGetSelected
+  | WindowMessageSetStore
+  | WindowMessagePaste
+  | WindowMessageExit;
 
-export type WindowMessageInit = {
-  readonly type: "INIT";
+export type WindowMessageGetSelectedAndStore = {
+  readonly type: "GET_SELECTED_AND_STORE";
 };
 
-export type WindowMessageConfirm = {
-  readonly type: "CONFIRM";
+export type WindowMessageGetSelected = {
+  readonly type: "GET_SELECTED";
+};
+
+export type WindowMessageSetStore = {
+  readonly type: "SET_STORE";
+  persistedStore: PersistedStore;
+};
+
+export type WindowMessagePaste = {
+  readonly type: "PASTE";
   itemsSequence: string[][];
   groupingKey: string;
 };
 
-export type WindowMessageGetNodes = {
-  readonly type: "GET_NODES";
-};
-
-export type WindowMessageUrl = {
-  readonly type: "URL";
-  url: string;
-};
-
-export type WindowMessageCancel = {
-  readonly type: "CANCEL";
+export type WindowMessageExit = {
+  readonly type: "EXIT";
 };
 
 export type SelectMenuOption<T = any> = {

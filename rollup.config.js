@@ -35,8 +35,7 @@ export default [
       }),
       resolve({
         browser: true,
-        dedupe: (importee) =>
-          importee === "svelte" || importee.startsWith("svelte/"),
+        dedupe: (importee) => importee === "svelte" || importee.startsWith("svelte/"),
         extensions: [".svelte", ".mjs", ".js", ".json", ".node"],
       }),
       typescript(),

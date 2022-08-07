@@ -1,34 +1,9 @@
-import { writable } from "svelte/store";
-import { defaultTextBlockCustomString } from "./constants";
-import { TextNodeGroup, ListGroup, TextBlock } from "types";
+import { writable } from '../node_modules/svelte/store/index';
+import { CachedStore } from "types";
+import { defaultTextBlockCustomString } from './constants';
 
-type Store = {
-  nodeGroups: TextNodeGroup[];
-  listGroups: ListGroup[];
-  textBlocks: TextBlock[];
-};
-
-const defaultStore = {
+export const store = writable<CachedStore>({
   nodeGroups: [],
   listGroups: [],
   textBlocks: [defaultTextBlockCustomString()],
-};
-
-// const setInitialStore = async () => {
-//   try {
-//     const _storeStr = await figma.clientStorage.getAsync("store");
-//     const _store = JSON.parse(_storeStr) as Store;
-//     store.set(_store);
-//   } catch (e) {
-//     store.set(defaultStore);
-//   }
-// };
-
-export const store = writable<Store>(defaultStore);
-
-store.subscribe(async (_store) => {
-  console.log('store:', _store);
-
-  // const _storeStr = JSON.stringify(_store);
-  // await figma.clientStorage.setAsync("store", _storeStr);
 });

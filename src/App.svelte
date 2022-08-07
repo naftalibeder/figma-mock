@@ -1,42 +1,41 @@
 <script lang="ts" type="module">
   import { onMount } from "svelte";
   import { Button } from "figma-plugin-ds-svelte";
-  import { CodeMessage } from "types";
+  import { CodeMessage, WindowMessage } from "types";
   import { fetchListGroups } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
   import TextBlocksBuilder from "./components/TextBlocksBuilder.svelte";
   import OutputPreview from "./components/OutputPreview.svelte";
 
-  onMount(() => {
-    parent.postMessage(
-      {
-        pluginMessage: {
-          type: "INIT",
-        },
-      },
-      "*"
-    );
+  onMount(async () => {
+    const message: WindowMessage = {
+      type: "GET_SELECTED_AND_STORE",
+    };
+    parent.postMessage({ pluginMessage: message }, "*");
   });
 
   window.onmessage = async (event: MessageEvent) => {
     const message = event.data.pluginMessage as CodeMessage;
+    console.log("Received message:", message);
 
-    if (message.type === "INIT") {
-      let urls = [
-        "https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json",
-      ];
-      if (message.url) urls.push(message.url);
-      $store.listGroups = await fetchListGroups(urls);
-
+    if (message.type === "SELECTED_AND_STORE") {
       $store.nodeGroups = message.nodeGroups;
-    } else if (message.type === "NODES") {
+
+      const urls = [...message.persistedStore.listUrls["current"]];
+      $store.listGroups = await fetchListGroups(urls);
+    } else if (message.type === "SELECTED") {
       $store.nodeGroups = message.nodeGroups;
     }
   };
 
   const onConfirmPaste = () => {
-    console.log("TODO");
+    const message: WindowMessage = {
+      type: "PASTE",
+      groupingKey: "",
+      itemsSequence: [[]],
+    };
+    parent.postMessage({ pluginMessage: message }, "*");
   };
 </script>
 

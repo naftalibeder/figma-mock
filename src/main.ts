@@ -1,28 +1,30 @@
+
 import {
-  WindowMessageConfirm,
+  WindowMessagePaste,
   TextNodeGroup,
-  WindowMessageUrl,
   WindowMessage,
-  CodeMessageInit,
-  CodeMessageGetNodes,
+  CodeMessageSelectedAndStore,
+  CodeMessageSelected,
+  CachedStore,
+  PersistedStore,
 } from "./types";
 
 figma.showUI(__html__, { width: 360, height: 720 });
 
 const refreshEverything = async () => {
   const nodeGroups = getTextNodeGroups();
-  const url = await getUrl();
-  const message: CodeMessageInit = { type: "INIT", nodeGroups, url };
+  const persistedStore = await getStore();
+  const message: CodeMessageSelectedAndStore = { type: 'SELECTED_AND_STORE', nodeGroups, persistedStore };
   figma.ui.postMessage(message);
 };
 
 const refreshSelectedNodes = async () => {
   const nodeGroups = getTextNodeGroups();
-  const message: CodeMessageGetNodes = { type: "NODES", nodeGroups };
+  const message: CodeMessageSelected = { type: 'SELECTED', nodeGroups };
   figma.ui.postMessage(message);
 };
 
-const writeToNodes = (message: WindowMessageConfirm) => {
+const writeToNodes = (message: WindowMessagePaste) => {
   const { itemsSequence, groupingKey } = message;
 
   const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
@@ -99,26 +101,50 @@ const getTextNodeGroups = (): TextNodeGroup[] => {
   return nodeGroups;
 };
 
-const getUrl = async (): Promise<string> => {
-  return figma.clientStorage.getAsync("url");
+const getStore = async (): Promise<PersistedStore> => {
+  const defaultUrl = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
+
+  try {
+    const storeStr = await figma.clientStorage.getAsync("store");
+    const store = JSON.parse(storeStr) as PersistedStore;
+    console.log('Fetched store:', store);
+
+    if (Object.keys(store).length === 0) {
+      throw 'Persisted store is empty';
+    }
+
+    return {
+      listUrls: store.listUrls,
+      textBlocks: store.textBlocks,
+    };
+  } catch (e) {
+    console.log('Error fetching store:', e);
+
+    return {
+      listUrls: { 'current': [defaultUrl] },
+      textBlocks: {},
+    };
+  }
 };
 
-const saveUrl = async (message: WindowMessageUrl) => {
-  await figma.clientStorage.setAsync("url", message.url);
+const setStore = async (store: PersistedStore) => {
+  const storeStr = JSON.stringify(store);
+  await figma.clientStorage.setAsync("store", storeStr);
+  console.log('Saved store:', store);
 };
 
-figma.ui.onmessage = (message: WindowMessage) => {
+figma.ui.onmessage = async (message: WindowMessage) => {
   const { type } = message;
 
-  if (type === "INIT") {
+  if (type === 'GET_SELECTED_AND_STORE') {
     refreshEverything();
-  } else if (type === "GET_NODES") {
+  } else if (type === 'GET_SELECTED') {
     refreshSelectedNodes();
-  } else if (type === "URL") {
-    saveUrl(message as WindowMessageUrl);
-  } else if (type === "CONFIRM") {
-    writeToNodes(message as WindowMessageConfirm);
-  } else if (type === "CANCEL") {
+  } else if (type === 'SET_STORE') {
+    setStore(message.persistedStore);
+  } else if (type === 'PASTE') {
+    writeToNodes(message)
+  } else if (type === 'EXIT') {
     figma.closePlugin();
   }
 };
