@@ -5,6 +5,6 @@
 <style>
   .wrap {
     font-size: smaller;
-    color: black;
+    color: var(--black8);
   }
 </style>
