@@ -32,12 +32,20 @@
         label: "Name",
       },
       {
-        value: "LOCAL_POS",
-        label: "Position",
-      },
-      {
         value: "TEXT",
         label: "Text",
+      },
+      {
+        value: "LOCAL_XY",
+        label: "X and Y",
+      },
+      {
+        value: "LOCAL_X",
+        label: "X",
+      },
+      {
+        value: "LOCAL_Y",
+        label: "Y",
       },
     ].map((o: SelectMenuOption<TextNodeGroupKind>) => {
       return {

@@ -185,10 +185,14 @@ export const buildTextNodeGroups = (nodes: TextNodeInfo[], groupKind: TextNodeGr
     let groupKey = "";
     if (groupKind === "NAME") {
       groupKey = `${node.name}`;
-    } else if (groupKind === "LOCAL_POS") {
-      groupKey = `${node.x}-${node.y}`;
     } else if (groupKind === "TEXT") {
       groupKey = `${node.characters}`;
+    } else if (groupKind === "LOCAL_XY") {
+      groupKey = `${node.x}-${node.y}`;
+    } else if (groupKind === "LOCAL_X") {
+      groupKey = `${node.x}`;
+    } else if (groupKind === "LOCAL_Y") {
+      groupKey = `${node.y}`;
     }
 
     if (!groupsMap[groupKey]) {

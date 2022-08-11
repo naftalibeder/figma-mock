@@ -92,7 +92,7 @@ export class TextNodeGroup {
   }
 }
 
-export type TextNodeGroupKind = 'NAME' | 'LOCAL_POS' | 'TEXT';
+export type TextNodeGroupKind = 'NAME' | 'TEXT' | 'LOCAL_XY' | 'LOCAL_X' | 'LOCAL_Y';
 
 export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 
