@@ -4,6 +4,7 @@
   import { store } from "../store";
   import Label from "../components/Label.svelte";
   import Divider from "../components/Divider.svelte";
+  import TextNodeListItem from "./TextNodeListItem.svelte";
 
   $: nodeGroups = $store.nodeGroups;
 
@@ -15,13 +16,22 @@
   $: selectedMapCopy = { ...selectedMap };
 
   let subtitleText = "";
-  $: {
+
+  const updateSubtitleText = () => {
     if (selectedGroups.length > 0) {
-      const itemsCount = selectedGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
-      subtitleText = `${itemsCount} items selected.`;
+      const selectedCount = selectedGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
+      const allCount = $store.nodeGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
+      subtitleText = `${selectedCount} of ${allCount} text fields selected.`;
     } else {
-      subtitleText = "Select the text fields to fill.";
+      subtitleText = "Select a grouping attribute and text fields to paste into.";
     }
+  };
+
+  $: {
+    $store.nodeGroups;
+    selectedGroups;
+
+    updateSubtitleText();
   }
 
   let groupKindOptions: SelectMenuOption<TextNodeGroupKind>[] = [];
@@ -51,11 +61,18 @@
       return {
         value: o.value,
         label: o.label,
-        group: "Group by property",
+        group: "Group by attribute",
         selected: o.value === groupKind,
       };
     });
   }
+
+  const _onChangeGroupKind = (groupKind: TextNodeGroupKind) => {
+    selectedMap = {};
+    selectedGroups = [];
+
+    onChangeGroupKind(groupKind);
+  };
 
   const onSelectGroup = (index: number) => {
     if (selectedMap[index] === undefined) {
@@ -84,7 +101,7 @@
   <div class="group-by-options">
     <SelectMenu
       bind:menuItems={groupKindOptions}
-      on:change={(e) => onChangeGroupKind(e.detail.value)}
+      on:change={(e) => _onChangeGroupKind(e.detail.value)}
       showGroupLabels={true}
     />
   </div>
@@ -94,20 +111,17 @@
         {#if index > 0}
           <Divider />
         {/if}
-        <div class="scroll-item" on:click={() => onSelectGroup(index)}>
-          <input
-            class="checkbox"
-            type="checkbox"
-            value={nodeGroup.key}
-            checked={selectedMapCopy[index]}
-          />
-          <Type>
-            {`${Object.values(nodeGroup.nodesMap)[0].characters} (${nodeGroup.count})`}
-          </Type>
-        </div>
+        <TextNodeListItem
+          {nodeGroup}
+          {groupKind}
+          checked={selectedMapCopy[index]}
+          on:click={() => onSelectGroup(index)}
+        />
       {/each}
     {:else}
-      <Label>Select at least one element.</Label>
+      <div class="empty-text">
+        <Type color="black3">Select at least one element.</Type>
+      </div>
     {/if}
   </div>
 </div>
@@ -134,14 +148,8 @@
     padding: 4px 8px;
     font-size: smaller;
   }
-  .scroll-item {
-    display: flex;
-    flex-direction: row;
+  .empty-text {
     padding: 4px 0px;
-    align-items: center;
-  }
-  .checkbox {
-    margin-right: 8px;
   }
   .rounded-box {
     border-color: rgb(235, 235, 235);
