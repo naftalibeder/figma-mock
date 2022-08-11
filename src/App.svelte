@@ -28,18 +28,14 @@
   window.onmessage = async (event: MessageEvent) => {
     const message = event.data.pluginMessage as CodeMessage;
     console.log("Received message:", message);
-    console.log(
-      ">",
-      message.nodes.map((o) => o.name)
-    );
 
     if (message.type === "SELECTED_AND_STORE") {
-      $store.nodeGroups = buildTextNodeGroups(message.nodes, groupKind);
+      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, groupKind);
 
       const urls = [...message.persistedStore.listUrls["current"]];
       $store.listGroups = await fetchListGroups(urls);
     } else if (message.type === "SELECTED") {
-      $store.nodeGroups = buildTextNodeGroups(message.nodes, groupKind);
+      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, groupKind);
     }
   };
 
