@@ -1,5 +1,5 @@
 <script lang="ts" type="module">
-  import { Section, Checkbox } from "figma-plugin-ds-svelte";
+  import { Section, Checkbox, Type } from "figma-plugin-ds-svelte";
   import { TextNodeGroup } from "types";
   import { store } from "../store";
   import Label from "../components/Label.svelte";
@@ -7,31 +7,44 @@
 
   $: nodeGroups = $store.nodeGroups;
 
+  export let selectedGroups: TextNodeGroup[] = [];
+
   let selectedMap: Record<number, boolean> = {}; // index, isSelected
-  let selectedGroups: TextNodeGroup[] = [];
+  $: selectedMapCopy = { ...selectedMap };
+
+  let subtitleText = "";
   $: {
+    if (selectedGroups.length > 0) {
+      const itemsCount = selectedGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
+      subtitleText = `${itemsCount} items selected.`;
+    } else {
+      subtitleText = "Select the text fields to fill.";
+    }
+  }
+
+  const onSelectGroup = (index: number) => {
+    if (selectedMap[index] === undefined) {
+      selectedMap[index] = true;
+    } else {
+      selectedMap[index] = !selectedMap[index];
+    }
+
     selectedGroups = [];
     nodeGroups.forEach((nodeGroup, index) => {
-      if (selectedMap[index] === true) {
+      if (selectedMap[index]) {
         selectedGroups.push(nodeGroup);
       }
     });
     selectedGroups = selectedGroups;
-  }
 
-  const onSelectNodeGroup = (index: number) => {
-    selectedMap[index] = !selectedMap[index];
+    console.log(`Selected node groups: ${selectedGroups.map((o) => o.key).join(", ")}`);
   };
 </script>
 
 <div class="section">
   <Section>Fields</Section>
   <div class="section-subtitle">
-    <Label
-      >{selectedGroups.length > 0
-        ? `${selectedGroups.map((o) => o.count).reduce((a, c) => (a += c), 0)} items selected.`
-        : "Select the text fields to fill."}</Label
-    >
+    <Label>{subtitleText}</Label>
   </div>
   <div class="scroll-box rounded-box">
     {#if nodeGroups.length > 0}
@@ -39,14 +52,16 @@
         {#if index > 0}
           <Divider />
         {/if}
-        <div class="scroll-item" on:click={() => onSelectNodeGroup(index)}>
-          <Checkbox
+        <div class="scroll-item" on:click={() => onSelectGroup(index)}>
+          <input
+            class="checkbox"
+            type="checkbox"
             value={nodeGroup.key}
-            checked={selectedMap[index]}
-            on:change={() => onSelectNodeGroup(index)}
-          >
+            checked={selectedMapCopy[index]}
+          />
+          <Type>
             {`${Object.values(nodeGroup.nodesMap)[0].characters} (${nodeGroup.count})`}
-          </Checkbox>
+          </Type>
         </div>
       {/each}
     {:else}
@@ -69,7 +84,7 @@
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    height: 134px;
+    height: 146px;
     margin-top: 8px;
     padding: 4px 8px;
     font-size: smaller;
@@ -77,8 +92,11 @@
   .scroll-item {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    padding: 4px 0px;
     align-items: center;
+  }
+  .checkbox {
+    margin-right: 8px;
   }
   .rounded-box {
     border-color: rgb(235, 235, 235);

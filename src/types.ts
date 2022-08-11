@@ -124,8 +124,7 @@ export type WindowMessageSetStore = {
 
 export type WindowMessagePaste = {
   readonly type: "PASTE";
-  itemsSequence: string[][];
-  groupingKey: string;
+  textLinesMap: Record<string, string>;
 };
 
 export type WindowMessageExit = {

@@ -1,11 +1,9 @@
 
 import {
-  WindowMessagePaste,
   TextNodeGroup,
   WindowMessage,
   CodeMessageSelectedAndStore,
   CodeMessageSelected,
-  CachedStore,
   PersistedStore,
 } from "./types";
 
@@ -24,29 +22,37 @@ const refreshSelectedNodes = async () => {
   figma.ui.postMessage(message);
 };
 
-const writeToNodes = (message: WindowMessagePaste) => {
-  const { itemsSequence, groupingKey } = message;
+const writeToNodes = async (textLinesMap: Record<string, string>) => {
+  let textNodes: TextNode[] = [];
+  for (const [textNodeId, _] of Object.entries(textLinesMap)) {
+    textNodes.push(figma.getNodeById(textNodeId) as TextNode)
+  }
 
-  const textNodes: TextNode[] = getTextNodesWithGroupingKey(groupingKey);
+  // Preload all fonts needed to edit the selected nodes.
 
-  textNodes.forEach(async (textNode, index) => {
-    if (!textNode.hasMissingFont) {
-      await figma.loadFontAsync(textNode.fontName as FontName);
+  const fontNameMap: Record<string, FontName> = {};
+  for (const textNode of textNodes) {
+    const fontName = textNode.fontName as FontName;
+    const fontId = `${fontName.family}-${fontName.style}`;
+    fontNameMap[fontId] = fontName;
+  }
+  const fontNames = Object.values(fontNameMap);
 
-      let text = "";
-      itemsSequence.forEach((items) => {
-        const finalIndex = index % items.length;
-        text += items[finalIndex];
-      });
-      textNode.characters = text;
-    } else {
-      console.log("Text node is missing a font and cannot be edited.");
+  for (const fontName of fontNames) {
+    try {
+      await figma.loadFontAsync(fontName);
+    } catch (e) {
+      console.warn("Error loading text node font:", e);
     }
+  }
 
-    if (index === textNodes.length - 1) {
-      refreshSelectedNodes();
-    }
-  });
+  // Paste text into all selected nodes.
+
+  for (const textNode of textNodes) {
+    textNode.characters = textLinesMap[textNode.id];
+  }
+
+  refreshSelectedNodes();
 };
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
@@ -69,20 +75,14 @@ const getAllSelectedTextNodes = (): TextNode[] => {
   return all;
 };
 
-const getTextNodesWithGroupingKey = (key: string): TextNode[] => {
-  const nodeGroups = getTextNodeGroups();
-  const nodeGroup = nodeGroups.filter((group) => group.key == key)[0];
-  const nodesInfos = Object.values(nodeGroup.nodesMap);
-  const nodes = nodesInfos.map((o) => figma.getNodeById(o.id) as TextNode);
-  return nodes;
-};
-
 const getTextNodeGroups = (): TextNodeGroup[] => {
   const nodes = getAllSelectedTextNodes();
 
   let groupsMap: { [key: string]: TextNodeGroup } = {};
   nodes.forEach((node) => {
-    const groupingKey = `${node.x},${node.y}`;
+    /** All nodes with this key are grouped. */
+    const groupingKey = `${node.name}`;
+    // const groupingKey = `${node.x}-${node.y}`;
 
     if (!groupsMap[groupingKey]) {
       groupsMap[groupingKey] = new TextNodeGroup(groupingKey);
@@ -143,7 +143,7 @@ figma.ui.onmessage = async (message: WindowMessage) => {
   } else if (type === 'SET_STORE') {
     setStore(message.persistedStore);
   } else if (type === 'PASTE') {
-    writeToNodes(message)
+    writeToNodes(message.textLinesMap)
   } else if (type === 'EXIT') {
     figma.closePlugin();
   }

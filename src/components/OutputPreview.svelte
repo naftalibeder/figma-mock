@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
   import { Section } from "figma-plugin-ds-svelte";
-  import { cased, fetchListContent, listById } from "utils";
+  import { cased, fetchListContent, getStringFromTextBlocks, listById } from "utils";
   import { store } from "../store";
   import Divider from "./Divider.svelte";
   import Label from "./Label.svelte";
@@ -10,36 +10,10 @@
 
   let previewLines: string[] = [];
 
-  const buildPreviewLine = async () => {
-    let text = "";
-
-    for (const textBlock of textBlocks) {
-      switch (textBlock.type) {
-        case "TextBlockCustomString":
-          text += textBlock.customText;
-          break;
-        case "TextBlockDate":
-          text += textBlock.earliest + "-" + textBlock.latest;
-          break;
-        case "TextBlockNumber":
-          text += textBlock.min + "-" + textBlock.max;
-          break;
-        case "TextBlockString":
-          const list = listById(textBlock.listId, listGroups);
-          const lines = await fetchListContent(list.url);
-          const randLine = lines[Math.floor(Math.random() * lines.length)];
-          text += cased(randLine, textBlock.casing);
-          break;
-      }
-    }
-
-    return text;
-  };
-
   const buildPreviewLines = async () => {
     const promises = Array(20)
       .fill(0)
-      .map(() => buildPreviewLine());
+      .map(() => getStringFromTextBlocks(textBlocks, listGroups));
     previewLines = await Promise.all(promises);
     previewLines = previewLines.filter((o) => o.length > 0);
   };

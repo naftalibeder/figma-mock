@@ -1,4 +1,4 @@
-import { Casing, ListGroup, ListGroupList, Sort } from "types";
+import { Casing, ListGroup, ListGroupList, Sort, TextBlock } from "types";
 import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
@@ -114,7 +114,7 @@ export const fetchListGroups = async (urls: string[]): Promise<ListGroup[]> => {
       const group = await fetchListGroup(url, i);
       groups.push(group);
     }
-  } catch (error) {}
+  } catch (error) { }
 
   return groups;
 };
@@ -177,4 +177,30 @@ export const listById = (id: string, listGroups: ListGroup[]): ListGroupList | u
   }
 
   return undefined;
+};
+
+export const getStringFromTextBlocks = async (textBlocks: TextBlock[], listGroups: ListGroup[]) => {
+  let text = "";
+
+  for (const textBlock of textBlocks) {
+    switch (textBlock.type) {
+      case "TextBlockCustomString":
+        text += textBlock.customText;
+        break;
+      case "TextBlockDate":
+        text += textBlock.earliest + "-" + textBlock.latest;
+        break;
+      case "TextBlockNumber":
+        text += textBlock.min + "-" + textBlock.max;
+        break;
+      case "TextBlockString":
+        const list = listById(textBlock.listId, listGroups);
+        const lines = await fetchListContent(list.url);
+        const randLine = lines[Math.floor(Math.random() * lines.length)];
+        text += cased(randLine, textBlock.casing);
+        break;
+    }
+  }
+
+  return text;
 };

@@ -1,12 +1,14 @@
 <script lang="ts" type="module">
   import { onMount } from "svelte";
   import { Button } from "figma-plugin-ds-svelte";
-  import { CodeMessage, WindowMessage } from "types";
-  import { fetchListGroups } from "utils";
+  import { CodeMessage, WindowMessage, TextNodeGroup } from "types";
+  import { fetchListGroups, getStringFromTextBlocks } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
   import TextBlocksBuilder from "./components/TextBlocksBuilder.svelte";
   import OutputPreview from "./components/OutputPreview.svelte";
+
+  let selectedGroups: TextNodeGroup[] = [];
 
   onMount(async () => {
     const message: WindowMessage = {
@@ -29,22 +31,42 @@
     }
   };
 
-  const onConfirmPaste = () => {
+  const onConfirmPaste = async () => {
+    let nodeIds: string[] = [];
+    let textLinesMap: Record<string, string> = {};
+
+    // For each group of text nodes...
+    for (const selectedGroup of selectedGroups) {
+      // Add that group's node ids to the list.
+      const nodeInfos = Object.values(selectedGroup.nodesMap);
+      nodeIds = [...nodeIds, ...nodeInfos.map((o) => o.id)];
+
+      // Generate a string for each of its nodes.
+      for (const nodeId of nodeIds) {
+        const textLine = await getStringFromTextBlocks($store.textBlocks, $store.listGroups);
+        textLinesMap[nodeId] = textLine;
+      }
+    }
+
     const message: WindowMessage = {
       type: "PASTE",
-      groupingKey: "",
-      itemsSequence: [[]],
+      textLinesMap,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   };
 </script>
 
 <div class="wrap">
-  <TextNodeList />
+  <TextNodeList bind:selectedGroups />
   <TextBlocksBuilder />
   <OutputPreview />
   <div class="button-holder">
-    <Button on:click={onConfirmPaste} disabled={false}>Paste into selected fields</Button>
+    <Button
+      on:click={onConfirmPaste}
+      disabled={$store.nodeGroups.length === 0 || selectedGroups.length === 0}
+    >
+      Paste into selected fields
+    </Button>
   </div>
 </div>
 
