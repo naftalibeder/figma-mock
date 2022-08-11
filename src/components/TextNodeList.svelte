@@ -5,6 +5,7 @@
   import Label from "../components/Label.svelte";
   import Divider from "../components/Divider.svelte";
   import TextNodeListItem from "./TextNodeListItem.svelte";
+  import EmptyText from "./EmptyText.svelte";
 
   $: nodeGroups = $store.nodeGroups;
 
@@ -119,9 +120,7 @@
         />
       {/each}
     {:else}
-      <div class="empty-text">
-        <Type color="black3">Select at least one element.</Type>
-      </div>
+      <EmptyText />
     {/if}
   </div>
 </div>
@@ -147,9 +146,6 @@
     margin-top: 8px;
     padding: 4px 8px;
     font-size: smaller;
-  }
-  .empty-text {
-    padding: 4px 0px;
   }
   .rounded-box {
     border-color: rgb(235, 235, 235);

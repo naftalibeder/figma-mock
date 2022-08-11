@@ -1,8 +1,9 @@
 <script lang="ts" type="module">
   import { Section } from "figma-plugin-ds-svelte";
-  import { cased, fetchListContent, getStringFromTextBlocks, listById } from "utils";
+  import { getStringFromTextBlocks } from "utils";
   import { store } from "../store";
   import Divider from "./Divider.svelte";
+  import EmptyText from "./EmptyText.svelte";
   import Label from "./Label.svelte";
 
   $: textBlocks = $store.textBlocks;
@@ -32,14 +33,18 @@
     <Label>Examples of output text will appear below.</Label>
   </div>
   <div class="scroll-box rounded-box">
-    {#each previewLines as previewLine, index}
-      {#if index > 0}
-        <Divider />
-      {/if}
-      <div class="preview-item">
-        <Label>{previewLine}</Label>
-      </div>
-    {/each}
+    {#if $store.nodeGroups.length > 0}
+      {#each previewLines as previewLine, index}
+        {#if index > 0}
+          <Divider />
+        {/if}
+        <div class="preview-item">
+          <Label>{previewLine}</Label>
+        </div>
+      {/each}
+    {:else}
+      <EmptyText />
+    {/if}
   </div>
 </div>
 
