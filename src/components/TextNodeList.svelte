@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
-  import { Section, Checkbox, Type } from "figma-plugin-ds-svelte";
-  import { TextNodeGroup } from "types";
+  import { Section, Type, SelectMenu } from "figma-plugin-ds-svelte";
+  import { SelectMenuOption, TextNodeGroup, TextNodeGroupKind } from "types";
   import { store } from "../store";
   import Label from "../components/Label.svelte";
   import Divider from "../components/Divider.svelte";
@@ -8,6 +8,8 @@
   $: nodeGroups = $store.nodeGroups;
 
   export let selectedGroups: TextNodeGroup[] = [];
+  export let groupKind: TextNodeGroupKind;
+  export let onChangeGroupKind: (groupKind: TextNodeGroupKind) => void;
 
   let selectedMap: Record<number, boolean> = {}; // index, isSelected
   $: selectedMapCopy = { ...selectedMap };
@@ -20,6 +22,31 @@
     } else {
       subtitleText = "Select the text fields to fill.";
     }
+  }
+
+  let groupKindOptions: SelectMenuOption<TextNodeGroupKind>[] = [];
+  $: {
+    groupKindOptions = [
+      {
+        value: "NAME",
+        label: "Name",
+      },
+      {
+        value: "LOCAL_POS",
+        label: "Position",
+      },
+      {
+        value: "TEXT",
+        label: "Text",
+      },
+    ].map((o: SelectMenuOption<TextNodeGroupKind>) => {
+      return {
+        value: o.value,
+        label: o.label,
+        group: "Group by property",
+        selected: o.value === groupKind,
+      };
+    });
   }
 
   const onSelectGroup = (index: number) => {
@@ -45,6 +72,13 @@
   <Section>Fields</Section>
   <div class="section-subtitle">
     <Label>{subtitleText}</Label>
+  </div>
+  <div class="group-by-options">
+    <SelectMenu
+      bind:menuItems={groupKindOptions}
+      on:change={(e) => onChangeGroupKind(e.detail.value)}
+      showGroupLabels={true}
+    />
   </div>
   <div class="scroll-box rounded-box">
     {#if nodeGroups.length > 0}
@@ -80,11 +114,14 @@
     padding: 0px 8px;
     font-size: smaller;
   }
+  .group-by-options {
+    margin-top: 8px;
+  }
   .scroll-box {
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    height: 146px;
+    height: 110px;
     margin-top: 8px;
     padding: 4px 8px;
     font-size: smaller;

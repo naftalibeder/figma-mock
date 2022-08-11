@@ -1,7 +1,14 @@
 <script lang="ts" type="module">
   import { onMount } from "svelte";
   import { Button } from "figma-plugin-ds-svelte";
-  import { CodeMessage, WindowMessage, TextNodeGroup } from "types";
+  import {
+    CodeMessage,
+    WindowMessage,
+    TextNodeGroup,
+    TextNodeGroupKind,
+    WindowMessageGetSelected,
+    WindowMessageGetSelectedAndStore,
+  } from "types";
   import { fetchListGroups, getStringFromTextBlocks } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
@@ -9,10 +16,12 @@
   import OutputPreview from "./components/OutputPreview.svelte";
 
   let selectedGroups: TextNodeGroup[] = [];
+  let groupKind: TextNodeGroupKind = "NAME";
 
   onMount(async () => {
-    const message: WindowMessage = {
+    const message: WindowMessageGetSelectedAndStore = {
       type: "GET_SELECTED_AND_STORE",
+      groupKind,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   });
@@ -29,6 +38,16 @@
     } else if (message.type === "SELECTED") {
       $store.nodeGroups = message.nodeGroups;
     }
+  };
+
+  let onChangeGroupKind = (_groupKind: TextNodeGroupKind) => {
+    groupKind = _groupKind;
+
+    const message: WindowMessageGetSelected = {
+      type: "GET_SELECTED",
+      groupKind,
+    };
+    parent.postMessage({ pluginMessage: message }, "*");
   };
 
   const onConfirmPaste = async () => {
@@ -51,13 +70,14 @@
     const message: WindowMessage = {
       type: "PASTE",
       textLinesMap,
+      groupKind,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   };
 </script>
 
 <div class="wrap">
-  <TextNodeList bind:selectedGroups />
+  <TextNodeList bind:selectedGroups {groupKind} bind:onChangeGroupKind />
   <TextBlocksBuilder />
   <OutputPreview />
   <div class="button-holder">

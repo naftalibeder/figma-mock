@@ -89,6 +89,8 @@ export class TextNodeGroup {
   }
 }
 
+export type TextNodeGroupKind = 'NAME' | 'LOCAL_POS' | 'TEXT';
+
 export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 
 export type CodeMessageSelectedAndStore = {
@@ -111,10 +113,12 @@ export type WindowMessage =
 
 export type WindowMessageGetSelectedAndStore = {
   readonly type: "GET_SELECTED_AND_STORE";
+  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageGetSelected = {
   readonly type: "GET_SELECTED";
+  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageSetStore = {
@@ -125,6 +129,7 @@ export type WindowMessageSetStore = {
 export type WindowMessagePaste = {
   readonly type: "PASTE";
   textLinesMap: Record<string, string>;
+  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageExit = {

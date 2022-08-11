@@ -5,24 +5,25 @@ import {
   CodeMessageSelectedAndStore,
   CodeMessageSelected,
   PersistedStore,
+  TextNodeGroupKind,
 } from "./types";
 
 figma.showUI(__html__, { width: 360, height: 720 });
 
-const refreshEverything = async () => {
-  const nodeGroups = getTextNodeGroups();
+const refreshEverything = async (groupKind: TextNodeGroupKind) => {
+  const nodeGroups = getTextNodeGroups(groupKind);
   const persistedStore = await getStore();
   const message: CodeMessageSelectedAndStore = { type: 'SELECTED_AND_STORE', nodeGroups, persistedStore };
   figma.ui.postMessage(message);
 };
 
-const refreshSelectedNodes = async () => {
-  const nodeGroups = getTextNodeGroups();
+const refreshSelectedNodes = async (groupKind: TextNodeGroupKind) => {
+  const nodeGroups = getTextNodeGroups(groupKind);
   const message: CodeMessageSelected = { type: 'SELECTED', nodeGroups };
   figma.ui.postMessage(message);
 };
 
-const writeToNodes = async (textLinesMap: Record<string, string>) => {
+const writeToNodes = async (textLinesMap: Record<string, string>, groupKind: TextNodeGroupKind) => {
   let textNodes: TextNode[] = [];
   for (const [textNodeId, _] of Object.entries(textLinesMap)) {
     textNodes.push(figma.getNodeById(textNodeId) as TextNode)
@@ -52,7 +53,7 @@ const writeToNodes = async (textLinesMap: Record<string, string>) => {
     textNode.characters = textLinesMap[textNode.id];
   }
 
-  refreshSelectedNodes();
+  refreshSelectedNodes(groupKind);
 };
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
@@ -75,20 +76,25 @@ const getAllSelectedTextNodes = (): TextNode[] => {
   return all;
 };
 
-const getTextNodeGroups = (): TextNodeGroup[] => {
+const getTextNodeGroups = (groupKind: TextNodeGroupKind): TextNodeGroup[] => {
   const nodes = getAllSelectedTextNodes();
 
   let groupsMap: { [key: string]: TextNodeGroup } = {};
   nodes.forEach((node) => {
-    /** All nodes with this key are grouped. */
-    const groupingKey = `${node.name}`;
-    // const groupingKey = `${node.x}-${node.y}`;
-
-    if (!groupsMap[groupingKey]) {
-      groupsMap[groupingKey] = new TextNodeGroup(groupingKey);
+    let groupKey = ''
+    if (groupKind === 'NAME') {
+      groupKey = `${node.name}`;
+    } else if (groupKind === 'LOCAL_POS') {
+      groupKey = `${node.x}-${node.y}`;
+    } else if (groupKind === 'TEXT') {
+      groupKey = `${node.characters}`;
     }
 
-    const existingGroup = groupsMap[groupingKey];
+    if (!groupsMap[groupKey]) {
+      groupsMap[groupKey] = new TextNodeGroup(groupKey);
+    }
+
+    const existingGroup = groupsMap[groupKey];
     existingGroup.nodesMap[node.id] = {
       id: node.id,
       characters: node.characters,
@@ -137,18 +143,18 @@ figma.ui.onmessage = async (message: WindowMessage) => {
   const { type } = message;
 
   if (type === 'GET_SELECTED_AND_STORE') {
-    refreshEverything();
+    refreshEverything(message.groupKind);
   } else if (type === 'GET_SELECTED') {
-    refreshSelectedNodes();
+    refreshSelectedNodes(message.groupKind);
   } else if (type === 'SET_STORE') {
     setStore(message.persistedStore);
   } else if (type === 'PASTE') {
-    writeToNodes(message.textLinesMap)
+    writeToNodes(message.textLinesMap, message.groupKind)
   } else if (type === 'EXIT') {
     figma.closePlugin();
   }
 };
 
 figma.on("selectionchange", () => {
-  refreshSelectedNodes();
+  // refreshSelectedNodes();
 });
