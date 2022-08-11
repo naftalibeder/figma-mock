@@ -74,7 +74,10 @@ export interface ListGroupList {
 
 export interface TextNodeInfo {
   id: UUID;
+  name: string;
   characters: string;
+  x: number;
+  y: number;
 }
 
 export class TextNodeGroup {
@@ -95,13 +98,13 @@ export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 
 export type CodeMessageSelectedAndStore = {
   readonly type: "SELECTED_AND_STORE";
-  nodeGroups: TextNodeGroup[];
+  nodeInfos: TextNodeInfo[];
   persistedStore: PersistedStore;
 };
 
 export type CodeMessageSelected = {
   readonly type: "SELECTED";
-  nodeGroups: TextNodeGroup[];
+  nodeInfos: TextNodeInfo[];
 };
 
 export type WindowMessage =
@@ -113,12 +116,10 @@ export type WindowMessage =
 
 export type WindowMessageGetSelectedAndStore = {
   readonly type: "GET_SELECTED_AND_STORE";
-  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageGetSelected = {
   readonly type: "GET_SELECTED";
-  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageSetStore = {
@@ -129,7 +130,6 @@ export type WindowMessageSetStore = {
 export type WindowMessagePaste = {
   readonly type: "PASTE";
   textLinesMap: Record<string, string>;
-  groupKind: TextNodeGroupKind;
 };
 
 export type WindowMessageExit = {

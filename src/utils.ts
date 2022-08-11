@@ -1,4 +1,4 @@
-import { Casing, ListGroup, ListGroupList, Sort, TextBlock } from "types";
+import { Casing, ListGroup, ListGroupList, Sort, TextBlock, TextNodeGroup, TextNodeGroupKind, TextNodeInfo } from "types";
 import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
@@ -177,6 +177,39 @@ export const listById = (id: string, listGroups: ListGroup[]): ListGroupList | u
   }
 
   return undefined;
+};
+
+export const buildTextNodeGroups = (nodes: TextNodeInfo[], groupKind: TextNodeGroupKind): TextNodeGroup[] => {
+  let groupsMap: { [key: string]: TextNodeGroup } = {};
+  nodes.forEach((node) => {
+    let groupKey = "";
+    if (groupKind === "NAME") {
+      groupKey = `${node.name}`;
+    } else if (groupKind === "LOCAL_POS") {
+      groupKey = `${node.x}-${node.y}`;
+    } else if (groupKind === "TEXT") {
+      groupKey = `${node.characters}`;
+    }
+
+    if (!groupsMap[groupKey]) {
+      groupsMap[groupKey] = new TextNodeGroup(groupKey);
+    }
+
+    const existingGroup = groupsMap[groupKey];
+    existingGroup.nodesMap[node.id] = {
+      id: node.id,
+      name: node.name,
+      characters: node.characters,
+      x: node.x,
+      y: node.y,
+    };
+    existingGroup.count += 1;
+  });
+
+  const nodeGroups = Object.keys(groupsMap)
+    .map((key) => groupsMap[key])
+    .sort((a, b) => b.count - a.count);
+  return nodeGroups;
 };
 
 export const getStringFromTextBlocks = async (textBlocks: TextBlock[], listGroups: ListGroup[]) => {

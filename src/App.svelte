@@ -9,7 +9,7 @@
     WindowMessageGetSelected,
     WindowMessageGetSelectedAndStore,
   } from "types";
-  import { fetchListGroups, getStringFromTextBlocks } from "utils";
+  import { buildTextNodeGroups, fetchListGroups, getStringFromTextBlocks } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
   import TextBlocksBuilder from "./components/TextBlocksBuilder.svelte";
@@ -21,7 +21,6 @@
   onMount(async () => {
     const message: WindowMessageGetSelectedAndStore = {
       type: "GET_SELECTED_AND_STORE",
-      groupKind,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   });
@@ -29,14 +28,18 @@
   window.onmessage = async (event: MessageEvent) => {
     const message = event.data.pluginMessage as CodeMessage;
     console.log("Received message:", message);
+    console.log(
+      ">",
+      message.nodes.map((o) => o.name)
+    );
 
     if (message.type === "SELECTED_AND_STORE") {
-      $store.nodeGroups = message.nodeGroups;
+      $store.nodeGroups = buildTextNodeGroups(message.nodes, groupKind);
 
       const urls = [...message.persistedStore.listUrls["current"]];
       $store.listGroups = await fetchListGroups(urls);
     } else if (message.type === "SELECTED") {
-      $store.nodeGroups = message.nodeGroups;
+      $store.nodeGroups = buildTextNodeGroups(message.nodes, groupKind);
     }
   };
 
@@ -45,7 +48,6 @@
 
     const message: WindowMessageGetSelected = {
       type: "GET_SELECTED",
-      groupKind,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   };
@@ -70,7 +72,6 @@
     const message: WindowMessage = {
       type: "PASTE",
       textLinesMap,
-      groupKind,
     };
     parent.postMessage({ pluginMessage: message }, "*");
   };

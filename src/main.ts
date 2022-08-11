@@ -1,29 +1,42 @@
 
 import {
-  TextNodeGroup,
   WindowMessage,
   CodeMessageSelectedAndStore,
   CodeMessageSelected,
   PersistedStore,
-  TextNodeGroupKind,
+  TextNodeInfo,
 } from "./types";
 
 figma.showUI(__html__, { width: 360, height: 720 });
 
-const refreshEverything = async (groupKind: TextNodeGroupKind) => {
-  const nodeGroups = getTextNodeGroups(groupKind);
+const buildNodeInfos = (nodes: TextNode[]): TextNodeInfo[] => {
+  return nodes.map(o => {
+    return {
+      id: o.id,
+      name: o.name,
+      characters: o.characters,
+      x: o.x,
+      y: o.y,
+    }
+  })
+}
+
+const refreshEverything = async () => {
+  const nodes = getAllSelectedTextNodes();
+  const nodeInfos = buildNodeInfos(nodes);
   const persistedStore = await getStore();
-  const message: CodeMessageSelectedAndStore = { type: 'SELECTED_AND_STORE', nodeGroups, persistedStore };
+  const message: CodeMessageSelectedAndStore = { type: 'SELECTED_AND_STORE', nodeInfos, persistedStore };
   figma.ui.postMessage(message);
 };
 
-const refreshSelectedNodes = async (groupKind: TextNodeGroupKind) => {
-  const nodeGroups = getTextNodeGroups(groupKind);
-  const message: CodeMessageSelected = { type: 'SELECTED', nodeGroups };
+const refreshSelectedNodes = async () => {
+  const nodes = getAllSelectedTextNodes();
+  const nodeInfos = buildNodeInfos(nodes);
+  const message: CodeMessageSelected = { type: 'SELECTED', nodeInfos };
   figma.ui.postMessage(message);
 };
 
-const writeToNodes = async (textLinesMap: Record<string, string>, groupKind: TextNodeGroupKind) => {
+const writeToNodes = async (textLinesMap: Record<string, string>) => {
   let textNodes: TextNode[] = [];
   for (const [textNodeId, _] of Object.entries(textLinesMap)) {
     textNodes.push(figma.getNodeById(textNodeId) as TextNode)
@@ -53,7 +66,7 @@ const writeToNodes = async (textLinesMap: Record<string, string>, groupKind: Tex
     textNode.characters = textLinesMap[textNode.id];
   }
 
-  refreshSelectedNodes(groupKind);
+  refreshSelectedNodes();
 };
 
 const appendChildTextNodes = (nodes: TextNode[], node: BaseNode) => {
@@ -74,37 +87,6 @@ const getAllSelectedTextNodes = (): TextNode[] => {
   let all: TextNode[] = [];
   selectedNodes.forEach((node) => appendChildTextNodes(all, node));
   return all;
-};
-
-const getTextNodeGroups = (groupKind: TextNodeGroupKind): TextNodeGroup[] => {
-  const nodes = getAllSelectedTextNodes();
-
-  let groupsMap: { [key: string]: TextNodeGroup } = {};
-  nodes.forEach((node) => {
-    let groupKey = ''
-    if (groupKind === 'NAME') {
-      groupKey = `${node.name}`;
-    } else if (groupKind === 'LOCAL_POS') {
-      groupKey = `${node.x}-${node.y}`;
-    } else if (groupKind === 'TEXT') {
-      groupKey = `${node.characters}`;
-    }
-
-    if (!groupsMap[groupKey]) {
-      groupsMap[groupKey] = new TextNodeGroup(groupKey);
-    }
-
-    const existingGroup = groupsMap[groupKey];
-    existingGroup.nodesMap[node.id] = {
-      id: node.id,
-      characters: node.characters,
-    };
-    existingGroup.count += 1;
-  });
-  const nodeGroups = Object.keys(groupsMap)
-    .map((key) => groupsMap[key])
-    .sort((a, b) => b.count - a.count);
-  return nodeGroups;
 };
 
 const getStore = async (): Promise<PersistedStore> => {
@@ -143,18 +125,18 @@ figma.ui.onmessage = async (message: WindowMessage) => {
   const { type } = message;
 
   if (type === 'GET_SELECTED_AND_STORE') {
-    refreshEverything(message.groupKind);
+    refreshEverything();
   } else if (type === 'GET_SELECTED') {
-    refreshSelectedNodes(message.groupKind);
+    refreshSelectedNodes();
   } else if (type === 'SET_STORE') {
     setStore(message.persistedStore);
   } else if (type === 'PASTE') {
-    writeToNodes(message.textLinesMap, message.groupKind)
+    writeToNodes(message.textLinesMap)
   } else if (type === 'EXIT') {
     figma.closePlugin();
   }
 };
 
 figma.on("selectionchange", () => {
-  // refreshSelectedNodes();
+  refreshSelectedNodes();
 });
