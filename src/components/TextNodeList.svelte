@@ -32,6 +32,11 @@
     $store.nodeGroups;
     selectedGroups;
 
+    if ($store.nodeGroups.length === 0) {
+      selectedGroups = [];
+      selectedMap = {};
+    }
+
     updateSubtitleText();
   }
 
@@ -73,8 +78,8 @@
   }
 
   const _onChangeGroupKind = (groupKind: TextNodeGroupKind) => {
-    selectedMap = {};
     selectedGroups = [];
+    selectedMap = {};
 
     onChangeGroupKind(groupKind);
   };
