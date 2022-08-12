@@ -45,7 +45,7 @@
   }
 </script>
 
-<div class={`container ${tag ? "four" : "three"}`} on:click>
+<div class={`container`} on:click>
   <div class="checkbox-wrap">
     <input class="checkbox" type="checkbox" value={nodeGroup.key} {checked} />
   </div>
@@ -66,16 +66,11 @@
   .container {
     display: grid;
     align-items: center;
+    grid-template-columns: min-content 1fr min-content 16px;
     min-height: 28px;
     width: 100%;
     gap: 4px;
     cursor: pointer;
-  }
-  .container.four {
-    grid-template-columns: min-content 1fr 64px min-content;
-  }
-  .container.three {
-    grid-template-columns: min-content 1fr 0px min-content;
   }
   .checkbox-wrap {
     grid-column: 1;
@@ -88,16 +83,18 @@
   }
   .tag-wrap {
     grid-column: 3;
-    place-self: center start;
+    place-self: center end;
+    padding-left: 8px;
   }
   .tag {
     padding: 2px 4px;
     border-radius: var(--border-radius-large);
     white-space: nowrap;
     background-color: lightgray;
+    place-self: center end;
   }
   .count-wrap {
     grid-column: 4;
-    padding-left: 8px;
+    text-align: right;
   }
 </style>
