@@ -7,7 +7,7 @@
   export let checked: boolean;
 
   let title = "";
-  let tag = "";
+  let tag: string | undefined = undefined;
   let count = "";
 
   $: {
@@ -41,49 +41,59 @@
   }
 </script>
 
-<div class="scroll-item" on:click>
-  <input class="checkbox" type="checkbox" value={nodeGroup.key} {checked} />
-  <div class="labels-wrap">
-    <div class="labels-title-and-tag">
-      <Type>{title}</Type>
-      {#if tag.length > 0}
-        <div class="tag"><Type size={""}>{tag}</Type></div>
-      {/if}
+<div class={`container ${tag ? "four" : "three"}`} on:click>
+  <div class="checkbox-wrap">
+    <input class="checkbox" type="checkbox" value={nodeGroup.key} {checked} />
+  </div>
+  <div class="title-wrap">
+    <Type>{title}</Type>
+  </div>
+  {#if tag}
+    <div class="tag-wrap">
+      <div class="tag"><Type>{tag}</Type></div>
     </div>
+  {/if}
+  <div class="count-wrap">
     <Type>{count}</Type>
   </div>
 </div>
 
 <style>
-  .scroll-item {
-    display: flex;
-    flex: 0;
-    flex-direction: row;
-    justify-content: flex-start;
+  .container {
+    display: grid;
     align-items: center;
-    padding: 4px 0px;
+    min-height: 28px;
+    width: 100%;
+    gap: 4px;
     cursor: pointer;
   }
-  .checkbox {
-    margin-right: 8px;
+  .container.four {
+    grid-template-columns: min-content 1fr 64px min-content;
   }
-  .labels-wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+  .container.three {
+    grid-template-columns: min-content 1fr 0px min-content;
   }
-  .labels-title-and-tag {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+  .checkbox-wrap {
+    grid-column: 1;
+  }
+  .title-wrap {
+    grid-column: 2;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
+  .tag-wrap {
+    grid-column: 3;
+    place-self: center start;
   }
   .tag {
     padding: 2px 4px;
     border-radius: var(--border-radius-large);
+    white-space: nowrap;
     background-color: lightgray;
+  }
+  .count-wrap {
+    grid-column: 4;
+    padding-left: 8px;
   }
 </style>

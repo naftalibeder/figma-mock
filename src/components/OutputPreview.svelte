@@ -74,6 +74,9 @@
     border-radius: 4px;
   }
   .preview-item {
-    padding: 8px 0px;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    min-height: 28px;
   }
 </style>

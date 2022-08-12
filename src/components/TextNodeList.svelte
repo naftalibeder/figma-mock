@@ -142,6 +142,7 @@
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
+    overflow-x: hidden;
     height: 110px;
     margin-top: 8px;
     padding: 4px 8px;
