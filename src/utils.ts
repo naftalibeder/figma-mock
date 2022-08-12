@@ -1,4 +1,13 @@
-import { Casing, ListGroup, List, Sort, TextBlock, TextNodeGroup, TextNodeGroupKind, TextNodeInfo } from "types";
+import {
+  Casing,
+  ListGroup,
+  List,
+  Sort,
+  TextBlock,
+  TextNodeGroup,
+  TextNodeGroupKind,
+  TextNodeInfo,
+} from "types";
 import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
@@ -102,7 +111,7 @@ export const fetchListGroups = async (indexUrls: string[]): Promise<ListGroup[]>
   let groups: ListGroup[] = [];
 
   const defaultResponse: ListGroup = {
-    indexUrl: '',
+    indexUrl: "",
     name: "Customizable",
     lists: defaultListOptions,
   };
@@ -114,7 +123,7 @@ export const fetchListGroups = async (indexUrls: string[]): Promise<ListGroup[]>
       const group = await fetchListGroup(indexUrl, i);
       groups.push(group);
     }
-  } catch (error) { }
+  } catch (error) {}
 
   return groups;
 };
@@ -179,20 +188,26 @@ export const listById = (id: string, listGroups: ListGroup[]): List | undefined 
   return undefined;
 };
 
-export const buildTextNodeGroups = (nodes: TextNodeInfo[], groupKind: TextNodeGroupKind): TextNodeGroup[] => {
+export const buildTextNodeGroups = (
+  nodes: TextNodeInfo[],
+  groupKind: TextNodeGroupKind
+): TextNodeGroup[] => {
   let groupsMap: { [key: string]: TextNodeGroup } = {};
   nodes.forEach((node) => {
     let groupKey = "";
-    if (groupKind === "NAME") {
-      groupKey = `${node.name}`;
-    } else if (groupKind === "TEXT") {
-      groupKey = `${node.characters}`;
-    } else if (groupKind === "LOCAL_XY") {
-      groupKey = `${node.x}-${node.y}`;
-    } else if (groupKind === "LOCAL_X") {
-      groupKey = `${node.x}`;
-    } else if (groupKind === "LOCAL_Y") {
-      groupKey = `${node.y}`;
+    switch (groupKind) {
+      case "NAME":
+        groupKey = `${node.name}`;
+      case "TEXT":
+        groupKey = `${node.characters}`;
+      case "LOCAL_XY":
+        groupKey = `${node.x}-${node.y}`;
+      case "LOCAL_X":
+        groupKey = `${node.x}`;
+      case "LOCAL_Y":
+        groupKey = `${node.y}`;
+      case "SIZE":
+        groupKey = `${node.width}-${node.height}`;
     }
 
     if (!groupsMap[groupKey]) {
@@ -200,13 +215,7 @@ export const buildTextNodeGroups = (nodes: TextNodeInfo[], groupKind: TextNodeGr
     }
 
     const existingGroup = groupsMap[groupKey];
-    existingGroup.nodesMap[node.id] = {
-      id: node.id,
-      name: node.name,
-      characters: node.characters,
-      x: node.x,
-      y: node.y,
-    };
+    existingGroup.nodesMap[node.id] = { ...node };
     existingGroup.count += 1;
   });
 

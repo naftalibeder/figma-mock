@@ -84,6 +84,8 @@ export interface TextNodeInfo {
   characters: string;
   x: number;
   y: number;
+  width: number;
+  height: number;
 }
 
 export class TextNodeGroup {
@@ -98,7 +100,7 @@ export class TextNodeGroup {
   }
 }
 
-export type TextNodeGroupKind = 'NAME' | 'TEXT' | 'LOCAL_XY' | 'LOCAL_X' | 'LOCAL_Y';
+export type TextNodeGroupKind = 'NAME' | 'TEXT' | 'LOCAL_XY' | 'LOCAL_X' | 'LOCAL_Y' | 'SIZE';
 
 export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 

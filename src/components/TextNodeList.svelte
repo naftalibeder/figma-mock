@@ -58,6 +58,10 @@
         value: "LOCAL_Y",
         label: "Y",
       },
+      {
+        value: "SIZE",
+        label: "Size",
+      },
     ].map((o: SelectMenuOption<TextNodeGroupKind>) => {
       return {
         value: o.value,

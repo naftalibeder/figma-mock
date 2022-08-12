@@ -37,6 +37,10 @@
         title = firstNode.characters;
         tag = `y: ${firstNode.y}`;
         break;
+      case "SIZE":
+        title = firstNode.characters;
+        tag = `${firstNode.width} x ${firstNode.height}`;
+        break;
     }
   }
 </script>
