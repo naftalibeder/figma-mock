@@ -58,8 +58,10 @@
       on:dblclick={() => _onPressDeleteTextBlock(textBlock)}
     />
   {/each}
-  <div class="add-button">
-    <Button variant={"secondary"} on:click={_onPressAppendTextBlock}>+</Button>
+  <div class="add-button-wrap">
+    <Button variant={"secondary"} on:click={_onPressAppendTextBlock}
+      ><div class="add-button-inner">+</div></Button
+    >
   </div>
 </div>
 
@@ -103,9 +105,17 @@
     width: 24px;
     opacity: 1;
   }
-  .add-button {
+  .add-button-wrap {
     padding: 0px 8px;
     font-size: smaller;
+  }
+  .add-button-inner {
+    padding: 0px 0px;
+    font-size: smaller;
+    transition: all 0.2s ease-out;
+  }
+  .add-button-wrap:hover .add-button-inner {
+    padding: 0px 4px;
   }
   .scroll-box::-webkit-scrollbar {
     display: none;
