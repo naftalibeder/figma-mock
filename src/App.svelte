@@ -16,7 +16,6 @@
   import OutputPreview from "./components/OutputPreview.svelte";
 
   let selectedGroups: TextNodeGroup[] = [];
-  let groupKind: TextNodeGroupKind = "NAME";
 
   onMount(async () => {
     const message: WindowMessageGetSelectedAndStore = {
@@ -30,17 +29,18 @@
     console.log("Received message:", message);
 
     if (message.type === "SELECTED_AND_STORE") {
-      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, groupKind);
-
-      const urls = [...message.persistedStore.listUrls["current"]];
-      $store.listGroups = await fetchListGroups(urls);
+      $store.nodeGroupKind = message.persistedStore.nodeGroupKind;
+      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, $store.nodeGroupKind);
+      $store.listGroups = await fetchListGroups(message.persistedStore.listGroupUrls);
+      $store.textBlocks = message.persistedStore.textBlocks;
+      $store.loaded = true;
     } else if (message.type === "SELECTED") {
-      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, groupKind);
+      $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, $store.nodeGroupKind);
     }
   };
 
-  let onChangeGroupKind = (_groupKind: TextNodeGroupKind) => {
-    groupKind = _groupKind;
+  let onChangeGroupKind = (groupKind: TextNodeGroupKind) => {
+    $store.nodeGroupKind = groupKind;
 
     const message: WindowMessageGetSelected = {
       type: "GET_SELECTED",
@@ -74,7 +74,7 @@
 </script>
 
 <div class="wrap">
-  <TextNodeList bind:selectedGroups {groupKind} bind:onChangeGroupKind />
+  <TextNodeList bind:selectedGroups groupKind={$store.nodeGroupKind} bind:onChangeGroupKind />
   <TextBlocksBuilder />
   <OutputPreview />
   <div class="button-holder">

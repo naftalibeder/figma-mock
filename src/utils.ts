@@ -1,4 +1,4 @@
-import { Casing, ListGroup, ListGroupList, Sort, TextBlock, TextNodeGroup, TextNodeGroupKind, TextNodeInfo } from "types";
+import { Casing, ListGroup, List, Sort, TextBlock, TextNodeGroup, TextNodeGroupKind, TextNodeInfo } from "types";
 import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
@@ -96,22 +96,22 @@ const fetchFromUrl = async (url: string): Promise<FetchResponse> => {
   });
 };
 
-export const fetchListGroups = async (urls: string[]): Promise<ListGroup[]> => {
-  console.log(`Fetching list groups from urls: [${urls}]`);
+export const fetchListGroups = async (indexUrls: string[]): Promise<ListGroup[]> => {
+  console.log(`Fetching list groups from index urls: [${indexUrls}]`);
 
   let groups: ListGroup[] = [];
 
   const defaultResponse: ListGroup = {
-    baseUrl: "",
+    indexUrl: '',
     name: "Customizable",
     lists: defaultListOptions,
   };
   groups.push(defaultResponse);
 
   try {
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i];
-      const group = await fetchListGroup(url, i);
+    for (let i = 0; i < indexUrls.length; i++) {
+      const indexUrl = indexUrls[i];
+      const group = await fetchListGroup(indexUrl, i);
       groups.push(group);
     }
   } catch (error) { }
@@ -119,35 +119,35 @@ export const fetchListGroups = async (urls: string[]): Promise<ListGroup[]> => {
   return groups;
 };
 
-const fetchListGroup = async (url: string, index: number): Promise<ListGroup> => {
-  const baseUrl = url.replace("/index.json", "");
-
-  if (!url || url.length === 0) {
-    return { baseUrl };
+const fetchListGroup = async (indexUrl: string, index: number): Promise<ListGroup | undefined> => {
+  if (!indexUrl || indexUrl.length === 0) {
+    return undefined;
   }
 
   try {
-    const response = await fetchFromUrl(url);
+    const response = await fetchFromUrl(indexUrl);
     if (response.error) {
       throw response.error;
     }
 
-    const listGroup = JSON.parse(response.response) as ListGroup;
-    listGroup.baseUrl = url.replace("/index.json", "/");
-    const lists: ListGroupList[] = listGroup.lists.map((list) => {
+    const listGroup: ListGroup = JSON.parse(response.response);
+    listGroup.indexUrl = indexUrl;
+
+    const rootUrl = indexUrl.replace("/index.json", "");
+    const lists: List[] = listGroup.lists.map((list) => {
       return {
         ...list,
         id: `${slugify(listGroup.name)}-${slugify(list.name)}`,
         type: list.type ?? "TextBlockString",
-        url: list.url ?? `${listGroup.baseUrl}${list.path}`,
+        url: list.url ?? `${rootUrl}/${list.path}`,
       };
     });
 
-    console.log(`Fetched ${lists.length} lists from ${url}`);
-    return { ...listGroup, baseUrl, lists };
+    console.log(`Fetched ${lists.length} lists from ${indexUrl}`);
+    return { ...listGroup, lists };
   } catch (error) {
     console.log(`Error: ${error}`);
-    return { baseUrl, error };
+    return { error };
   }
 };
 
@@ -167,7 +167,7 @@ export const fetchListContent = async (url: string): Promise<string[]> => {
   }
 };
 
-export const listById = (id: string, listGroups: ListGroup[]): ListGroupList | undefined => {
+export const listById = (id: string, listGroups: ListGroup[]): List | undefined => {
   for (const listGroup of listGroups) {
     for (const list of listGroup.lists) {
       if (list.id === id) {

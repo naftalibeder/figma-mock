@@ -1,14 +1,17 @@
 type UUID = string;
 
 export type CachedStore = {
+  loaded: boolean;
+  nodeGroupKind?: TextNodeGroupKind;
   nodeGroups: TextNodeGroup[];
   listGroups: ListGroup[];
   textBlocks: TextBlock[];
 };
 
 export type PersistedStore = {
-  listUrls: Record<UUID, string[]>;
-  textBlocks: Record<UUID, TextBlock[]>;
+  nodeGroupKind: TextNodeGroupKind;
+  listGroupUrls: string[];
+  textBlocks: TextBlock[];
 };
 
 export type ListKind =
@@ -58,16 +61,19 @@ export interface TextBlockCustomString extends TextBlockBase {
 }
 
 export interface ListGroup {
-  baseUrl: string;
+  /** The public url to the list group's description file. */
+  indexUrl?: string;
   name?: string;
-  lists?: ListGroupList[];
+  lists?: List[];
   error?: string;
 }
 
-export interface ListGroupList {
+export interface List {
   id: UUID;
   name: string;
+  /** The relative path from the parent group's `indexUrl` to the list. */
   path?: string;
+  /** The public url to the list. */
   url?: string;
   type?: ListKind;
 }

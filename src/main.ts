@@ -1,4 +1,5 @@
 
+import { defaultTextBlockCustomString } from "./constants";
 import {
   WindowMessage,
   CodeMessageSelectedAndStore,
@@ -90,7 +91,7 @@ const getAllSelectedTextNodes = (): TextNode[] => {
 };
 
 const getStore = async (): Promise<PersistedStore> => {
-  const defaultUrl = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
+  const defaultListGroupUrl = 'https://raw.githubusercontent.com/naftalibeder/figma-mock-content/main/index.json';
 
   try {
     const storeStr = await figma.clientStorage.getAsync("store");
@@ -101,16 +102,28 @@ const getStore = async (): Promise<PersistedStore> => {
       throw 'Persisted store is empty';
     }
 
+    let listGroupUrls = store.listGroupUrls;
+    if (listGroupUrls.length === 0) {
+      listGroupUrls = [defaultListGroupUrl];
+    }
+
+    let textBlocks = store.textBlocks;
+    if (textBlocks.length === 0) {
+      textBlocks = [defaultTextBlockCustomString()];
+    }
+
     return {
-      listUrls: store.listUrls,
-      textBlocks: store.textBlocks,
+      nodeGroupKind: store.nodeGroupKind,
+      listGroupUrls,
+      textBlocks,
     };
   } catch (e) {
     console.log('Error fetching store:', e);
 
     return {
-      listUrls: { 'current': [defaultUrl] },
-      textBlocks: {},
+      nodeGroupKind: 'NAME',
+      listGroupUrls: [defaultListGroupUrl],
+      textBlocks: [defaultTextBlockCustomString()],
     };
   }
 };

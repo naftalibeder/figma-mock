@@ -1,4 +1,4 @@
-import { ListGroupList, TextBlockCustomString } from "./types";
+import { List, TextBlockCustomString } from "./types";
 
 export const jsonExampleText = `{
   "name": "Coffee",
@@ -14,7 +14,7 @@ export const jsonExampleText = `{
   ]
 }`;
 
-export const defaultListOptions: ListGroupList[] = [
+export const defaultListOptions: List[] = [
   {
     id: "custom-text",
     name: "Custom Text",

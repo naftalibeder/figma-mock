@@ -7,12 +7,13 @@
   import TextBlockList from "./TextBlockList.svelte";
   import TextBlockDetails from "./TextBlockDetails.svelte";
 
-  let textBlocks = $store.textBlocks;
   let selectedBlock: TextBlock | undefined;
 
-  onMount(() => {
-    selectedBlock = textBlocks[0];
-  });
+  $: {
+    if (!selectedBlock) {
+      selectedBlock = $store.textBlocks[0];
+    }
+  }
 
   const onSelectTextBlock = (textBlock: TextBlock) => {
     selectedBlock = textBlock;
@@ -25,9 +26,9 @@
     placement: "before" | "after",
     index: number
   ) => {
-    const blocks = [...textBlocks];
+    const blocks = [...$store.textBlocks];
     blocks.splice(placement === "before" ? index : index + 1, 0, textBlock);
-    textBlocks = [...blocks];
+    $store.textBlocks = [...blocks];
 
     console.log(`Added text block ${placement} index ${index}:`, selectedBlock);
 
@@ -35,10 +36,10 @@
   };
 
   const onUpdateTextBlock = (textBlock: TextBlock) => {
-    const blocks = [...textBlocks];
+    const blocks = [...$store.textBlocks];
     const i = blocks.findIndex((o) => o.id === textBlock.id);
     blocks[i] = textBlock;
-    textBlocks = [...blocks];
+    $store.textBlocks = [...blocks];
 
     console.log("Updated selected block:", textBlock);
 
@@ -46,24 +47,15 @@
   };
 
   const onPressDeleteTextBlock = (textBlock: TextBlock) => {
-    const blocks = [...textBlocks];
+    const blocks = [...$store.textBlocks];
     const i = blocks.findIndex((o) => o.id === textBlock.id);
     blocks.splice(i, 1);
-    textBlocks = [...blocks];
+    $store.textBlocks = [...blocks];
 
     console.log("Deleted selected block:", textBlock);
 
-    selectedBlock = textBlocks[i < textBlocks.length ? i : i - 1];
+    selectedBlock = $store.textBlocks[i < $store.textBlocks.length ? i : i - 1];
   };
-
-  const updateStore = () => {
-    $store.textBlocks = textBlocks;
-  };
-
-  $: {
-    textBlocks;
-    updateStore();
-  }
 </script>
 
 <div class="section">
@@ -76,7 +68,7 @@
   </div>
   <div class="rounded-box" style="margin-top: 8px">
     <TextBlockList
-      {textBlocks}
+      textBlocks={$store.textBlocks}
       {selectedBlock}
       {onSelectTextBlock}
       {onUpdateTextBlock}

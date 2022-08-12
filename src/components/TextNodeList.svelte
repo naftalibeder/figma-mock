@@ -10,7 +10,7 @@
   $: nodeGroups = $store.nodeGroups;
 
   export let selectedGroups: TextNodeGroup[] = [];
-  export let groupKind: TextNodeGroupKind;
+  export let groupKind: TextNodeGroupKind | undefined;
   export let onChangeGroupKind: (groupKind: TextNodeGroupKind) => void;
 
   let selectedMap: Record<number, boolean> = {}; // index, isSelected

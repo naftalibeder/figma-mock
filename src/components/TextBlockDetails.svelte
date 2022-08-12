@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
   import { SelectMenu, Input, Type } from "figma-plugin-ds-svelte";
-  import { TextBlock, ListGroupList, Casing, SelectMenuOption } from "types";
+  import { TextBlock, List, Casing, SelectMenuOption } from "types";
   import { listById } from "utils";
   import { store } from "../store";
   import Label from "./Label.svelte";
@@ -10,8 +10,8 @@
 
   $: listGroups = $store.listGroups;
 
-  let lists: ListGroupList[] = [];
-  let selectedList: ListGroupList | undefined = undefined;
+  let lists: List[] = [];
+  let selectedList: List | undefined = undefined;
 
   let listOptions: SelectMenuOption[] = [];
 
@@ -52,12 +52,14 @@
     });
 
     // For the active block, mark the block's list dropdown option as selected.
-    selectedList = lists.find((o) => o.id === selectedBlock.listId);
-    listOptions.forEach((listOption, i) => {
-      if (listOption.value === selectedList.id) {
-        listOption.selected = true;
-      }
-    });
+    if (selectedBlock) {
+      selectedList = lists.find((o) => o.id === selectedBlock.listId);
+      listOptions.forEach((listOption, i) => {
+        if (listOption.value === selectedList.id) {
+          listOption.selected = true;
+        }
+      });
+    }
   };
 
   $: {
