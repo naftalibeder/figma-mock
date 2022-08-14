@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
   import { onMount } from "svelte";
-  import { Button } from "figma-plugin-ds-svelte";
+  import { Type, Icon, IconForward } from "figma-plugin-ds-svelte";
   import {
     CodeMessage,
     WindowMessage,
@@ -14,8 +14,11 @@
   import TextNodeList from "./components/TextNodeList.svelte";
   import TextBlocksBuilder from "./components/TextBlocksBuilder.svelte";
   import OutputPreview from "./components/OutputPreview.svelte";
+  import Divider from "./components/Divider.svelte";
 
   let selectedGroups: TextNodeGroup[] = [];
+
+  $: canPaste = $store.nodeGroups.length > 0 && selectedGroups.length > 0;
 
   onMount(async () => {
     const message: WindowMessageGetSelectedAndStore = {
@@ -37,6 +40,8 @@
     } else if (message.type === "SELECTED") {
       $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, $store.nodeGroupKind);
     }
+
+    console.log("Selected groups:", $store.nodeGroups);
   };
 
   let onChangeGroupKind = (groupKind: TextNodeGroupKind) => {
@@ -74,16 +79,23 @@
 </script>
 
 <div class="wrap">
-  <TextNodeList bind:selectedGroups groupKind={$store.nodeGroupKind} bind:onChangeGroupKind />
+  <TextNodeList
+    bind:selectedGroups
+    nodeGroups={$store.nodeGroups}
+    groupKind={$store.nodeGroupKind}
+    bind:onChangeGroupKind
+  />
+  <div class="divider"><Divider /></div>
   <TextBlocksBuilder />
+  <div class="divider"><Divider /></div>
   <OutputPreview />
-  <div class="button-holder">
-    <Button
-      on:click={onConfirmPaste}
-      disabled={$store.nodeGroups.length === 0 || selectedGroups.length === 0}
-    >
-      Paste into selected fields
-    </Button>
+  <div class="divider"><Divider /></div>
+  <div
+    class={`button ${canPaste ? "" : "disabled"}`}
+    on:click={canPaste ? onConfirmPaste : undefined}
+  >
+    <Type weight="bold">Paste into selected text fields</Type>
+    <Icon iconName={IconForward} />
   </div>
 </div>
 
@@ -92,10 +104,30 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px;
+    padding: 8px 0px;
   }
-  .button-holder {
-    margin-top: 8px;
+  .divider {
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .button {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 16px;
+    padding-top: 12px;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .button.disabled {
+    opacity: 0.5;
+  }
+  .button:hover {
+    opacity: 1;
+  }
+  .button.disabled:hover {
+    opacity: 0.6;
   }
 </style>

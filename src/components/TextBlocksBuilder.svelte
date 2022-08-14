@@ -84,6 +84,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    padding: 0px 8px;
   }
   .section-subtitle {
     padding: 0px 8px;

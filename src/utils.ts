@@ -192,22 +192,28 @@ export const buildTextNodeGroups = (
   nodes: TextNodeInfo[],
   groupKind: TextNodeGroupKind
 ): TextNodeGroup[] => {
-  let groupsMap: { [key: string]: TextNodeGroup } = {};
+  const groupsMap: { [key: string]: TextNodeGroup } = {};
   nodes.forEach((node) => {
     let groupKey = "";
     switch (groupKind) {
       case "NAME":
         groupKey = `${node.name}`;
+        break;
       case "TEXT":
         groupKey = `${node.characters}`;
+        break;
       case "LOCAL_XY":
         groupKey = `${node.x}-${node.y}`;
+        break;
       case "LOCAL_X":
         groupKey = `${node.x}`;
+        break;
       case "LOCAL_Y":
         groupKey = `${node.y}`;
+        break;
       case "SIZE":
         groupKey = `${node.width}-${node.height}`;
+        break;
     }
 
     if (!groupsMap[groupKey]) {

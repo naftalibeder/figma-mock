@@ -53,6 +53,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    padding: 0px 8px;
   }
   .section-subtitle {
     padding: 0px 8px;
@@ -62,7 +63,7 @@
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    height: 134px;
+    height: 120px;
     margin-top: 8px;
     padding: 4px 8px;
     font-size: smaller;

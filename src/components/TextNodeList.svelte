@@ -7,9 +7,8 @@
   import TextNodeListItem from "./TextNodeListItem.svelte";
   import EmptyText from "./EmptyText.svelte";
 
-  $: nodeGroups = $store.nodeGroups;
-
   export let selectedGroups: TextNodeGroup[] = [];
+  export let nodeGroups: TextNodeGroup[];
   export let groupKind: TextNodeGroupKind | undefined;
   export let onChangeGroupKind: (groupKind: TextNodeGroupKind) => void;
 
@@ -21,7 +20,7 @@
   const updateSubtitleText = () => {
     if (selectedGroups.length > 0) {
       const selectedCount = selectedGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
-      const allCount = $store.nodeGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
+      const allCount = nodeGroups.map((o) => o.count).reduce((a, c) => (a += c), 0);
       subtitleText = `${selectedCount} of ${allCount} text fields selected.`;
     } else {
       subtitleText = "Select a grouping attribute and text fields to paste into.";
@@ -29,10 +28,10 @@
   };
 
   $: {
-    $store.nodeGroups;
+    nodeGroups;
     selectedGroups;
 
-    if ($store.nodeGroups.length === 0) {
+    if (nodeGroups.length === 0) {
       selectedGroups = [];
       selectedMap = {};
     }
@@ -84,7 +83,7 @@
     onChangeGroupKind(groupKind);
   };
 
-  const onSelectGroup = (index: number) => {
+  const onChangeSelectedGroup = (index: number) => {
     if (selectedMap[index] === undefined) {
       selectedMap[index] = true;
     } else {
@@ -125,7 +124,7 @@
           {nodeGroup}
           {groupKind}
           checked={selectedMapCopy[index]}
-          on:click={() => onSelectGroup(index)}
+          on:click={() => onChangeSelectedGroup(index)}
         />
       {/each}
     {:else}
@@ -139,6 +138,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    padding: 0px 8px;
   }
   .section-subtitle {
     padding: 0px 8px;
@@ -152,7 +152,7 @@
     flex-direction: column;
     overflow-y: scroll;
     overflow-x: hidden;
-    height: 110px;
+    height: 120px;
     margin-top: 8px;
     padding: 4px 8px;
     font-size: smaller;

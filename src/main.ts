@@ -7,7 +7,7 @@ import {
   TextNodeInfo,
 } from "./types";
 
-figma.showUI(__html__, { width: 360, height: 720 });
+figma.showUI(__html__, { width: 360, height: 798 });
 
 const buildNodeInfos = (nodes: TextNode[]): TextNodeInfo[] => {
   return nodes.map((o) => {

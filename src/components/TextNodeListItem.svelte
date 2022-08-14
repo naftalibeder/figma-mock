@@ -16,29 +16,32 @@
 
     count = `${nodeGroup.count}`;
 
+    const joinedNames = [...new Set(nodes.map((o) => o.name))].join(", ");
+    const joinedText = [...new Set(nodes.map((o) => o.characters))].join(", ");
+
     switch (groupKind) {
       case "NAME":
-        title = firstNode.name;
+        title = joinedNames;
         tag = "";
         break;
       case "TEXT":
-        title = firstNode.characters;
+        title = joinedText;
         tag = "";
         break;
       case "LOCAL_XY":
-        title = firstNode.characters;
+        title = joinedText;
         tag = `x: ${firstNode.x}, y: ${firstNode.y}`;
         break;
       case "LOCAL_X":
-        title = firstNode.characters;
+        title = joinedText;
         tag = `x: ${firstNode.x}`;
         break;
       case "LOCAL_Y":
-        title = firstNode.characters;
+        title = joinedText;
         tag = `y: ${firstNode.y}`;
         break;
       case "SIZE":
-        title = firstNode.characters;
+        title = joinedText;
         tag = `${firstNode.width} x ${firstNode.height}`;
         break;
     }
