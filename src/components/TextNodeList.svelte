@@ -1,7 +1,6 @@
 <script lang="ts" type="module">
   import { Section, Type, SelectMenu } from "figma-plugin-ds-svelte";
   import { SelectMenuOption, TextNodeGroup, TextNodeGroupKind } from "types";
-  import { store } from "../store";
   import Label from "../components/Label.svelte";
   import Divider from "../components/Divider.svelte";
   import TextNodeListItem from "./TextNodeListItem.svelte";

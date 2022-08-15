@@ -1,5 +1,7 @@
 type UUID = string;
 
+export type Page = "generate" | "data" | "about";
+
 export type CachedStore = {
   loaded: boolean;
   nodeGroupKind?: TextNodeGroupKind;
