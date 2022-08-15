@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
   import { Section } from "figma-plugin-ds-svelte";
-  import { getStringFromTextBlocks } from "utils";
+  import { buildStringFromTextBlocks } from "utils";
   import { store } from "../store";
   import Divider from "./Divider.svelte";
   import EmptyText from "./EmptyText.svelte";
@@ -14,7 +14,7 @@
   const buildPreviewLines = async () => {
     const promises = Array(20)
       .fill(0)
-      .map(() => getStringFromTextBlocks(textBlocks, listGroups));
+      .map(() => buildStringFromTextBlocks(textBlocks, listGroups));
     previewLines = await Promise.all(promises);
     previewLines = previewLines.filter((o) => o.length > 0);
   };

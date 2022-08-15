@@ -1,7 +1,8 @@
 <script lang="ts" type="module">
-  import { SelectMenu, Input, Type } from "figma-plugin-ds-svelte";
-  import { TextBlock, List, Casing, SelectMenuOption } from "types";
-  import { listById } from "utils";
+  import { SelectMenu, Input } from "figma-plugin-ds-svelte";
+  import { onMount } from "svelte";
+  import { TextBlock, List, Casing, SelectMenuOption, TextBlockString } from "types";
+  import { listById, textBlockIsValid } from "utils";
   import { store } from "../store";
   import Label from "./Label.svelte";
 
@@ -15,7 +16,10 @@
 
   let listOptions: SelectMenuOption[] = [];
 
-  let customTextInputValue = "";
+  let customTextInputValue: string | undefined;
+  let numberMinInputValue: string | undefined;
+  let numberMaxInputValue: string | undefined;
+  let numberPrecisionInputValue: string | undefined;
 
   let casingOptions: SelectMenuOption<Casing>[] = [];
   let selectedCasingOption: SelectMenuOption<Casing>;
@@ -30,7 +34,13 @@
     ];
   }
 
-  const _listGroupsDidChange = () => {
+  onMount(() => {
+    if (selectedBlock) {
+      onUpdateSelectedBlock(selectedBlock);
+    }
+  });
+
+  const listGroupsDidChange = () => {
     lists = [];
     listOptions = [];
 
@@ -62,31 +72,7 @@
     }
   };
 
-  $: {
-    selectedBlock?.id;
-    listGroups;
-    _listGroupsDidChange();
-  }
-
-  const _onSwitchSelectedBlock = () => {
-    if (!selectedBlock) {
-      return;
-    }
-
-    if (selectedBlock.type === "TextBlockCustomString") {
-      customTextInputValue = selectedBlock.customText;
-    } else if (selectedBlock.type === "TextBlockString") {
-      // @ts-ignore
-      selectedCasingOption = casingOptions.find((o) => o.value === selectedBlock.casing);
-    }
-  };
-
-  $: {
-    selectedBlock?.id;
-    _onSwitchSelectedBlock();
-  }
-
-  const _onSelectListOption = (listOption: SelectMenuOption) => {
+  const onSelectListOption = (listOption: SelectMenuOption) => {
     selectedList = listById(listOption.value, listGroups);
 
     const block: TextBlock = { ...selectedBlock };
@@ -94,55 +80,146 @@
     block.type = selectedList.type;
     block.listId = selectedList.id;
     block.title = selectedList.name;
-    selectedBlock = block;
-
-    onUpdateTextBlock(selectedBlock);
+    onUpdateSelectedBlock(block);
   };
 
-  const _onSelectCasingOption = (casingOption: SelectMenuOption<Casing>) => {
-    selectedCasingOption = casingOption;
-
-    if (selectedBlock.type === "TextBlockString") {
-      const block: TextBlock = { ...selectedBlock };
-      block.casing = casingOption.value;
-      selectedBlock = block;
-    }
-
-    onUpdateTextBlock(selectedBlock);
-  };
-
-  const _onEditCustomText = (customText: string) => {
+  const onSwitchSelectedBlock = () => {
     if (!selectedBlock) {
       return;
     }
 
-    if (selectedBlock.type === "TextBlockCustomString") {
-      const block: TextBlock = { ...selectedBlock };
-      block.customText = customText;
-      selectedBlock = block;
+    switch (selectedBlock.type) {
+      case "TextBlockCustomString":
+        customTextInputValue = selectedBlock.customText;
+        break;
+      case "TextBlockNumber":
+        numberMinInputValue = selectedBlock.min?.toString();
+        numberMaxInputValue = selectedBlock.max?.toString();
+        numberPrecisionInputValue = selectedBlock.decimals?.toString();
+        break;
+      case "TextBlockString":
+        selectedCasingOption = casingOptions.find(
+          (o) => o.value === (selectedBlock as TextBlockString).casing
+        );
+        break;
     }
-
-    onUpdateTextBlock(selectedBlock);
   };
+
+  const onUpdateSelectedBlock = (textBlock: TextBlock) => {
+    const block: TextBlock = { ...textBlock };
+    block.isValid = textBlockIsValid(block);
+    selectedBlock = block;
+    onUpdateTextBlock(block);
+  };
+
+  $: {
+    selectedBlock?.id;
+    listGroups;
+
+    listGroupsDidChange();
+  }
+
+  $: {
+    selectedBlock?.id;
+
+    onSwitchSelectedBlock();
+  }
 </script>
 
 <div class="wrap">
-  <Label>Data</Label>
-  <SelectMenu
-    bind:menuItems={listOptions}
-    on:change={(e) => _onSelectListOption(e.detail)}
-    showGroupLabels={true}
-  />
-  {#if selectedBlock?.type === "TextBlockCustomString"}
-    <Label>Custom text</Label>
-    <Input
-      placeholder="Enter custom text"
-      bind:value={customTextInputValue}
-      on:input={(e) => _onEditCustomText(e.target["value"])}
+  <div class="col">
+    <Label>Data</Label>
+    <SelectMenu
+      bind:menuItems={listOptions}
+      on:change={(e) => onSelectListOption(e.detail)}
+      showGroupLabels={true}
     />
+  </div>
+  {#if selectedBlock?.type === "TextBlockCustomString"}
+    <div class="col">
+      <Label>Custom text</Label>
+      <Input
+        placeholder="Enter custom text"
+        bind:value={customTextInputValue}
+        on:input={(e) => {
+          const value = e.target["value"];
+          if (selectedBlock.type === "TextBlockCustomString") {
+            const block = { ...selectedBlock };
+            block.customText = value;
+            onUpdateSelectedBlock(block);
+          }
+        }}
+      />
+    </div>
+  {:else if selectedBlock?.type === "TextBlockNumber"}
+    <div class="row">
+      <div class="col">
+        <Label>Min</Label>
+        <Input
+          type="number"
+          placeholder={"10"}
+          step={"1"}
+          bind:value={numberMinInputValue}
+          on:input={(e) => {
+            const value = e.target["value"];
+            if (selectedBlock.type === "TextBlockNumber") {
+              const block = { ...selectedBlock };
+              block.min = parseFloat(value);
+              onUpdateSelectedBlock(block);
+            }
+          }}
+        />
+      </div>
+      <div class="col">
+        <Label>Max</Label>
+        <Input
+          type="number"
+          placeholder={"1000"}
+          step={"1"}
+          bind:value={numberMaxInputValue}
+          on:input={(e) => {
+            const value = e.target["value"];
+            if (selectedBlock.type === "TextBlockNumber") {
+              const block = { ...selectedBlock };
+              block.max = parseFloat(value);
+              onUpdateSelectedBlock(block);
+            }
+          }}
+        />
+      </div>
+      <div class="col">
+        <Label>Decimals</Label>
+        <Input
+          type="number"
+          placeholder={"2"}
+          min={"0"}
+          step={"1"}
+          bind:value={numberPrecisionInputValue}
+          on:input={(e) => {
+            const value = e.target["value"];
+            if (selectedBlock.type === "TextBlockNumber") {
+              const block = { ...selectedBlock };
+              block.decimals = parseFloat(value);
+              onUpdateSelectedBlock(block);
+            }
+          }}
+        />
+      </div>
+    </div>
   {:else if selectedBlock?.type === "TextBlockString"}
     <Label>Capitalization</Label>
-    <SelectMenu bind:menuItems={casingOptions} on:change={(e) => _onSelectCasingOption(e.detail)} />
+    <SelectMenu
+      bind:menuItems={casingOptions}
+      on:change={(e) => {
+        const value = e.detail.value;
+        selectedCasingOption = value; // Set here imperatively because we don't `bind` the menu value.
+        if (selectedBlock.type === "TextBlockString") {
+          const block = { ...selectedBlock };
+          block.casing = value;
+          onUpdateSelectedBlock(block);
+        }
+      }}
+    />
   {/if}
 </div>
 
@@ -150,8 +227,18 @@
   .wrap {
     display: flex;
     flex-direction: column;
-    gap: 8px;
     padding: 8px;
+    gap: 8px;
     font-size: smaller;
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 </style>

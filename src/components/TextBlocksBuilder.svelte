@@ -1,5 +1,4 @@
 <script lang="ts" type="module">
-  import { onMount } from "svelte";
   import { Section } from "figma-plugin-ds-svelte";
   import { TextBlock } from "types";
   import { store } from "../store";
@@ -10,6 +9,9 @@
   let selectedBlock: TextBlock | undefined;
 
   $: {
+    selectedBlock;
+    $store.textBlocks;
+
     if (!selectedBlock) {
       selectedBlock = $store.textBlocks[0];
     }
@@ -66,7 +68,7 @@
       to delete.
     </Label>
   </div>
-  <div class="rounded-box" style="margin-top: 8px">
+  <div class="rounded-box {selectedBlock?.isValid === false && 'error'}" style="margin-top: 8px">
     <TextBlockList
       textBlocks={$store.textBlocks}
       {selectedBlock}
@@ -95,5 +97,8 @@
     border-width: 1px;
     border-style: solid;
     border-radius: 4px;
+  }
+  .rounded-box.error {
+    border-color: rgb(255, 53, 53);
   }
 </style>

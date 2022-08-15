@@ -25,11 +25,6 @@ export const defaultListOptions: List[] = [
     name: "Numbers",
     type: "TextBlockNumber",
   },
-  {
-    id: "dates",
-    name: "Dates",
-    type: "TextBlockDate",
-  },
 ];
 
 export const defaultTextBlockCustomString = (): TextBlockCustomString => {
@@ -40,7 +35,7 @@ export const defaultTextBlockCustomString = (): TextBlockCustomString => {
     title: list.name,
     listId: list.id,
     sort: "original",
-    confirmed: false,
     customText: "My Text",
+    isValid: true,
   };
 };

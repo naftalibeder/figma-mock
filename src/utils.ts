@@ -193,6 +193,7 @@ export const buildTextNodeGroups = (
   groupKind: TextNodeGroupKind
 ): TextNodeGroup[] => {
   const groupsMap: { [key: string]: TextNodeGroup } = {};
+
   nodes.forEach((node) => {
     let groupKey = "";
     switch (groupKind) {
@@ -231,7 +232,21 @@ export const buildTextNodeGroups = (
   return nodeGroups;
 };
 
-export const getStringFromTextBlocks = async (textBlocks: TextBlock[], listGroups: ListGroup[]) => {
+export const textBlockIsValid = (textBlock: TextBlock) => {
+  switch (textBlock.type) {
+    case "TextBlockCustomString":
+      return textBlock.customText?.length > 0;
+    case "TextBlockNumber":
+      return !isNaN(textBlock.min) && !isNaN(textBlock.max) && !isNaN(textBlock.decimals);
+    case "TextBlockString":
+      return textBlock.casing !== undefined;
+  }
+};
+
+export const buildStringFromTextBlocks = async (
+  textBlocks: TextBlock[],
+  listGroups: ListGroup[]
+) => {
   let text = "";
 
   for (const textBlock of textBlocks) {
@@ -239,11 +254,9 @@ export const getStringFromTextBlocks = async (textBlocks: TextBlock[], listGroup
       case "TextBlockCustomString":
         text += textBlock.customText;
         break;
-      case "TextBlockDate":
-        text += textBlock.earliest + "-" + textBlock.latest;
         break;
       case "TextBlockNumber":
-        text += textBlock.min + "-" + textBlock.max;
+        text += randomNumberString(textBlock.min, textBlock.max, textBlock.decimals);
         break;
       case "TextBlockString":
         const list = listById(textBlock.listId, listGroups);

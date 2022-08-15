@@ -9,7 +9,7 @@
     WindowMessageGetSelected,
     WindowMessageGetSelectedAndStore,
   } from "types";
-  import { buildTextNodeGroups, fetchListGroups, getStringFromTextBlocks } from "utils";
+  import { buildTextNodeGroups, fetchListGroups, buildStringFromTextBlocks } from "utils";
   import { store } from "./store";
   import TextNodeList from "./components/TextNodeList.svelte";
   import TextBlocksBuilder from "./components/TextBlocksBuilder.svelte";
@@ -65,7 +65,7 @@
 
       // Generate a string for each of its nodes.
       for (const nodeId of nodeIds) {
-        const textLine = await getStringFromTextBlocks($store.textBlocks, $store.listGroups);
+        const textLine = await buildStringFromTextBlocks($store.textBlocks, $store.listGroups);
         textLinesMap[nodeId] = textLine;
       }
     }

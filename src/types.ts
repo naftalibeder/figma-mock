@@ -30,10 +30,10 @@ export interface TextBlockBase {
   title: string;
   listId: UUID;
   sort: Sort;
-  confirmed: boolean;
+  isValid: boolean;
 }
 
-export type TextBlock = TextBlockString | TextBlockNumber | TextBlockDate | TextBlockCustomString;
+export type TextBlock = TextBlockString | TextBlockNumber | TextBlockCustomString;
 
 export interface TextBlockString extends TextBlockBase {
   readonly type: "TextBlockString";
@@ -46,13 +46,6 @@ export interface TextBlockNumber extends TextBlockBase {
   min: number;
   max: number;
   decimals: number;
-}
-
-export interface TextBlockDate extends TextBlockBase {
-  readonly type: "TextBlockDate";
-  earliest: Date;
-  latest: Date;
-  format: string;
 }
 
 export interface TextBlockCustomString extends TextBlockBase {
@@ -100,7 +93,7 @@ export class TextNodeGroup {
   }
 }
 
-export type TextNodeGroupKind = 'NAME' | 'TEXT' | 'LOCAL_XY' | 'LOCAL_X' | 'LOCAL_Y' | 'SIZE';
+export type TextNodeGroupKind = "NAME" | "TEXT" | "LOCAL_XY" | "LOCAL_X" | "LOCAL_Y" | "SIZE";
 
 export type CodeMessage = CodeMessageSelectedAndStore | CodeMessageSelected;
 
