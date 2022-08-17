@@ -3,14 +3,9 @@
 </script>
 
 <div class="wrap">
-  <Type>Mock is developed by Naftali Beder and is completely free to use.</Type>
-  <Type>
-    The code is open source and available <a
-      href="https://github.com/naftalibeder/figma-mock"
-      target="_blank"
-    >
-      here</a
-    >.
+  <Type
+    >Mock is developed by Naftali Beder and is completely free to use. The code is open source and
+    available <a href="https://github.com/naftalibeder/figma-mock" target="_blank"> here</a>.
   </Type>
   <Type
     >Bug reports and feature requests are welcome, and can be posted as issues on the GitHub page,
@@ -26,6 +21,7 @@
     >, leaving a comment, or telling someone else about it.</Type
   >
   <Type>Thank you for using it!</Type>
+  <Type>- Naftali</Type>
 </div>
 
 <style>

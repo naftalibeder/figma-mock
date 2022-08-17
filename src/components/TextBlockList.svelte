@@ -97,7 +97,7 @@
     margin: 0px;
     border-radius: var(--border-radius-large);
     background-color: white;
-    border: 1px solid lightgray;
+    border: 1px solid rgb(235, 235, 235);
     opacity: 0;
     transition: all 0.2s ease-out;
   }

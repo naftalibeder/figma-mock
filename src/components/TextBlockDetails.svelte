@@ -1,10 +1,9 @@
 <script lang="ts" type="module">
-  import { SelectMenu, Input } from "figma-plugin-ds-svelte";
+  import { SelectMenu, Input, Type } from "figma-plugin-ds-svelte";
   import { onMount } from "svelte";
   import { TextBlock, List, Casing, SelectMenuOption, TextBlockString } from "types";
   import { listById, textBlockIsValid } from "utils";
   import { store } from "../store";
-  import Label from "./Label.svelte";
 
   export let selectedBlock: TextBlock | undefined;
   export let onUpdateTextBlock: (textBlock: TextBlock) => void;
@@ -128,7 +127,7 @@
 
 <div class="wrap">
   <div class="col">
-    <Label>Data</Label>
+    <Type>Data</Type>
     <SelectMenu
       bind:menuItems={listOptions}
       on:change={(e) => onSelectListOption(e.detail)}
@@ -137,7 +136,7 @@
   </div>
   {#if selectedBlock?.type === "TextBlockCustomString"}
     <div class="col">
-      <Label>Custom text</Label>
+      <Type>Custom text</Type>
       <Input
         placeholder="Enter custom text"
         bind:value={customTextInputValue}
@@ -154,7 +153,7 @@
   {:else if selectedBlock?.type === "TextBlockNumber"}
     <div class="row">
       <div class="col">
-        <Label>Min</Label>
+        <Type>Min</Type>
         <Input
           type="number"
           placeholder={"10"}
@@ -171,7 +170,7 @@
         />
       </div>
       <div class="col">
-        <Label>Max</Label>
+        <Type>Max</Type>
         <Input
           type="number"
           placeholder={"1000"}
@@ -188,7 +187,7 @@
         />
       </div>
       <div class="col">
-        <Label>Decimals</Label>
+        <Type>Decimals</Type>
         <Input
           type="number"
           placeholder={"2"}
@@ -207,7 +206,7 @@
       </div>
     </div>
   {:else if selectedBlock?.type === "TextBlockString"}
-    <Label>Capitalization</Label>
+    <Type>Capitalization</Type>
     <SelectMenu
       bind:menuItems={casingOptions}
       on:change={(e) => {

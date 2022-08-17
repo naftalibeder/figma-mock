@@ -93,7 +93,7 @@
     padding: 2px 4px;
     border-radius: var(--border-radius-large);
     white-space: nowrap;
-    background-color: lightgray;
+    background-color: rgb(245, 245, 245);
     place-self: center end;
   }
   .count-wrap {

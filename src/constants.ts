@@ -1,4 +1,4 @@
-import { List, TextBlockCustomString } from "./types";
+import { List, ListGroup, TextBlockCustomString } from "./types";
 
 export const jsonExampleText = `{
   "name": "Coffee",
@@ -26,6 +26,13 @@ export const defaultListOptions: List[] = [
     type: "TextBlockNumber",
   },
 ];
+
+export const defaultListGroup: ListGroup = {
+  indexUrl: undefined,
+  name: "Customizable",
+  lists: defaultListOptions,
+  editable: false,
+};
 
 export const defaultTextBlockCustomString = (): TextBlockCustomString => {
   const list = defaultListOptions[0];

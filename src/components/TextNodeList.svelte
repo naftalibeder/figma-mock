@@ -1,7 +1,6 @@
 <script lang="ts" type="module">
   import { Section, Type, SelectMenu } from "figma-plugin-ds-svelte";
   import { SelectMenuOption, TextNodeGroup, TextNodeGroupKind } from "types";
-  import Label from "../components/Label.svelte";
   import Divider from "../components/Divider.svelte";
   import TextNodeListItem from "./TextNodeListItem.svelte";
   import EmptyText from "./EmptyText.svelte";
@@ -104,7 +103,7 @@
 <div class="section">
   <Section>Fields</Section>
   <div class="section-subtitle">
-    <Label>{subtitleText}</Label>
+    <Type>{subtitleText}</Type>
   </div>
   <div class="group-by-options">
     <SelectMenu

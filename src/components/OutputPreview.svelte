@@ -1,10 +1,9 @@
 <script lang="ts" type="module">
-  import { Section } from "figma-plugin-ds-svelte";
+  import { Section, Type } from "figma-plugin-ds-svelte";
   import { buildStringFromTextBlocks } from "utils";
   import { store } from "../store";
   import Divider from "./Divider.svelte";
   import EmptyText from "./EmptyText.svelte";
-  import Label from "./Label.svelte";
 
   $: textBlocks = $store.textBlocks;
   $: listGroups = $store.listGroups;
@@ -30,7 +29,7 @@
 <div class="section">
   <Section>Preview</Section>
   <div class="section-subtitle">
-    <Label>Examples of output text will appear below.</Label>
+    <Type>Examples of output text will appear below.</Type>
   </div>
   <div class="scroll-box rounded-box">
     {#if $store.nodeGroups.length > 0}
@@ -39,7 +38,7 @@
           <Divider />
         {/if}
         <div class="preview-item">
-          <Label>{previewLine}</Label>
+          <Type>{previewLine}</Type>
         </div>
       {/each}
     {:else}

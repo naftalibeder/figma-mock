@@ -8,7 +8,6 @@ import {
   TextNodeGroupKind,
   TextNodeInfo,
 } from "types";
-import { defaultListOptions } from "./constants";
 
 export const randomNumberString = (min: number, max: number, precision: number): string => {
   const randNum = min + Math.random() * (max - min);
@@ -110,20 +109,15 @@ export const fetchListGroups = async (indexUrls: string[]): Promise<ListGroup[]>
 
   let groups: ListGroup[] = [];
 
-  const defaultResponse: ListGroup = {
-    indexUrl: "",
-    name: "Customizable",
-    lists: defaultListOptions,
-  };
-  groups.push(defaultResponse);
-
-  try {
-    for (let i = 0; i < indexUrls.length; i++) {
-      const indexUrl = indexUrls[i];
+  for (let i = 0; i < indexUrls.length; i++) {
+    const indexUrl = indexUrls[i];
+    try {
       const group = await fetchListGroup(indexUrl, i);
-      groups.push(group);
-    }
-  } catch (error) {}
+      if (group) {
+        groups.push(group);
+      }
+    } catch (error) {}
+  }
 
   return groups;
 };
@@ -141,6 +135,7 @@ const fetchListGroup = async (indexUrl: string, index: number): Promise<ListGrou
 
     const listGroup: ListGroup = JSON.parse(response.response);
     listGroup.indexUrl = indexUrl;
+    listGroup.editable = true;
 
     const rootUrl = indexUrl.replace("/index.json", "");
     const lists: List[] = listGroup.lists.map((list) => {
@@ -156,7 +151,7 @@ const fetchListGroup = async (indexUrl: string, index: number): Promise<ListGrou
     return { ...listGroup, lists };
   } catch (error) {
     console.log(`Error: ${error}`);
-    return { error };
+    return undefined;
   }
 };
 

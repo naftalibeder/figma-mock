@@ -60,7 +60,7 @@ export interface ListGroup {
   indexUrl?: string;
   name?: string;
   lists?: List[];
-  error?: string;
+  editable: boolean;
 }
 
 export interface List {

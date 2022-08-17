@@ -1,8 +1,7 @@
 <script lang="ts" type="module">
-  import { Section } from "figma-plugin-ds-svelte";
+  import { Section, Type } from "figma-plugin-ds-svelte";
   import { TextBlock } from "types";
   import { store } from "../store";
-  import Label from "./Label.svelte";
   import TextBlockList from "./TextBlockList.svelte";
   import TextBlockDetails from "./TextBlockDetails.svelte";
 
@@ -63,10 +62,10 @@
 <div class="section">
   <Section>Output</Section>
   <div class="section-subtitle">
-    <Label>
+    <Type>
       Add one or more tags to create a text string. Click between tags to insert; double-click a tag
       to delete.
-    </Label>
+    </Type>
   </div>
   <div class="rounded-box {selectedBlock?.isValid === false && 'error'}" style="margin-top: 8px">
     <TextBlockList

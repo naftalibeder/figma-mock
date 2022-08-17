@@ -11,6 +11,7 @@
   } from "types";
   import { buildTextNodeGroups, fetchListGroups, buildStringFromTextBlocks } from "utils";
   import { store } from "../store";
+  import { defaultListGroup } from "../constants";
   import TextNodeList from "../components/TextNodeList.svelte";
   import TextBlocksBuilder from "../components/TextBlocksBuilder.svelte";
   import OutputPreview from "../components/OutputPreview.svelte";
@@ -34,7 +35,8 @@
     if (message.type === "SELECTED_AND_STORE") {
       $store.nodeGroupKind = message.persistedStore.nodeGroupKind;
       $store.nodeGroups = buildTextNodeGroups(message.nodeInfos, $store.nodeGroupKind);
-      $store.listGroups = await fetchListGroups(message.persistedStore.listGroupUrls);
+      const listGroups = await fetchListGroups(message.persistedStore.listGroupUrls);
+      $store.listGroups = [defaultListGroup, ...listGroups];
       $store.textBlocks = message.persistedStore.textBlocks;
       $store.loaded = true;
     } else if (message.type === "SELECTED") {
