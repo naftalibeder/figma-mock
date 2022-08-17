@@ -1,7 +1,7 @@
 # 12
 
 - Major rewrite and interface redesign
-- Enable choosing the attribute used to group text fields (e.g. name, content, coordinates, etc.)
+- The attribute used to group text fields (e.g. name, content, coordinates, etc.) can be selected
 - Allow selection of specific text fields to paste into
 - All configuration state is now saved between sessions
 
