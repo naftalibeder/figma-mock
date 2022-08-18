@@ -1,7 +1,8 @@
 # 13
 
-- Make under-the-hood style changes
+- When grouping by layer name, the list now shows examples of the text contained in each group of layers
 - Various minor layout improvements
+- Under-the-hood style changes
 
 # 12
 
