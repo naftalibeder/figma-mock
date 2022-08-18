@@ -1,4 +1,3 @@
-import path from "path";
 import svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
@@ -12,7 +11,6 @@ import postcss from "rollup-plugin-postcss";
 import childProcess from "child_process";
 
 const production = !process.env.ROLLUP_WATCH;
-const projectDir = path.resolve(__dirname);
 
 export default [
   {
@@ -24,7 +22,6 @@ export default [
     },
     plugins: [
       svelte({
-        dev: !production,
         preprocess: sveltePreprocess({
           sourceMap: !production,
           postcss: {
