@@ -1,3 +1,8 @@
+# 13
+
+- Make under-the-hood style changes
+- Various minor layout improvements
+
 # 12
 
 - Major rewrite and interface redesign
