@@ -26,57 +26,25 @@
   }
 </script>
 
-<div class="section">
+<div>
   <Section>Preview</Section>
   <div class="section-subtitle">
     <Type>Examples of output text will appear below.</Type>
   </div>
-  <div class="scroll-box rounded-box">
-    {#if $store.nodeGroups.length > 0}
+  <div class="scroll-box rounded-box h-[120]">
+    {#if previewLines.length > 0}
       {#each previewLines as previewLine, index}
         {#if index > 0}
           <Divider />
         {/if}
-        <div class="preview-item">
-          <Type>{previewLine}</Type>
+        <div class="flex">
+          <div class="flex flex-1 items-center h-7">
+            <Type>{previewLine}</Type>
+          </div>
         </div>
       {/each}
     {:else}
-      <EmptyText />
+      <EmptyText>No text blocks configured.</EmptyText>
     {/if}
   </div>
 </div>
-
-<style>
-  .section {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 0px 8px;
-  }
-  .section-subtitle {
-    padding: 0px 8px;
-    font-size: smaller;
-  }
-  .scroll-box {
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-    height: 120px;
-    margin-top: 8px;
-    padding: 4px 8px;
-    font-size: smaller;
-  }
-  .rounded-box {
-    border-color: rgb(235, 235, 235);
-    border-width: 1px;
-    border-style: solid;
-    border-radius: 4px;
-  }
-  .preview-item {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    min-height: 28px;
-  }
-</style>

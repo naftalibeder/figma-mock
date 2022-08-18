@@ -59,7 +59,7 @@
   };
 </script>
 
-<div class="section">
+<div>
   <Section>Output</Section>
   <div class="section-subtitle">
     <Type>
@@ -67,7 +67,7 @@
       to delete.
     </Type>
   </div>
-  <div class="rounded-box {selectedBlock?.isValid === false && 'error'}" style="margin-top: 8px">
+  <div class="rounded-box mt-2 {selectedBlock?.isValid === false ? 'error' : ''}">
     <TextBlockList
       textBlocks={$store.textBlocks}
       {selectedBlock}
@@ -79,25 +79,3 @@
     <TextBlockDetails {selectedBlock} {onUpdateTextBlock} />
   </div>
 </div>
-
-<style>
-  .section {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 0px 8px;
-  }
-  .section-subtitle {
-    padding: 0px 8px;
-    font-size: smaller;
-  }
-  .rounded-box {
-    border-color: rgb(235, 235, 235);
-    border-width: 1px;
-    border-style: solid;
-    border-radius: 4px;
-  }
-  .rounded-box.error {
-    border-color: rgb(255, 53, 53);
-  }
-</style>

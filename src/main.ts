@@ -108,10 +108,7 @@ const getStore = async (): Promise<PersistedStore> => {
       throw "Persisted store is empty";
     }
 
-    let listGroupUrls = store.listGroupUrls;
-    if (listGroupUrls.length === 0) {
-      listGroupUrls = [defaultListGroupUrl];
-    }
+    const listGroupUrls = store.listGroupUrls;
 
     let textBlocks = store.textBlocks;
     if (textBlocks.length === 0) {

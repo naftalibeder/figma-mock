@@ -2,7 +2,7 @@
   import { Type } from "figma-plugin-ds-svelte";
 </script>
 
-<div class="wrap">
+<div class="flex flex-1 flex-col p-4 gap-2">
   <Type
     >Mock is developed by Naftali Beder and is completely free to use. The code is open source and
     available <a href="https://github.com/naftalibeder/figma-mock" target="_blank"> here</a>.
@@ -23,13 +23,3 @@
   <Type>Thank you for using it!</Type>
   <Type>- Naftali</Type>
 </div>
-
-<style>
-  .wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 16px;
-    gap: 8px;
-  }
-</style>

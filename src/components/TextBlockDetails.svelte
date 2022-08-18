@@ -125,8 +125,8 @@
   }
 </script>
 
-<div class="wrap">
-  <div class="col">
+<div class="flex flex-col p-2 gap-2">
+  <div class="flex flex-col gap-2">
     <Type>Data</Type>
     <SelectMenu
       bind:menuItems={listOptions}
@@ -135,7 +135,7 @@
     />
   </div>
   {#if selectedBlock?.type === "TextBlockCustomString"}
-    <div class="col">
+    <div class="flex flex-col gap-2">
       <Type>Custom text</Type>
       <Input
         placeholder="Enter custom text"
@@ -151,8 +151,8 @@
       />
     </div>
   {:else if selectedBlock?.type === "TextBlockNumber"}
-    <div class="row">
-      <div class="col">
+    <div class="flex flex-row gap-2">
+      <div class="flex flex-col gap-2">
         <Type>Min</Type>
         <Input
           type="number"
@@ -169,7 +169,7 @@
           }}
         />
       </div>
-      <div class="col">
+      <div class="flex flex-col gap-2">
         <Type>Max</Type>
         <Input
           type="number"
@@ -186,7 +186,7 @@
           }}
         />
       </div>
-      <div class="col">
+      <div class="flex flex-col gap-2">
         <Type>Decimals</Type>
         <Input
           type="number"
@@ -221,23 +221,3 @@
     />
   {/if}
 </div>
-
-<style>
-  .wrap {
-    display: flex;
-    flex-direction: column;
-    padding: 8px;
-    gap: 8px;
-    font-size: smaller;
-  }
-  .row {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-  }
-  .col {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-</style>

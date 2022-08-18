@@ -43,13 +43,16 @@
   };
 </script>
 
-<div class="scroll-box">
+<div class="flex flex-row py-2 overflow-x-scroll overflow-y-hidden">
   {#each textBlocks as textBlock, index}
     <div
-      class={"insert-button-wrap" + (index === 0 ? "" : "")}
+      class={"flex items-center content-center h-8 opacity-0 \
+      transition-all duration-200 ease-out \
+      hover:px-2 hover:opacity-100 first:hover:pr-2 first:hover:pl-2 \
+      group"}
       on:click={() => _onPressAddTextBlock("before", index)}
     >
-      <div class="insert-button-box" />
+      <div class="flex h-8 w-2 m-0 rounded-md bg-white outline outline-gray-200 group-hover:w-4" />
     </div>
     <TextBlockButton
       {textBlock}
@@ -58,66 +61,15 @@
       on:dblclick={() => _onPressDeleteTextBlock(textBlock)}
     />
   {/each}
-  <div class="add-button-wrap">
+  <div class="px-2 group">
     <Button variant={"secondary"} on:click={_onPressAppendTextBlock}
-      ><div class="add-button-inner">+</div></Button
+      ><div class="transition-all duration-200 ease-out group-hover:px-1">+</div></Button
     >
   </div>
 </div>
 
 <style>
-  .scroll-box {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: scroll;
-    padding: 8px 0px;
-    height: 100%;
-    font-size: smaller;
-  }
-  .insert-button-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: var(--size-medium); /* Button height. */
-    padding: 0px 0px;
-    transition: all 0.2s ease-out;
-  }
-  .insert-button-wrap:hover {
-    padding: 0px 8px;
-  }
-  .insert-button-wrap.first:hover {
-    padding: 0px 8px 0px 16px;
-  }
-  .insert-button-box {
-    display: flex;
-    height: var(--size-medium); /* Button height. */
-    width: 8px;
-    margin: 0px;
-    border-radius: var(--border-radius-large);
-    background-color: white;
-    border: 1px solid rgb(235, 235, 235);
-    opacity: 0;
-    transition: all 0.2s ease-out;
-  }
-  .insert-button-wrap:hover .insert-button-box {
-    width: 24px;
-    opacity: 1;
-  }
-  .add-button-wrap {
-    padding: 0px 8px;
-    font-size: smaller;
-  }
-  .add-button-inner {
-    padding: 0px 0px;
-    font-size: smaller;
-    transition: all 0.2s ease-out;
-  }
-  .add-button-wrap:hover .add-button-inner {
-    padding: 0px 4px;
-  }
-  .scroll-box::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     display: none;
   }
 </style>

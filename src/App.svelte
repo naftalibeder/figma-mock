@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+  import "../styles/main.css";
   import { Page } from "types";
   import Nav from "./components/Nav.svelte";
   import GeneratePage from "./components/GeneratePage.svelte";
@@ -9,7 +10,7 @@
   let currentPage: Page = "generate";
 </script>
 
-<div class="wrap">
+<div class="flex flex-1 flex-col">
   <Nav bind:currentPage />
   <Divider />
   {#if currentPage === "generate"}
@@ -20,11 +21,3 @@
     <AboutPage />
   {/if}
 </div>
-
-<style>
-  .wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-  }
-</style>

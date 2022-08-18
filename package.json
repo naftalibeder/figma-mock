@@ -15,7 +15,8 @@
     "@rollup/plugin-image": "2.1.1",
     "@rollup/plugin-node-resolve": "13.3.0",
     "@rollup/plugin-typescript": "8.3.4",
-    "caniuse-lite": "1.0.30001376",
+    "autoprefixer": "^10.4.7",
+    "caniuse-lite": "1.0.30001378",
     "cssnano": "^5.1.13",
     "figma-plugin-ds": "1.0.1",
     "figma-plugin-ds-svelte": "github:naftalibeder/figma-plugin-ds-svelte",
@@ -30,7 +31,9 @@
     "svelte": "3.49.0",
     "svelte-preprocess": "4.10.7",
     "tslib": "2.4.0",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8"
   },
   "dependencies": {
     "js-convert-case": "^4.2.0",

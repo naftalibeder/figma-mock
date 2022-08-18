@@ -102,40 +102,13 @@
     <OutputPreview />
   </div>
   <Divider />
-  <div class={`button ${canPaste ? "" : "disabled"}`} on:click={onSelectPaste}>
+  <div
+    class={"flex flex-1 flex-row items-center justify-between px-4 pt-3 cursor-pointer " +
+      (canPaste ? "opacity-80 hover:opacity-100" : "opacity-50 hover:opacity-60")}
+    disabled={!canPaste}
+    on:click={onSelectPaste}
+  >
     <Type weight="bold">Paste into selected text fields</Type>
     <Icon iconName={IconForward} />
   </div>
 </div>
-
-<style>
-  .wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-  }
-  .section {
-    padding-top: 8px;
-    padding-bottom: 16px;
-  }
-  .button {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0px 16px;
-    padding-top: 12px;
-    cursor: pointer;
-    opacity: 0.8;
-  }
-  .button.disabled {
-    opacity: 0.5;
-  }
-  .button:hover {
-    opacity: 1;
-  }
-  .button.disabled:hover {
-    opacity: 0.6;
-  }
-</style>

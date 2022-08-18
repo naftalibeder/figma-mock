@@ -100,19 +100,19 @@
   };
 </script>
 
-<div class="section">
+<div>
   <Section>Fields</Section>
   <div class="section-subtitle">
     <Type>{subtitleText}</Type>
   </div>
-  <div class="group-by-options">
+  <div class="mt-2">
     <SelectMenu
       bind:menuItems={groupKindOptions}
       on:change={(e) => _onChangeGroupKind(e.detail.value)}
       showGroupLabels={true}
     />
   </div>
-  <div class="scroll-box rounded-box">
+  <div class="scroll-box rounded-box h-[120]">
     {#if nodeGroups.length > 0}
       {#each nodeGroups as nodeGroup, index}
         {#if index > 0}
@@ -126,39 +126,7 @@
         />
       {/each}
     {:else}
-      <EmptyText />
+      <EmptyText>Select at least one text element.</EmptyText>
     {/if}
   </div>
 </div>
-
-<style>
-  .section {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 0px 8px;
-  }
-  .section-subtitle {
-    padding: 0px 8px;
-    font-size: smaller;
-  }
-  .group-by-options {
-    margin-top: 8px;
-  }
-  .scroll-box {
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    height: 120px;
-    margin-top: 8px;
-    padding: 4px 8px;
-    font-size: smaller;
-  }
-  .rounded-box {
-    border-color: rgb(235, 235, 235);
-    border-width: 1px;
-    border-style: solid;
-    border-radius: 4px;
-  }
-</style>

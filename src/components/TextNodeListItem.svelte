@@ -22,7 +22,7 @@
     switch (groupKind) {
       case "NAME":
         title = joinedNames;
-        tag = "";
+        tag = joinedText;
         break;
       case "TEXT":
         title = joinedText;
@@ -48,56 +48,23 @@
   }
 </script>
 
-<div class={`container`} on:click>
-  <div class="checkbox-wrap">
-    <input class="checkbox" type="checkbox" value={nodeGroup.key} {checked} />
-  </div>
-  <div class="title-wrap">
-    <Type>{title}</Type>
-  </div>
-  {#if tag}
-    <div class="tag-wrap">
-      <div class="tag"><Type>{tag}</Type></div>
+<div class="flex">
+  <div class="flex flex-row h-7 w-full gap-2 items-center content-between cursor-pointer" on:click>
+    <div class="flex">
+      <input type="checkbox" value={nodeGroup.key} {checked} />
     </div>
-  {/if}
-  <div class="count-wrap">
-    <Type>{count}</Type>
+    <div class="flex flex-1 flex-grow whitespace-nowrap overflow-ellipsis">
+      <Type>{title}</Type>
+    </div>
+    {#if tag}
+      <div class="flex flex-shrink items-center overflow-hidden overflow-ellipsis">
+        <div class="flex py-0.5 px-1 rounded-lg whitespace-nowrap bg-gray-100">
+          <Type>{tag}</Type>
+        </div>
+      </div>
+    {/if}
+    <div class="flex text-right">
+      <Type>{count}</Type>
+    </div>
   </div>
 </div>
-
-<style>
-  .container {
-    display: grid;
-    align-items: center;
-    grid-template-columns: min-content 1fr min-content 16px;
-    min-height: 28px;
-    width: 100%;
-    gap: 4px;
-    cursor: pointer;
-  }
-  .checkbox-wrap {
-    grid-column: 1;
-  }
-  .title-wrap {
-    grid-column: 2;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-  }
-  .tag-wrap {
-    grid-column: 3;
-    place-self: center end;
-    padding-left: 8px;
-  }
-  .tag {
-    padding: 2px 4px;
-    border-radius: var(--border-radius-large);
-    white-space: nowrap;
-    background-color: rgb(245, 245, 245);
-    place-self: center end;
-  }
-  .count-wrap {
-    grid-column: 4;
-    text-align: right;
-  }
-</style>

@@ -1,10 +1,11 @@
 <script lang="ts" type="module">
   import { Type, Section, Textarea, Icon, IconMinus, Button } from "figma-plugin-ds-svelte";
-  import { ListGroup } from "types";
   import { fetchListGroups } from "utils";
   import { store } from "../store";
   import Divider from "./Divider.svelte";
   import EmptyText from "./EmptyText.svelte";
+
+  $: editableGroups = $store.listGroups.filter((o) => o.editable);
 
   let addGroupFieldValue = "";
   let addGroupUrl: URL | undefined = undefined;
@@ -62,35 +63,42 @@
       >
     </div>
     <div class="scroll-box rounded-box">
-      {#if $store.listGroups.length > 0}
-        {#each $store.listGroups.filter((o) => o.editable === true) as listGroup, index}
+      {#if editableGroups.length > 0}
+        {#each editableGroups as listGroup, index}
           {#if index > 0}
             <Divider />
           {/if}
-          <div class="item">
-            <div class="item-col">
-              <Type weight="bold">{listGroup.name}</Type>
-              <div class="item-row">
-                {#each listGroup.lists as list}
-                  <Type>{list.name}</Type>
-                {/each}
+          <div class="flex">
+            <div class="flex flex-1 flex-row items-center h-12 py-2 gap-2 cursor-pointer">
+              <div class="flex flex-1 flex-col items-start justify-center gap-1">
+                <Type weight="bold">{listGroup.name}</Type>
+                <div
+                  class="flex flex-1 flex-row items-center gap-2 overflow-ellipsis whitespace-nowrap"
+                >
+                  {#each listGroup.lists as list}
+                    <Type>{list.name}</Type>
+                  {/each}
+                </div>
               </div>
-            </div>
-            <div
-              class="minus-button-wrap"
-              on:click={() => onSelectDeleteListGroup(listGroup.indexUrl)}
-            >
-              <Icon iconName={IconMinus} />
+              <div
+                class="rounded-md hover:bg-gray-100"
+                on:click={() => onSelectDeleteListGroup(listGroup.indexUrl)}
+              >
+                <Icon iconName={IconMinus} />
+              </div>
             </div>
           </div>
         {/each}
       {:else}
-        <EmptyText>No list groups added.</EmptyText>
+        <div class="flex">
+          <EmptyText>No list groups added.</EmptyText>
+        </div>
       {/if}
     </div>
   </div>
+  <Divider />
   <div class="section">
-    <Section>Add group</Section>
+    <Section>Add list group</Section>
     <div class="section-subtitle">
       <Type
         >Enter any public url pointing to a file called <a
@@ -101,7 +109,7 @@
         >.</Type
       >
     </div>
-    <div class="add-input-wrap">
+    <div class="flex flex-1 flex-col pt-2 gap-2">
       <Textarea
         on:input={(e) => {
           const value = e.target["value"];
@@ -110,84 +118,10 @@
         placeholder="https://example.com/index.json"
       />
     </div>
-    <div class="add-button-wrap">
+    <div class="flex pt-2">
       <Button variant="secondary" disabled={addGroupUrl === undefined} on:click={onSubmitAddGroup}
         >Add</Button
       >
     </div>
   </div>
 </div>
-
-<style>
-  .section {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 8px;
-  }
-  .section-subtitle {
-    padding: 0px 8px;
-  }
-  .scroll-box {
-    display: flex;
-    flex: 0;
-    flex-direction: column;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    max-height: 240px;
-    margin-top: 8px;
-    padding: 4px 8px;
-    font-size: smaller;
-  }
-  .rounded-box {
-    border-color: rgb(235, 235, 235);
-    border-width: 1px;
-    border-style: solid;
-    border-radius: 4px;
-  }
-  .item {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    min-height: 48px;
-    padding: 8px 0px;
-    gap: 8px;
-    cursor: pointer;
-  }
-  .item-col {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 4px;
-  }
-  .item-row {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .minus-button-wrap {
-    border-radius: var(--border-radius-large);
-  }
-  .minus-button-wrap:hover {
-    background-color: rgb(245, 245, 245);
-  }
-  .add-input-wrap {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding-top: 8px;
-    gap: 8px;
-  }
-  .add-button-wrap {
-    display: flex;
-    flex: 0;
-    padding-top: 8px;
-  }
-</style>

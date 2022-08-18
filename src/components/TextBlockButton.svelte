@@ -13,28 +13,11 @@
 </script>
 
 <div>
-  <div class={isSelected ? "wrap hoverable" : "wrap"} on:click on:dblclick>
+  <div class={"flex flex-row items-center"} on:click on:dblclick>
     <Button variant={isSelected ? "primary" : "secondary"}>
-      <div class="wrap-inner">
+      <div class="flex flex-row items-center whitespace-nowrap">
         {textBlock.title}
       </div>
     </Button>
   </div>
 </div>
-
-<style>
-  .wrap {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-  .wrap.hoverable {
-    display: flex;
-  }
-  .wrap-inner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    white-space: nowrap;
-  }
-</style>
