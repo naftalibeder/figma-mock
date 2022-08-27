@@ -2,15 +2,32 @@
   "compilerOptions": {
     "outDir": "build",
     "target": "ES2019",
-    "lib": ["ES2021", "dom"],
+    "lib": [
+      "ES2021",
+      "dom"
+    ],
     "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./node_modules/@figma", "./src/types"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma",
+      "./src/types"
+    ],
     "paths": {
-      "components": ["./src/components"],
-      "components/*": ["./src/components/*"],
-      "constants": ["./src/constants"],
-      "utils": ["./src/utils"],
-      "types": ["./src/types"]
+      "components": [
+        "./src/components"
+      ],
+      "components/*": [
+        "./src/components/*"
+      ],
+      "constants": [
+        "./src/constants"
+      ],
+      "utils": [
+        "./src/utils"
+      ],
+      "types": [
+        "./src/types"
+      ]
     },
     "allowSyntheticDefaultImports": true
   }
