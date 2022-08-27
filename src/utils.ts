@@ -234,7 +234,7 @@ export const textBlockIsValid = (textBlock: TextBlock) => {
     case "TextBlockNumber":
       return !isNaN(textBlock.min) && !isNaN(textBlock.max) && !isNaN(textBlock.decimals);
     case "TextBlockString":
-      return textBlock.casing !== undefined;
+      return textBlock.listId.length > 0;
   }
 };
 
